@@ -342,6 +342,10 @@ private:
 };
 
 
+/// Helper typedef
+using string_view = basic_string_view<char>;
+
+
 } // END namespace jwt
 
 #include "jwt/impl/string_view.ipp"

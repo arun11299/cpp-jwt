@@ -36,41 +36,41 @@ std::string base64_encode(const char* in, size_t len)
   std::string result;
   result.resize(128);
 
-  constexpr static const EMap bmap{};
+  constexpr static const EMap emap{};
 
   int i = 0;
-
+  int j = 0;
   for (; i < len - 2; i += 3) {
-    auto first  = in[i];
-    auto second = in[i+1];
-    auto third  = in[i+2];
+    auto& first  = in[i];
+    auto& second = in[i+1];
+    auto& third  = in[i+2];
 
-    result[i]     = bmap.at( (first >> 2) & 0x3F                           );
-    result[i + 1] = bmap.at(((first  & 0x03) << 4) | ((second & 0xF0) >> 4));
-    result[i + 2] = bmap.at(((second & 0x0F) << 2) | ((third  & 0xC0) >> 6));
-    result[i + 3] = bmap.at(                          (third  & 0x3F)      );
+    result[j++] = emap.at( (first >> 2) & 0x3F                           );
+    result[j++] = emap.at(((first  & 0x03) << 4) | ((second & 0xF0) >> 4));
+    result[j++] = emap.at(((second & 0x0F) << 2) | ((third  & 0xC0) >> 6));
+    result[j++] = emap.at(                          (third  & 0x3F)      );
   }
 
   switch (len % 3) {
   case 2:
   {
-    auto first  = in[i];
-    auto second = in[i+1];
+    auto& first  = in[i];
+    auto& second = in[i+1];
 
-    result[i]     = bmap.at( (first >> 2) & 0x3F                          );
-    result[i + 1] = bmap.at(((first & 0x03) << 4) | ((second & 0xF0) >> 4));
-    result[i + 2] = bmap.at(                         (second & 0x0F) << 2 );
-    result[i + 3] = '=';
+    result[j++] = emap.at( (first >> 2) & 0x3F                          );
+    result[j++] = emap.at(((first & 0x03) << 4) | ((second & 0xF0) >> 4));
+    result[j++] = emap.at(                         (second & 0x0F) << 2 );
+    result[j++] = '=';
     break;
   }
   case 1:
   {
     auto& first = in[i];
 
-    result[i]     = bmap.at((first >> 2) & 0x3F                          );
-    result[i + 1] = bmap.at((first & 0x03) << 4                          );
-    result[i + 2] = '=';
-    result[i + 3] = '=';
+    result[j++] = emap.at((first >> 2) & 0x3F);
+    result[j++] = emap.at((first & 0x03) << 4);
+    result[j++] = '=';
+    result[j++] = '=';
     break;
   }
   case 0:
@@ -135,7 +135,7 @@ std::string base64_decode(const char* in, size_t len)
   while (bytes_rem > 4)
   {
     // Error case in input
-    if (dmap.at(*in) == -1) return;
+    if (dmap.at(*in) == -1) return result;
 
     auto first  = dmap.at(in[0]);
     auto second = dmap.at(in[1]);
