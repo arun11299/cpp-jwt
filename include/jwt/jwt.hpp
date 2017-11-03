@@ -149,6 +149,9 @@ struct write_interface
 };
 
 /*!
+ * Provides the functionality for doing
+ * base64 encoding and decoding from the
+ * json string.
  */
 template <typename Derived>
 struct base64_enc_dec
