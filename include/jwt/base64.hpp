@@ -127,6 +127,7 @@ std::string base64_decode(const char* in, size_t len)
   result.resize(128);
   int i = 0;
   size_t bytes_rem = len;
+  size_t bytes_wr = 0;
 
   constexpr static const DMap dmap{};
 
@@ -150,6 +151,7 @@ std::string base64_decode(const char* in, size_t len)
     i += 3;
     in += 4;
   }
+  bytes_wr = i;
 
   switch(bytes_rem) {
   case 4:
@@ -157,6 +159,7 @@ std::string base64_decode(const char* in, size_t len)
     auto third  = dmap.at(in[2]);
     auto fourth = dmap.at(in[3]);
     result[i + 2] = (third << 6) | fourth;
+    bytes_wr++;
     //FALLTHROUGH
   }
   case 3:
@@ -164,6 +167,7 @@ std::string base64_decode(const char* in, size_t len)
     auto second = dmap.at(in[1]);
     auto third  = dmap.at(in[2]);
     result[i + 1] = (second << 4) | (third >> 2);
+    bytes_wr++;
     //FALLTHROUGH
   }
   case 2:
@@ -171,8 +175,11 @@ std::string base64_decode(const char* in, size_t len)
     auto first  = dmap.at(in[0]);
     auto second = dmap.at(in[1]);
     result[i] = (first << 2) | (second >> 4);
+    bytes_wr++;
   }
   };
+
+  result.resize(bytes_wr);
 
   return result;
 }

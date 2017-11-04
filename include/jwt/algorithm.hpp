@@ -241,14 +241,20 @@ public:
   {
     std::error_code ec{};
 
-    EVP_PKEY* pkey = load_key(key);
+    static auto evpkey_deletor = [](EVP_PKEY* ptr) {
+      if (ptr) EVP_PKEY_free(ptr);
+    };
+
+    std::unique_ptr<EVP_PKEY, decltype(evpkey_deletor)>
+      pkey{load_key(key), evpkey_deletor};
+
     if (!pkey) {
       //TODO: set valid error code
       return {std::string{}, ec};
     }
 
     //TODO: Use stack string here ?
-    std::string sign = evp_digest(pkey, data, ec);
+    std::string sign = evp_digest(pkey.get(), data, ec);
     if (ec) {
       //TODO: handle error_code
       return {std::move(sign), ec};
@@ -257,7 +263,7 @@ public:
     if (Hasher::type != EVP_PKEY_EC) {
       return {std::move(sign), ec};
     } else {
-      sign = public_key_ser(pkey, sign, ec);
+      sign = public_key_ser(pkey.get(), sign, ec);
     }
 
     return {std::move(sign), ec};
@@ -316,7 +322,7 @@ private:
       return std::string{};
     }
 
-    uint32_t len = 0;
+    unsigned long len = 0;
 
     if (EVP_DigestSignFinal(mdctx_ptr.get(), nullptr, &len) != 1) {
       //TODO: set appropriate error_code
@@ -327,7 +333,7 @@ private:
     sign.resize(len);
 
     //Get the signature
-    if (EVP_DigestSignFinal(mdctx_ptr.get(), &sign[0], &len) != 1) {
+    if (EVP_DigestSignFinal(mdctx_ptr.get(), (unsigned char*)&sign[0], &len) != 1) {
       //TODO: set appropriate error_code
       return std::string{};
     }
@@ -342,8 +348,12 @@ private:
     // (optionaly) an associated private key
     std::string new_sign;
 
-    auto eckey_deletor = [](EC_KEY* ptr) {
+    static auto eckey_deletor = [](EC_KEY* ptr) {
       if (ptr) EC_KEY_free(ptr);
+    };
+
+    static auto ecsig_deletor = [](ECDSA_SIG* ptr) {
+      if (ptr) ECDSA_SIG_free(ptr);
     };
 
     std::unique_ptr<EC_KEY, decltype(eckey_deletor)> 
@@ -356,9 +366,13 @@ private:
 
     uint32_t degree = EC_GROUP_get_degree(EC_KEY_get0_group(ec_key.get()));
 
-    ECDSA_SIG* ec_sig = d2i_ECDSA_SIG(nullptr,
-                                      (const unsigned char**)&sign[0],
-                                      sign.length());
+
+    std::unique_ptr<ECDSA_SIG, decltype(ecsig_deletor)>
+      ec_sig{d2i_ECDSA_SIG(nullptr,
+                           (const unsigned char**)&sign[0],
+                           sign.length()),
+             ecsig_deletor};
+
     if (!ec_sig) {
       //TODO set a valid error code
       return std::string{};
@@ -377,7 +391,7 @@ private:
       
 #endif
 
-    ECDSA_SIG_get0(ec_sig, &ec_sig_r, &ec_sig_s);
+    ECDSA_SIG_get0(ec_sig.get(), &ec_sig_r, &ec_sig_s);
 
     auto r_len = BN_num_bytes(ec_sig_r);
     auto s_len = BN_num_bytes(ec_sig_s);

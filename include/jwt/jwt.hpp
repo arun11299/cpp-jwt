@@ -2,6 +2,8 @@
 #define JWT_HPP
 
 #include <cassert>
+#include <cstring>
+#include <set>
 #include <string>
 #include <ostream>
 
@@ -156,12 +158,16 @@ struct write_interface
 template <typename Derived>
 struct base64_enc_dec
 {
+  /*!
+   */
   std::string base64_encode(bool with_pretty = false) const
   {
     std::string jstr = to_json_str(*static_cast<const Derived*>(this), with_pretty);
     return jwt::base64_encode(jstr.c_str(), jstr.length());
   }
 
+  /*!
+   */
   static std::string base64_decode(const std::string& encoded_str)
   {
     return jwt::base64_decode(encoded_str.c_str(), encoded_str.length());
@@ -233,6 +239,7 @@ public: // Exposed APIs
   json_t create_json_obj() const
   {
     json_t obj = json_t::object();
+    //TODO: should be able to do with string_view
     obj["typ"] = type_to_str(typ_).to_string();
     obj["alg"] = alg_to_str(alg_).to_string();
 
@@ -247,10 +254,88 @@ private: // Data members
   enum type      typ_ = type::JWT;
 };
 
+
 /*!
+ * JWT Payload
  */
-struct jwt_payload
+struct jwt_payload: write_interface
+                  , base64_enc_dec<jwt_payload>
 {
+public: // 'tors
+  /*!
+   */
+  jwt_payload() = default;
+
+  /// Default copy and assignment operations
+  jwt_payload(const jwt_payload&) = default;
+  jwt_payload& operator=(const jwt_payload&) = default;
+
+  ~jwt_payload() = default;
+
+public: // Exposed APIs
+  /*!
+   */
+  template <typename T>
+  bool add_claim(const std::string& cname, T&& cvalue, bool overwrite=false)
+  {
+    // Duplicate claim names not allowed
+    // if overwrite flag is set to true.
+    auto itr = claim_names_.find(cname);
+    if (itr != claim_names_.end() && !overwrite) {
+      return false;
+    }
+
+    // Add it to the known set of claims
+    claim_names_.emplace(cname.data(), cname.length());
+
+    //Add it to the json payload
+    //TODO: claim name copied twice inside json 
+    //and in the set
+    payload_[cname.data()] = std::forward<T>(cvalue);
+
+    return true;
+  }
+
+  /*!
+   */
+  bool has_claim(const std::string& cname) const noexcept
+  {
+    return claim_names_.count(cname);
+  }
+
+  /*!
+   */
+  template <typename T>
+  bool has_claim_with_value(const std::string& cname, T&& cvalue) const
+  {
+    auto itr = claim_names_.find(cname);
+    if (itr == claim_names_.end()) return false;
+
+    return (cvalue == payload_[cname]);
+  }
+
+  /*!
+   */
+  const json_t& create_json_obj() const
+  {
+    return payload_;
+  }
+
+private:
+  /*!
+   */
+  struct case_compare {
+    bool operator()(const std::string& lhs, const std::string& rhs) const
+    {
+      int ret = strcasecmp(lhs.c_str(), rhs.c_str());
+      return (ret < 0);
+    }
+  };
+
+  /// JSON object containing payload
+  json_t payload_;
+  /// The set of claim names in the payload
+  std::set<std::string, case_compare> claim_names_;
 };
 
 /*!
