@@ -3,10 +3,11 @@
 
 #include <array>
 #include <cassert>
+#include "jwt/string_view.hpp"
 
 namespace jwt {
 
-/*
+/*!
  * Encoding map.
  */
 class EMap
@@ -30,7 +31,8 @@ private:
   };
 };
 
-
+/*!
+ */
 std::string base64_encode(const char* in, size_t len)
 {
   std::string result;
@@ -120,7 +122,8 @@ private:
   };
 };
 
-
+/*!
+ */
 std::string base64_decode(const char* in, size_t len)
 {
   std::string result;
@@ -182,6 +185,31 @@ std::string base64_decode(const char* in, size_t len)
   result.resize(bytes_wr);
 
   return result;
+}
+
+/*!
+ */
+void base64_uri_encode(char* data, size_t len) noexcept
+{
+  size_t i = 0;
+  size_t j = 0;
+
+  for (; i < len; ++i) {
+    switch (data[i]) {
+    case '+':
+      data[j++] = '-';
+      break;
+    case '/':
+      data[j++] = '_';
+      break;
+    case '=':
+      break;
+    default:
+      data[j++] = data[i];
+    };
+  }
+
+  return;
 }
 
 } // END namespace jwt

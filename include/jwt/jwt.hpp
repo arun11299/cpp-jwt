@@ -8,6 +8,7 @@
 #include <ostream>
 
 #include "jwt/base64.hpp"
+#include "jwt/algorithm.hpp"
 #include "jwt/string_view.hpp"
 #include "jwt/detail/meta.hpp"
 #include "jwt/json/json.hpp"
@@ -342,6 +343,37 @@ private:
  */
 struct jwt_signature
 {
+public: // 'tors
+  /// Default constructor
+  jwt_signature() = default;
+
+  /*!
+   */
+  jwt_signature(string_view key)
+    : key_(key.data(), key.length())
+  {
+  }
+
+  /// Default copy and assignment operator
+  jwt_signature(const jwt_signature&) = default;
+  jwt_signature& operator=(const jwt_signature&) = default;
+
+  ~jwt_signature() = default;
+
+public: // Exposed APIs
+  /*!
+   */
+  std::string encode(const jwt_header& header, 
+                     const jwt_payload& payload);
+
+private: // Private implementation
+  /*!
+   */
+  sign_func_t get_algorithm_impl(const jwt_header& hdr) const noexcept;
+
+private: // Data members;
+  /// The key for creating the JWS
+  std::string key_;
 };
 
 
