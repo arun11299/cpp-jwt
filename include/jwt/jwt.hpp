@@ -10,7 +10,6 @@
 #include "jwt/base64.hpp"
 #include "jwt/algorithm.hpp"
 #include "jwt/string_view.hpp"
-#include "jwt/detail/meta.hpp"
 #include "jwt/json/json.hpp"
 
 // For convenience
@@ -59,6 +58,25 @@ string_view alg_to_str(enum algorithm alg) noexcept
   assert (0 && "Code not reached");
 }
 
+/*!
+ */
+enum algorithm str_to_alg(const string_view alg) noexcept
+{
+  if (!alg.length()) return algorithm::NONE;
+
+  if (!strcasecmp(alg.data(), "none"))  return algorithm::NONE;
+  if (!strcasecmp(alg.data(), "hs256")) return algorithm::HS256;
+  if (!strcasecmp(alg.data(), "hs384")) return algorithm::HS384;
+  if (!strcasecmp(alg.data(), "hs512")) return algorithm::HS512;
+  if (!strcasecmp(alg.data(), "rs256")) return algorithm::RS256;
+  if (!strcasecmp(alg.data(), "rs384")) return algorithm::RS384;
+  if (!strcasecmp(alg.data(), "rs512")) return algorithm::RS512;
+  if (!strcasecmp(alg.data(), "es256")) return algorithm::ES256;
+  if (!strcasecmp(alg.data(), "es384")) return algorithm::ES384;
+  if (!strcasecmp(alg.data(), "es512")) return algorithm::ES512;
+
+  assert (0 && "Code not reached");
+}
 
 /*!
  */
@@ -66,6 +84,17 @@ enum class type
 {
   JWT = 0,
 };
+
+/*!
+ */
+enum type str_to_type(const string_view typ) noexcept
+{
+  assert (typ.length() && "Empty type string");
+
+  if (!strcasecmp(typ.data(), "jwt")) return type::JWT;
+
+  assert (0 && "Code not reached");
+}
 
 
 /*!
@@ -160,18 +189,28 @@ template <typename Derived>
 struct base64_enc_dec
 {
   /*!
+   * Does URL safe base64 encoding
    */
   std::string base64_encode(bool with_pretty = false) const
   {
     std::string jstr = to_json_str(*static_cast<const Derived*>(this), with_pretty);
-    return jwt::base64_encode(jstr.c_str(), jstr.length());
+    std::string b64_str = jwt::base64_encode(jstr.c_str(), jstr.length());
+    size_t rpos = b64_str.length();
+    while(b64_str[rpos-1] == '=') rpos--;
+    // Remove the '=' characters
+    b64_str.resize(rpos);
+    // Do the URI safe encoding
+    jwt::base64_uri_encode(&b64_str[0], b64_str.length());
+
+    return b64_str;
   }
 
   /*!
+   * Does URL safe base64 decoding.
    */
-  static std::string base64_decode(const std::string& encoded_str)
+  std::string base64_decode(const string_view encoded_str)
   {
-    return jwt::base64_decode(encoded_str.c_str(), encoded_str.length());
+    return jwt::base64_uri_decode(encoded_str.data(), encoded_str.length());
   }
 
 };
@@ -234,6 +273,18 @@ public: // Exposed APIs
   {
     return typ_;
   }
+
+  /*!
+   */
+  //TODO: error code ?
+  std::string encode(bool pprint = false)
+  {
+    return base64_encode(pprint);
+  }
+
+  /*!
+   */
+  void decode(const string_view enc_str);
 
   /*!
    */
@@ -317,6 +368,18 @@ public: // Exposed APIs
 
   /*!
    */
+  std::string encode(bool pprint = false)
+  {
+    return base64_encode(pprint);
+  }
+
+  /*!
+   */
+  //TODO: what about error_code ?
+  void decode(const string_view enc_str);
+
+  /*!
+   */
   const json_t& create_json_obj() const
   {
     return payload_;
@@ -366,6 +429,12 @@ public: // Exposed APIs
   std::string encode(const jwt_header& header, 
                      const jwt_payload& payload);
 
+  /*!
+   */
+  bool verify(const jwt_header& header,
+              const string_view hdr_pld_sign,
+              const string_view jwt_sign);
+
 private: // Private implementation
   /*!
    */
@@ -381,7 +450,23 @@ private: // Data members;
  */
 class jwt_object
 {
+public: // 'tors
+  jwt_object() = default;
+
+public: // Exposed APIs
+
+private: // Data Members
+
+  /// JWT header section
+  jwt_header header_;
+  /// JWT payload section
+  jwt_payload payload_;
+
 };
+
+/*!
+ */
+void jwt_decode(string_view encoded_str, string_view key, bool validate=true);
 
 
 } // END namespace jwt

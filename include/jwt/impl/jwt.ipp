@@ -1,6 +1,8 @@
 #ifndef JWT_IPP
 #define JWT_IPP
 
+#include "jwt/detail/meta.hpp"
+
 namespace jwt {
 
 template <typename T>
@@ -23,11 +25,52 @@ std::ostream& write(std::ostream& os, const T& obj, bool pretty)
 }
 
 
-template <typename T>
+template <typename T,
+          typename = typename std::enable_if<
+            detail::meta::has_create_json_obj_member<T>{}>::type>
 std::ostream& operator<< (std::ostream& os, const T& obj)
 {
   os << obj.create_json_obj();
   return os;
+}
+
+//========================================================================
+
+void jwt_header::decode(const string_view enc_str)
+{
+  std::string json_str = base64_decode(enc_str);
+  json_t obj = json_t::parse(std::move(json_str));
+
+  //Look for the algorithm field
+  auto alg_itr = obj.find("alg");
+  assert (alg_itr != obj.end() && "Algorithm header is missing");
+  std::error_code ec;
+
+  alg_ = str_to_alg(alg_itr.value().get<std::string>());
+
+  if (alg_ != algorithm::NONE) {
+    auto itr = obj.find("typ");
+    if (itr == obj.end()) {
+      //TODO: set error code
+      return;
+    }
+    auto typ = itr.value().get<std::string>();
+    if (strcasecmp(typ.c_str(), "JWT")) {
+      //TODO: set error code
+      return;
+    }
+    typ_ = str_to_type(typ);
+  }
+
+  return;
+}
+
+
+void jwt_payload::decode(const string_view enc_str)
+{
+  std::string json_str = base64_decode(enc_str);
+  payload_ = json_t::parse(std::move(json_str));
+  return;
 }
 
 std::string jwt_signature::encode(const jwt_header& header,
@@ -41,9 +84,6 @@ std::string jwt_signature::encode(const jwt_header& header,
   std::string hdr_sign = header.base64_encode();
   std::string pld_sign = payload.base64_encode();
 
-  base64_uri_encode(&hdr_sign[0], hdr_sign.length());
-  base64_uri_encode(&pld_sign[0], pld_sign.length());
-
   std::string data = hdr_sign + '.' + pld_sign;
   auto res = sign_fn(key_, data);
  
@@ -53,6 +93,15 @@ std::string jwt_signature::encode(const jwt_header& header,
   jwt_msg = data + '.' + b64hash;
 
   return jwt_msg;
+}
+
+bool jwt_signature::verify(const jwt_header& header,
+                           const string_view hdr_pld_sign,
+                           const srting_view jwt_sign)
+{
+  //TODO: is bool the right choice ?
+
+  return true;
 }
 
 
@@ -97,6 +146,33 @@ jwt_signature::get_algorithm_impl(const jwt_header& hdr) const noexcept
   };
 
   return ret;
+}
+
+//====================================================================
+
+void jwt_decode(string_view encoded_str, string_view key, bool validate)
+{
+  //TODO: implement error_code
+  size_t fpos = encoded_str.find_first_of('.');
+  assert (fpos != string_view::npos);
+
+  string_view head{&encoded_str[0], fpos};
+  std::cout << "Head: " << head << std::endl;
+  jwt_header hdr;
+  hdr.decode(head);
+
+  size_t spos = encoded_str.find_first_of('.', fpos + 1);
+  if (spos == string_view::npos) {
+    //TODO: Check for none algorithm
+  }
+  string_view body{&encoded_str[fpos + 1], spos - fpos - 1};
+  std::cout << "Body: " << body << std::endl;
+
+  //Json objects or claims get set in the decode
+  jwt_payload pld;
+  pld.decode(body);
+
+
 }
 
 } // END namespace jwt

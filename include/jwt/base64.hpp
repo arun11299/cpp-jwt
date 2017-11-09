@@ -212,6 +212,36 @@ void base64_uri_encode(char* data, size_t len) noexcept
   return;
 }
 
+/*!
+ */
+std::string base64_uri_decode(const char* data, size_t len)
+{
+  std::string uri_dec;
+  uri_dec.resize(len + 4);
+
+  for (size_t i = 0; i < len; ++i) {
+    switch (data[i]) {
+    case '-':
+      uri_dec[i] = '+';
+      break;
+    case '_':
+      uri_dec[i] = '/';
+      break;
+    default:
+      uri_dec[i] = data[i];
+    };
+  }
+
+  size_t trailer = 4 - (i % 4);
+  if (trailer && trailer < 4) {
+    while (trailer--) {
+      uri_dec[i++] = '=';
+    }
+  }
+
+  return base64_decode(uri_dec.c_str(), uri_dec.length());
+}
+
 } // END namespace jwt
 
 

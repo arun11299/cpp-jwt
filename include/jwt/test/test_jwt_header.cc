@@ -10,7 +10,7 @@ void test_basic_header()
 
   std::string enc_str = hdr.base64_encode();
   std::cout << "Base64: " << enc_str << std::endl;
-  std::cout << "Decoded: " << jwt::jwt_header::base64_decode(enc_str) << std::endl;
+  std::cout << "Decoded: " << hdr.base64_decode(enc_str) << std::endl;
 }
 
 int main() {
