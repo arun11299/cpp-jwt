@@ -189,7 +189,7 @@ std::string base64_decode(const char* in, size_t len)
 
 /*!
  */
-void base64_uri_encode(char* data, size_t len) noexcept
+size_t base64_uri_encode(char* data, size_t len) noexcept
 {
   size_t i = 0;
   size_t j = 0;
@@ -209,7 +209,7 @@ void base64_uri_encode(char* data, size_t len) noexcept
     };
   }
 
-  return;
+  return j;
 }
 
 /*!
@@ -219,7 +219,9 @@ std::string base64_uri_decode(const char* data, size_t len)
   std::string uri_dec;
   uri_dec.resize(len + 4);
 
-  for (size_t i = 0; i < len; ++i) {
+  size_t i = 0;
+
+  for (; i < len; ++i) {
     switch (data[i]) {
     case '-':
       uri_dec[i] = '+';

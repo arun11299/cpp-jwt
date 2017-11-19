@@ -25,7 +25,7 @@ using sign_func_t   = sign_result_t (*) (const string_view key,
                                          const string_view data);
 ///
 using verify_func_t = verify_result_t (*) (const string_view key,
-                                           const string_view header,
+                                           const string_view head,
                                            const string_view jwt_sign);
 
 namespace algo {
@@ -215,7 +215,7 @@ struct HMACSign<algo::NONE>
   static verify_result_t
   verify(const string_view key, const string_view head, const string_view sign)
   {
-    int compare_res = 0;
+    bool compare_res = 0;
     std::error_code ec{};
 
     //TODO: Set the appropriate error code for none
@@ -268,6 +268,18 @@ public:
     return {std::move(sign), ec};
   }
 
+  /*!
+   */
+  static verify_result_t
+  verify(const string_view key, const string_view head, const string_view sign)
+  {
+    bool compare_res = 0;
+    std::error_code ec{};
+
+    //TODO: Set the appropriate error code for none
+    return {compare_res, ec};
+  }
+
 private:
   /*!
    */
@@ -283,6 +295,8 @@ private:
 };
 
 } // END namespace jwt
+
+#include "jwt/impl/algorithm.ipp"
 
 
 #endif

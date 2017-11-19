@@ -26,7 +26,7 @@ template <typename T>
 struct has_create_json_obj_member<T, 
   void_t<
     decltype(
-      std::declval<T&&>.create_json_obj(),
+      std::declval<T&&>().create_json_obj(),
       (void)0
     )
   >

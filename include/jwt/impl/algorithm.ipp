@@ -1,6 +1,8 @@
 #ifndef CPP_JWT_ALGORITHM_IPP
 #define CPP_JWT_ALGORITHM_IPP
 
+#include <iostream>
+
 namespace jwt {
 
 template <typename Hasher>
@@ -14,10 +16,14 @@ verify_result_t HMACSign<Hasher>::verify(
     if (ptr) BIO_free_all(ptr);
   };
 
-  using bio_deletor_t = decltype(bio_deletor);
-  using BIO_unique_ptr = std::unique_ptr<BIO_unique_ptr, bio_deletor_t>;
+  std::cout << "Key: "  << key      << std::endl;
+  std::cout << "Head: " << head     << std::endl;
+  std::cout << "JWT: "  << jwt_sign << std::endl;
 
-  BIO_unique_ptr b64{BIO_new(BIO_f_base64())};
+  using bio_deletor_t = decltype(bio_deletor);
+  using BIO_unique_ptr = std::unique_ptr<BIO, bio_deletor_t>;
+
+  BIO_unique_ptr b64{BIO_new(BIO_f_base64()), bio_deletor};
   if (!b64) {
     //TODO: set error code
     return {false, ec};
@@ -29,10 +35,11 @@ verify_result_t HMACSign<Hasher>::verify(
     return {false, ec};
   }
 
-  BIO_push(b64, bmem);
-  BIO_set_flags(b64, BIO_FLAGS_BASE64_NO_NL);
+  BIO_push(b64.get(), bmem);
+  BIO_set_flags(b64.get(), BIO_FLAGS_BASE64_NO_NL);
 
   unsigned char enc_buf[EVP_MAX_MD_SIZE];
+  uint32_t enc_buf_len = 0;
 
   unsigned char* res = HMAC(Hasher{}(),
                             key.data(),
@@ -41,12 +48,36 @@ verify_result_t HMACSign<Hasher>::verify(
                             head.length(),
                             enc_buf,
                             &enc_buf_len);
+  if (!res) {
+    //TODO: set error code
+    return {false, ec};
+  }
 
-  return {true, ec};
+  BIO_write(b64.get(), enc_buf, enc_buf_len);
+  (void)BIO_flush(b64.get());
+
+  int len = BIO_pending(bmem);
+  if (len < 0) {
+    //TODO: set error code
+    return {false, ec};
+  }
+
+  std::string cbuf;
+  cbuf.resize(len + 1);
+
+  len = BIO_read(bmem, &cbuf[0], len);
+  cbuf.resize(len);
+
+  //Make the base64 string url safe
+  auto new_len = jwt::base64_uri_encode(&cbuf[0], cbuf.length());
+  cbuf.resize(new_len);
+  std::cout << "cbuf: " << cbuf << std::endl;
+
+  return {string_view{cbuf} == jwt_sign, ec};
 }
 
 template <typename Hasher>
-sign_result_t PEMSign<Hasher>::load_key(const string_view key)
+EVP_PKEY* PEMSign<Hasher>::load_key(const string_view key)
 {
   auto bio_deletor = [](BIO* ptr) {
     if (ptr) BIO_free(ptr);

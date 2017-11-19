@@ -79,7 +79,7 @@ std::string jwt_signature::encode(const jwt_header& header,
   std::string jwt_msg;
   //TODO: Optimize allocations
 
-  sign_func_t sign_fn = get_algorithm_impl(header);
+  sign_func_t sign_fn = get_sign_algorithm_impl(header);
 
   std::string hdr_sign = header.base64_encode();
   std::string pld_sign = payload.base64_encode();
@@ -88,7 +88,8 @@ std::string jwt_signature::encode(const jwt_header& header,
   auto res = sign_fn(key_, data);
  
   std::string b64hash = base64_encode(res.first.c_str(), res.first.length());
-  base64_uri_encode(&b64hash[0], b64hash.length());
+  auto new_len = base64_uri_encode(&b64hash[0], b64hash.length());
+  b64hash.resize(new_len);
 
   jwt_msg = data + '.' + b64hash;
 
@@ -97,16 +98,18 @@ std::string jwt_signature::encode(const jwt_header& header,
 
 bool jwt_signature::verify(const jwt_header& header,
                            const string_view hdr_pld_sign,
-                           const srting_view jwt_sign)
+                           const string_view jwt_sign)
 {
   //TODO: is bool the right choice ?
+  verify_func_t verify_fn = get_verify_algorithm_impl(header);
+  verify_fn(key_, hdr_pld_sign, jwt_sign);
 
   return true;
 }
 
 
 sign_func_t 
-jwt_signature::get_algorithm_impl(const jwt_header& hdr) const noexcept
+jwt_signature::get_sign_algorithm_impl(const jwt_header& hdr) const noexcept
 {
   sign_func_t ret = nullptr;
 
@@ -148,16 +151,61 @@ jwt_signature::get_algorithm_impl(const jwt_header& hdr) const noexcept
   return ret;
 }
 
+
+
+verify_func_t 
+jwt_signature::get_verify_algorithm_impl(const jwt_header& hdr) const noexcept
+{
+  verify_func_t ret = nullptr;
+
+  switch (hdr.algo()) {
+  case algorithm::HS256:
+    ret = HMACSign<algo::HS256>::verify;
+    break;
+  case algorithm::HS384:
+    ret = HMACSign<algo::HS384>::verify;
+    break;
+  case algorithm::HS512:
+    ret = HMACSign<algo::HS512>::verify;
+    break;
+  case algorithm::NONE:
+    ret = HMACSign<algo::NONE>::verify;
+    break;
+  case algorithm::RS256:
+    ret = PEMSign<algo::RS256>::verify;
+    break;
+  case algorithm::RS384:
+    ret = PEMSign<algo::RS384>::verify;
+    break;
+  case algorithm::RS512:
+    ret = PEMSign<algo::RS512>::verify;
+    break;
+  case algorithm::ES256:
+    ret = PEMSign<algo::ES256>::verify;
+    break;
+  case algorithm::ES384:
+    ret = PEMSign<algo::ES384>::verify;
+    break;
+  case algorithm::ES512:
+    ret = PEMSign<algo::ES512>::verify;
+    break;
+  default:
+    assert (0 && "Code not reached");
+  };
+
+  return ret;
+}
+
+
 //====================================================================
 
-void jwt_decode(string_view encoded_str, string_view key, bool validate)
+void jwt_decode(const string_view encoded_str, const string_view key, bool validate)
 {
   //TODO: implement error_code
   size_t fpos = encoded_str.find_first_of('.');
   assert (fpos != string_view::npos);
 
   string_view head{&encoded_str[0], fpos};
-  std::cout << "Head: " << head << std::endl;
   jwt_header hdr;
   hdr.decode(head);
 
@@ -166,13 +214,13 @@ void jwt_decode(string_view encoded_str, string_view key, bool validate)
     //TODO: Check for none algorithm
   }
   string_view body{&encoded_str[fpos + 1], spos - fpos - 1};
-  std::cout << "Body: " << body << std::endl;
 
   //Json objects or claims get set in the decode
   jwt_payload pld;
   pld.decode(body);
 
-
+  jwt_signature jsign{key};
+  jsign.verify(hdr, encoded_str.substr(0, spos), encoded_str);
 }
 
 } // END namespace jwt

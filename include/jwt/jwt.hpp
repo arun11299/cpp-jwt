@@ -176,7 +176,7 @@ struct write_interface
 
   /*!
    */
-  template <typename T>
+  template <typename T, typename Cond>
   friend std::ostream& operator<< (std::ostream& os, const T& obj);
 };
 
@@ -195,12 +195,9 @@ struct base64_enc_dec
   {
     std::string jstr = to_json_str(*static_cast<const Derived*>(this), with_pretty);
     std::string b64_str = jwt::base64_encode(jstr.c_str(), jstr.length());
-    size_t rpos = b64_str.length();
-    while(b64_str[rpos-1] == '=') rpos--;
-    // Remove the '=' characters
-    b64_str.resize(rpos);
     // Do the URI safe encoding
-    jwt::base64_uri_encode(&b64_str[0], b64_str.length());
+    auto new_len = jwt::base64_uri_encode(&b64_str[0], b64_str.length());
+    b64_str.resize(new_len);
 
     return b64_str;
   }
@@ -438,7 +435,11 @@ public: // Exposed APIs
 private: // Private implementation
   /*!
    */
-  sign_func_t get_algorithm_impl(const jwt_header& hdr) const noexcept;
+  sign_func_t get_sign_algorithm_impl(const jwt_header& hdr) const noexcept;
+
+  /*!
+   */
+  verify_func_t get_verify_algorithm_impl(const jwt_header& hdr) const noexcept;
 
 private: // Data members;
   /// The key for creating the JWS
@@ -461,12 +462,11 @@ private: // Data Members
   jwt_header header_;
   /// JWT payload section
   jwt_payload payload_;
-
 };
 
 /*!
  */
-void jwt_decode(string_view encoded_str, string_view key, bool validate=true);
+void jwt_decode(const string_view encoded_str, const string_view key, bool validate=true);
 
 
 } // END namespace jwt
