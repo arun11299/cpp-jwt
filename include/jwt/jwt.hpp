@@ -10,6 +10,7 @@
 #include "jwt/base64.hpp"
 #include "jwt/algorithm.hpp"
 #include "jwt/string_view.hpp"
+#include "jwt/parameters.hpp"
 #include "jwt/json/json.hpp"
 
 // For convenience
@@ -442,6 +443,7 @@ private: // Private implementation
   verify_func_t get_verify_algorithm_impl(const jwt_header& hdr) const noexcept;
 
 private: // Data members;
+
   /// The key for creating the JWS
   std::string key_;
 };
@@ -452,16 +454,84 @@ private: // Data members;
 class jwt_object
 {
 public: // 'tors
+  /**
+   */
   jwt_object() = default;
 
+  /**
+   */
+  template <typename... Args>
+  jwt_object(Args&&... args);
+
 public: // Exposed APIs
+  /**
+   */
+  jwt_payload& payload() noexcept
+  {
+    return payload_;
+  }
+
+  /**
+   */
+  const jwt_payload& payload() const noexcept
+  {
+    return payload_;
+  }
+
+  /**
+   */
+  jwt_header& header() noexcept
+  {
+    return header_;
+  }
+
+  /**
+   */
+  const jwt_header& header() const noexcept
+  {
+    return header_;
+  }
+
+  /**
+   */
+  template <typename T>
+  jwt_payload& add_payload(const std::string& name, T&& value);
+
+private: // private APIs
+  /**
+   */
+  template <typename... Args>
+  void set_parameters(Args&&... args);
+
+  /**
+   */
+  template <typename M, typename... Rest>
+  void set_parameters(params::detail::payload_param<M>&&, Rest&&...);
+
+  /**
+   */
+  template <typename... Rest>
+  void set_parameters(params::detail::secret_param, Rest&&...);
+
+  /**
+   */
+  template <typename M, typename... Rest>
+  void set_parameters(params::detail::headers_param<M>&&, Rest&&...);
+
+  /**
+   */
+  void set_parameters();
 
 private: // Data Members
 
   /// JWT header section
   jwt_header header_;
+
   /// JWT payload section
   jwt_payload payload_;
+
+  /// The secret key
+  std::string secret_;
 };
 
 /*!

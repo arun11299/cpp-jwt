@@ -197,6 +197,51 @@ jwt_signature::get_verify_algorithm_impl(const jwt_header& hdr) const noexcept
 }
 
 
+//
+template <typename... Args>
+jwt_object::jwt_object(Args&&... args)
+{
+  static_assert (detail::meta::are_all_params<Args...>::value,
+      "All constructor argument types must model ParameterConcept");
+
+  set_parameters(std::forward<Args>(args)...);
+}
+
+template <typename Map, typename... Rest>
+void jwt_object::set_parameters(
+    params::detail::payload_param<Map>&& payload, Rest&&... rargs)
+{
+  set_parameters(std::forward<Rest>(rargs)...);
+}
+
+template <typename... Rest>
+void jwt_object::set_parameters(
+    params::detail::secret_param secret, Rest&&... rargs)
+{
+  set_parameters(std::forward<Rest>(rargs)...);
+}
+
+template <typename Map, typename... Rest>
+void jwt_object::set_parameters(
+    params::detail::headers_param<Map>&& header, Rest&&... rargs)
+{
+  set_parameters(std::forward<Rest>(rargs)...);
+}
+
+void jwt_object::set_parameters()
+{
+  //setinel call
+  return;
+}
+
+template <typename T>
+jwt_payload& jwt_object::add_payload(const std::string& name, T&& value)
+{
+  payload_.add_claim(name, std::forward<T>(value));
+  return payload_;
+}
+
+
 //====================================================================
 
 void jwt_decode(const string_view encoded_str, const string_view key, bool validate)
