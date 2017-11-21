@@ -1,11 +1,12 @@
 #ifndef JWT_HPP
 #define JWT_HPP
 
-#include <cassert>
-#include <cstring>
 #include <set>
+#include <array>
 #include <string>
 #include <ostream>
+#include <cassert>
+#include <cstring>
 
 #include "jwt/base64.hpp"
 #include "jwt/algorithm.hpp"
@@ -233,6 +234,15 @@ public: // 'tors
   {
   }
 
+  /**
+   * Construct the header from an encoded string.
+   * TODO: Throw an exception in case of error
+   */
+  jwt_header(const string_view enc_str)
+  {
+    this->decode(enc_str);
+  }
+
   /// Default Copy and assignment
   jwt_header(const jwt_header&) = default;
   jwt_header& operator=(const jwt_header&) = default;
@@ -312,9 +322,18 @@ struct jwt_payload: write_interface
                   , base64_enc_dec<jwt_payload>
 {
 public: // 'tors
-  /*!
+  /**
    */
   jwt_payload() = default;
+
+  /**
+   * Construct the payload from an encoded string.
+   * TODO: Throw an exception in case of error.
+   */
+  jwt_payload(const string_view enc_str)
+  {
+    this->decode(enc_str);
+  }
 
   /// Default copy and assignment operations
   jwt_payload(const jwt_payload&) = default;
@@ -323,7 +342,7 @@ public: // 'tors
   ~jwt_payload() = default;
 
 public: // Exposed APIs
-  /*!
+  /**
    */
   template <typename T>
   bool add_claim(const std::string& cname, T&& cvalue, bool overwrite=false)
@@ -346,14 +365,27 @@ public: // Exposed APIs
     return true;
   }
 
-  /*!
+  /**
+   */
+  bool remove_claim(const std::string& cname)
+  {
+    auto itr = claim_names_.find(cname);
+    if (itr == claim_names_.end()) return false;
+
+    claim_names_.erase(itr);
+    payload_.erase(cname.c_str());
+
+    return true;
+  }
+
+  /**
    */
   bool has_claim(const std::string& cname) const noexcept
   {
     return claim_names_.count(cname);
   }
 
-  /*!
+  /**
    */
   template <typename T>
   bool has_claim_with_value(const std::string& cname, T&& cvalue) const
@@ -364,19 +396,19 @@ public: // Exposed APIs
     return (cvalue == payload_[cname]);
   }
 
-  /*!
+  /**
    */
   std::string encode(bool pprint = false)
   {
     return base64_encode(pprint);
   }
 
-  /*!
+  /**
    */
   //TODO: what about error_code ?
   void decode(const string_view enc_str);
 
-  /*!
+  /**
    */
   const json_t& create_json_obj() const
   {
@@ -384,12 +416,33 @@ public: // Exposed APIs
   }
 
 private:
-  /*!
+  /**
    */
-  struct case_compare {
+  struct case_compare 
+  {
+    using is_transparent = std::true_type;
+
     bool operator()(const std::string& lhs, const std::string& rhs) const
     {
       int ret = strcasecmp(lhs.c_str(), rhs.c_str());
+      return (ret < 0);
+    }
+
+    bool operator()(const string_view lhs, const string_view rhs) const
+    {
+      int ret = strcasecmp(lhs.data(), rhs.data());
+      return (ret < 0);
+    }
+
+    bool operator()(const std::string& lhs, const string_view rhs) const
+    {
+      int ret = strcasecmp(lhs.data(), rhs.data());
+      return (ret < 0);
+    }
+
+    bool operator()(const string_view lhs, const std::string& rhs) const
+    {
+      int ret = strcasecmp(lhs.data(), rhs.data());
       return (ret < 0);
     }
   };
@@ -449,7 +502,7 @@ private: // Data members;
 };
 
 
-/*!
+/**
  */
 class jwt_object
 {
@@ -462,6 +515,12 @@ public: // 'tors
    */
   template <typename... Args>
   jwt_object(Args&&... args);
+
+public: // Exposed static APIs
+  /**
+   */
+  static std::array<string_view, 3>
+  three_parts(const string_view enc_str);
 
 public: // Exposed APIs
   /**
@@ -476,6 +535,34 @@ public: // Exposed APIs
   const jwt_payload& payload() const noexcept
   {
     return payload_;
+  }
+
+  /**
+   */
+  void payload(const jwt_payload& p)
+  {
+    payload_ = p;
+  }
+
+  /**
+   */
+  void payload(jwt_payload&& p)
+  {
+    payload_ = std::move(p);
+  }
+
+  /**
+   */
+  void header(const jwt_header& h)
+  {
+    header_ = h;
+  }
+
+  /**
+   */
+  void header(jwt_header&& h)
+  {
+    header_ = std::move(h);
   }
 
   /**
@@ -495,7 +582,15 @@ public: // Exposed APIs
   /**
    */
   template <typename T>
-  jwt_payload& add_payload(const std::string& name, T&& value);
+  jwt_payload& add_claim(const std::string& name, T&& value);
+
+  /**
+   */
+  jwt_payload& remove_claim(const std::string& name);
+
+  /**
+   */
+  std::string signature() const;
 
 private: // private APIs
   /**
@@ -536,7 +631,7 @@ private: // Data Members
 
 /*!
  */
-void jwt_decode(const string_view encoded_str, const string_view key, bool validate=true);
+jwt_object jwt_decode(const string_view encoded_str, const string_view key, bool validate=true);
 
 
 } // END namespace jwt

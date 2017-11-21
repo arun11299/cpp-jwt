@@ -211,6 +211,9 @@ template <typename Map, typename... Rest>
 void jwt_object::set_parameters(
     params::detail::payload_param<Map>&& payload, Rest&&... rargs)
 {
+  for (const auto& elem : payload.get()) {
+    payload_.add_claim(std::move(elem.first), std::move(elem.second));
+  }
   set_parameters(std::forward<Rest>(rargs)...);
 }
 
@@ -218,6 +221,7 @@ template <typename... Rest>
 void jwt_object::set_parameters(
     params::detail::secret_param secret, Rest&&... rargs)
 {
+  secret_.assign(secret.get().data(), secret.get().length());
   set_parameters(std::forward<Rest>(rargs)...);
 }
 
@@ -225,6 +229,7 @@ template <typename Map, typename... Rest>
 void jwt_object::set_parameters(
     params::detail::headers_param<Map>&& header, Rest&&... rargs)
 {
+  //TODO: add kid support
   set_parameters(std::forward<Rest>(rargs)...);
 }
 
@@ -235,37 +240,72 @@ void jwt_object::set_parameters()
 }
 
 template <typename T>
-jwt_payload& jwt_object::add_payload(const std::string& name, T&& value)
+jwt_payload& jwt_object::add_claim(const std::string& name, T&& value)
 {
   payload_.add_claim(name, std::forward<T>(value));
   return payload_;
 }
 
-
-//====================================================================
-
-void jwt_decode(const string_view encoded_str, const string_view key, bool validate)
+jwt_payload& jwt_object::remove_claim(const std::string& name)
 {
-  //TODO: implement error_code
-  size_t fpos = encoded_str.find_first_of('.');
+  payload_.remove_claim(name);
+  return payload_;
+}
+
+std::string jwt_object::signature() const
+{
+  jwt_signature jws{secret_};
+
+  return jws.encode(header_, payload_);
+}
+
+
+std::array<string_view, 3>
+jwt_object::three_parts(const string_view enc_str)
+{
+  std::array<string_view, 3> result;
+
+  size_t fpos = enc_str.find_first_of('.');
   assert (fpos != string_view::npos);
 
-  string_view head{&encoded_str[0], fpos};
-  jwt_header hdr;
-  hdr.decode(head);
+  result[0] = string_view{&enc_str[0], fpos};
 
-  size_t spos = encoded_str.find_first_of('.', fpos + 1);
+  size_t spos = enc_str.find_first_of('.', fpos + 1);
   if (spos == string_view::npos) {
     //TODO: Check for none algorithm
   }
-  string_view body{&encoded_str[fpos + 1], spos - fpos - 1};
 
-  //Json objects or claims get set in the decode
-  jwt_payload pld;
-  pld.decode(body);
+  result[1] = string_view{&enc_str[fpos + 1], spos - fpos - 1};
+
+  size_t tpos = enc_str.find_first_of('.', spos + 1);
+
+  if (tpos != string_view::npos) {
+    result[2] = string_view{&enc_str[tpos + 1], tpos - spos - 1};
+  }
+
+  return result;
+}
+
+
+//====================================================================
+
+jwt_object jwt_decode(const string_view encoded_str, const string_view key, bool validate)
+{
+  //TODO: implement error_code
+  jwt_object jobj;
+
+  auto parts = jwt_object::three_parts(encoded_str);
+
+  jobj.header(jwt_header{parts[0]});
+  jobj.payload(jwt_payload{parts[1]});
 
   jwt_signature jsign{key};
-  jsign.verify(hdr, encoded_str.substr(0, spos), encoded_str);
+  //length of the encoded header and payload only.
+  //Addition of '1' to account for the '.' character.
+  auto l = parts[0].length() + 1 + parts[1].length();
+  jsign.verify(jobj.header(), encoded_str.substr(0, l), encoded_str);
+
+  return jobj;
 }
 
 } // END namespace jwt
