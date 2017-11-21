@@ -20,67 +20,6 @@ using json_t = nlohmann::json;
 namespace jwt {
 
 /*!
- * JWT signing algorithm.
- */
-enum class algorithm
-{
-  NONE = 0,
-  HS256,
-  HS384,
-  HS512,
-  RS256,
-  RS384,
-  RS512,
-  ES256,
-  ES384,
-  ES512,
-  TERM,
-};
-
-
-/*!
- */
-string_view alg_to_str(enum algorithm alg) noexcept
-{
-  switch (alg) {
-    case algorithm::HS256: return "HS256";
-    case algorithm::HS384: return "HS384";
-    case algorithm::HS512: return "HS512";
-    case algorithm::RS256: return "RS256";
-    case algorithm::RS384: return "RS384";
-    case algorithm::RS512: return "RS512";
-    case algorithm::ES256: return "ES256";
-    case algorithm::ES384: return "ES384";
-    case algorithm::ES512: return "ES512";
-    case algorithm::TERM:  return "TERM";
-    case algorithm::NONE:  return "NONE";
-    default:               assert (0 && "Unknown Algorithm");
-  };
-
-  assert (0 && "Code not reached");
-}
-
-/*!
- */
-enum algorithm str_to_alg(const string_view alg) noexcept
-{
-  if (!alg.length()) return algorithm::NONE;
-
-  if (!strcasecmp(alg.data(), "none"))  return algorithm::NONE;
-  if (!strcasecmp(alg.data(), "hs256")) return algorithm::HS256;
-  if (!strcasecmp(alg.data(), "hs384")) return algorithm::HS384;
-  if (!strcasecmp(alg.data(), "hs512")) return algorithm::HS512;
-  if (!strcasecmp(alg.data(), "rs256")) return algorithm::RS256;
-  if (!strcasecmp(alg.data(), "rs384")) return algorithm::RS384;
-  if (!strcasecmp(alg.data(), "rs512")) return algorithm::RS512;
-  if (!strcasecmp(alg.data(), "es256")) return algorithm::ES256;
-  if (!strcasecmp(alg.data(), "es384")) return algorithm::ES384;
-  if (!strcasecmp(alg.data(), "es512")) return algorithm::ES512;
-
-  assert (0 && "Code not reached");
-}
-
-/*!
  */
 enum class type
 {
@@ -607,6 +546,11 @@ private: // private APIs
    */
   template <typename... Rest>
   void set_parameters(params::detail::secret_param, Rest&&...);
+
+  /**
+   */
+  template <typename... Rest>
+  void set_parameters(params::detail::algorithm_param, Rest&&...);
 
   /**
    */

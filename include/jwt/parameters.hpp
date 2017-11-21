@@ -5,6 +5,7 @@
 #include <utility>
 #include <unordered_map>
 
+#include "jwt/algorithm.hpp"
 #include "jwt/detail/meta.hpp"
 #include "jwt/string_view.hpp"
 
@@ -53,6 +54,31 @@ struct secret_param
 
   string_view get() { return secret_; }
   string_view secret_;
+};
+
+/**
+ * Parameter for providing the algorithm to use.
+ * The parameter can accept either the string representation
+ * or the enum class.
+ *
+ * Modeled as ParameterConcept.
+ */
+struct algorithm_param
+{
+  algorithm_param(const string_view alg)
+    : alg_(str_to_alg(alg))
+  {}
+
+  algorithm_param(jwt::algorithm alg)
+    : alg_(alg)
+  {}
+
+  jwt::algorithm get() const noexcept
+  {
+    return alg_;
+  }
+
+  typename jwt::algorithm alg_;
 };
 
 /**
@@ -108,9 +134,23 @@ payload(const param_init_list_t& kvs)
 
 /**
  */
-detail::secret_param secret(string_view sv)
+detail::secret_param secret(const string_view sv)
 {
   return { sv };
+}
+
+/**
+ */
+detail::algorithm_param algorithm(const string_view sv)
+{
+  return { sv };
+}
+
+/**
+ */
+detail::algorithm_param algorithm(jwt::algorithm alg)
+{
+  return { alg };
 }
 
 /**
@@ -125,7 +165,7 @@ headers(MappingConcept&& mc)
 
 /**
  */
-  detail::headers_param<std::map<std::string, std::string>>
+detail::headers_param<std::map<std::string, std::string>>
 headers(const param_init_list_t& kvs)
 {
   std::map<std::string, std::string> m;

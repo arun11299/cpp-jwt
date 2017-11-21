@@ -225,6 +225,14 @@ void jwt_object::set_parameters(
   set_parameters(std::forward<Rest>(rargs)...);
 }
 
+template <typename... Rest>
+void jwt_object::set_parameters(
+    params::detail::algorithm_param alg, Rest&&... rargs)
+{
+  header_.algo(alg.get());
+  set_parameters(std::forward<Rest>(rargs)...);
+}
+
 template <typename Map, typename... Rest>
 void jwt_object::set_parameters(
     params::detail::headers_param<Map>&& header, Rest&&... rargs)
