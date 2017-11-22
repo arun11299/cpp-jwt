@@ -7,8 +7,27 @@
 
 namespace jwt {
 
-/*!
+// Returns the maximum number of bytes required to
+// encode an input byte string of length `n` to base64.
+inline constexpr 
+size_t encoding_size(size_t n)
+{
+  return 4 * ((n + 2) / 3);
+}
+
+
+// Returns the maximum number of bytes required
+// to store a decoded base64 byte string.
+inline constexpr
+size_t decoding_size(size_t n)
+{
+  return n / 4 * 3;
+}
+
+/**
  * Encoding map.
+ * A constexpr helper class for performing base64
+ * encoding on the input byte string.
  */
 class EMap
 {
@@ -31,21 +50,32 @@ private:
   };
 };
 
-/*!
+/**
+ * Encodes a sequence of octet into base64 string.
+ * Returns std::string resized to contain only the
+ * encoded data (as usual without null terminator).
+ *
+ * The encoded string is atleast `encoding_size(input len)`
+ * in size.
+ *
+ * Arguments:
+ *  @in : Input byte string to be encoded.
+ *  @len : Length of the input byte string.
  */
 std::string base64_encode(const char* in, size_t len)
 {
   std::string result;
-  result.resize(128);
+  const auto encoded_siz = encoding_size(len);
+  result.resize(encoded_siz);
 
   constexpr static const EMap emap{};
 
   int i = 0;
   int j = 0;
   for (; i < len - 2; i += 3) {
-    auto& first  = in[i];
-    auto& second = in[i+1];
-    auto& third  = in[i+2];
+    const auto first  = in[i];
+    const auto second = in[i+1];
+    const auto third  = in[i+2];
 
     result[j++] = emap.at( (first >> 2) & 0x3F                           );
     result[j++] = emap.at(((first  & 0x03) << 4) | ((second & 0xF0) >> 4));
@@ -56,8 +86,8 @@ std::string base64_encode(const char* in, size_t len)
   switch (len % 3) {
   case 2:
   {
-    auto& first  = in[i];
-    auto& second = in[i+1];
+    const auto first  = in[i];
+    const auto second = in[i+1];
 
     result[j++] = emap.at( (first >> 2) & 0x3F                          );
     result[j++] = emap.at(((first & 0x03) << 4) | ((second & 0xF0) >> 4));
@@ -67,7 +97,7 @@ std::string base64_encode(const char* in, size_t len)
   }
   case 1:
   {
-    auto& first = in[i];
+    const auto first = in[i];
 
     result[j++] = emap.at((first >> 2) & 0x3F);
     result[j++] = emap.at((first & 0x03) << 4);
@@ -79,6 +109,8 @@ std::string base64_encode(const char* in, size_t len)
     break;
   };
 
+  result.resize(j);
+
   return result;
 }
 
@@ -86,8 +118,10 @@ std::string base64_encode(const char* in, size_t len)
 
 //======================= Decoder ==========================
 
-/*
+/**
  * Decoding map.
+ * A helper constexpr class for providing interface
+ * to the decoding map for base64.
  */
 class DMap
 {
@@ -122,12 +156,21 @@ private:
   };
 };
 
-/*!
+/**
+ * Decodes octet of base64 encoded byte string.
+ *
+ * Returns a std::string with the decoded byte string.
+ *
+ * Arguments:
+ *  @in : Encoded base64 byte string.
+ *  @len : Length of the encoded input byte string.
  */
 std::string base64_decode(const char* in, size_t len)
 {
   std::string result;
-  result.resize(128);
+  const auto decoded_siz = decoding_size(len);
+  result.resize(decoded_siz);
+
   int i = 0;
   size_t bytes_rem = len;
   size_t bytes_wr = 0;
@@ -141,13 +184,13 @@ std::string base64_decode(const char* in, size_t len)
     // Error case in input
     if (dmap.at(*in) == -1) return result;
 
-    auto first  = dmap.at(in[0]);
-    auto second = dmap.at(in[1]);
-    auto third  = dmap.at(in[2]);
-    auto fourth = dmap.at(in[3]);
+    const auto first  = dmap.at(in[0]);
+    const auto second = dmap.at(in[1]);
+    const auto third  = dmap.at(in[2]);
+    const auto fourth = dmap.at(in[3]);
 
     result[i]     = (first  << 2) | (second >> 4);
-    result[i + 1] = (second << 4) | (third >> 2);
+    result[i + 1] = (second << 4) | (third  >> 2);
     result[i + 2] = (third  << 6) | fourth;
 
     bytes_rem -= 4;
@@ -159,24 +202,24 @@ std::string base64_decode(const char* in, size_t len)
   switch(bytes_rem) {
   case 4:
   {
-    auto third  = dmap.at(in[2]);
-    auto fourth = dmap.at(in[3]);
+    const auto third  = dmap.at(in[2]);
+    const auto fourth = dmap.at(in[3]);
     result[i + 2] = (third << 6) | fourth;
     bytes_wr++;
     //FALLTHROUGH
   }
   case 3:
   {
-    auto second = dmap.at(in[1]);
-    auto third  = dmap.at(in[2]);
+    const auto second = dmap.at(in[1]);
+    const auto third  = dmap.at(in[2]);
     result[i + 1] = (second << 4) | (third >> 2);
     bytes_wr++;
     //FALLTHROUGH
   }
   case 2:
   {
-    auto first  = dmap.at(in[0]);
-    auto second = dmap.at(in[1]);
+    const auto first  = dmap.at(in[0]);
+    const auto second = dmap.at(in[1]);
     result[i] = (first << 2) | (second >> 4);
     bytes_wr++;
   }
@@ -187,7 +230,17 @@ std::string base64_decode(const char* in, size_t len)
   return result;
 }
 
-/*!
+/**
+ * Makes the base64 encoded byte string URL safe.
+ * Overwrites/skips few URL unsafe characters
+ * from the input sequence.
+ *
+ * Arguments:
+ *  @data : Base64 encoded byte string.
+ *  @len : Length of the base64 byte string.
+ *
+ * Returns:
+ *  Length of the URL safe base64 encoded byte string.
  */
 size_t base64_uri_encode(char* data, size_t len) noexcept
 {
@@ -212,7 +265,15 @@ size_t base64_uri_encode(char* data, size_t len) noexcept
   return j;
 }
 
-/*!
+/**
+ * Decodes an input URL safe base64 encoded byte string.
+ *
+ * NOTE: To be used only for decoding URL safe base64 encoded
+ * byte string.
+ *
+ * Arguments:
+ *  @data : URL safe base64 encoded byte string.
+ *  @len : Length of the input byte string.
  */
 std::string base64_uri_decode(const char* data, size_t len)
 {
