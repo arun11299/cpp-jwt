@@ -1,6 +1,13 @@
 #ifndef CPP_JWT_ALGORITHM_HPP
 #define CPP_JWT_ALGORITHM_HPP
 
+/*!
+ * Most of the signing and verification code has been taken
+ * and modified for C++ specific use from the C implementation
+ * JWT library, libjwt.
+ * https://github.com/benmcollins/libjwt/tree/master/libjwt
+ */
+
 #include <cassert>
 #include <system_error>
 
@@ -12,7 +19,9 @@
 #include <openssl/ecdsa.h>
 #include <openssl/buffer.h>
 
+#include "jwt/exceptions.hpp"
 #include "jwt/string_view.hpp"
+#include "jwt/error_codes.hpp"
 
 namespace jwt {
 
@@ -20,23 +29,25 @@ namespace jwt {
 using sign_result_t = std::pair<std::string, std::error_code>;
 /// The result type of verification function
 using verify_result_t = std::pair<bool, std::error_code>;
-/// The function pointer type of the signing function
+/// The function pointer type for the signing function
 using sign_func_t   = sign_result_t (*) (const string_view key, 
                                          const string_view data);
-///
+/// The function pointer type for the verifying function
 using verify_func_t = verify_result_t (*) (const string_view key,
                                            const string_view head,
                                            const string_view jwt_sign);
 
 namespace algo {
 
-//TODO: All these can be done using code generaion.
-// NO. NEVER. I hate Macros.
-// You can use templates too.
-// No. I would rather prefer explicit.
-// Ok. You win.
+//Me: TODO: All these can be done using code generaion.
+//Me: NO. NEVER. I hate Macros.
+//Me: You can use templates too.
+//Me: No. I would rather prefer explicit.
+//Me: Ok. You win.
+//Me: Same to you.
 
-/*!
+/**
+ * HS256 algorithm.
  */
 struct HS256
 {
@@ -46,7 +57,8 @@ struct HS256
   }
 };
 
-/*!
+/**
+ * HS384 algorithm.
  */
 struct HS384
 {
@@ -56,7 +68,8 @@ struct HS384
   }
 };
 
-/*!
+/**
+ * HS512 algorithm.
  */
 struct HS512
 {
@@ -66,7 +79,8 @@ struct HS512
   }
 };
 
-/*!
+/**
+ * NONE algorithm.
  */
 struct NONE
 {
@@ -76,7 +90,8 @@ struct NONE
   }
 };
 
-/*!
+/**
+ * RS256 algorithm.
  */
 struct RS256
 {
@@ -88,7 +103,8 @@ struct RS256
   }
 };
 
-/*!
+/**
+ * RS384 algorithm.
  */
 struct RS384
 {
@@ -100,7 +116,8 @@ struct RS384
   }
 };
 
-/*!
+/**
+ * RS512 algorithm.
  */
 struct RS512
 {
@@ -112,7 +129,8 @@ struct RS512
   }
 };
 
-/*!
+/**
+ * ES256 algorithm.
  */
 struct ES256
 {
@@ -124,7 +142,8 @@ struct ES256
   }
 };
 
-/*!
+/**
+ * ES384 algorithm.
  */
 struct ES384
 {
@@ -136,7 +155,8 @@ struct ES384
   }
 };
 
-/*!
+/**
+ * ES512 algorithm.
  */
 struct ES512
 {
@@ -151,8 +171,8 @@ struct ES512
 } //END Namespace algo
 
 
-/*!
- * JWT signing algorithm.
+/**
+ * JWT signing algorithm types.
  */
 enum class algorithm
 {
@@ -170,7 +190,9 @@ enum class algorithm
 };
 
 
-/*!
+/**
+ * Convert the algorithm enum class type to
+ * its stringified form.
  */
 string_view alg_to_str(enum algorithm alg) noexcept
 {
@@ -192,7 +214,9 @@ string_view alg_to_str(enum algorithm alg) noexcept
   assert (0 && "Code not reached");
 }
 
-/*!
+/**
+ * Convert stringified algorithm to enum class.
+ * The string comparison is case insesitive.
  */
 enum algorithm str_to_alg(const string_view alg) noexcept
 {
@@ -213,7 +237,14 @@ enum algorithm str_to_alg(const string_view alg) noexcept
 }
 
 
-/*!
+/**
+ * OpenSSL HMAC based signature and verfication.
+ *
+ * The template type `Hasher` takes the type representing
+ * the HMAC algorithm type from the `jwt::algo` namespace.
+ *
+ * The struct is specialized for NONE algorithm. See the
+ * details of that class as well.
  */
 template <typename Hasher>
 struct HMACSign
@@ -221,7 +252,18 @@ struct HMACSign
   /// The type of Hashing algorithm
   using hasher_type = Hasher;
 
-  /*!
+  /**
+   * Signs the input using the HMAC algorithm using the
+   * provided key.
+   *
+   * Arguments:
+   *  @key : The secret/key to use for the signing.
+   *         Cannot be empty string.
+   *  @data : The data to be signed.
+   *
+   *  Exceptions:
+   *    Any allocation failure will result in jwt::MemoryAllocationException
+   *    being thrown.
    */
   static sign_result_t sign(const string_view key, const string_view data)
   {
@@ -240,39 +282,55 @@ struct HMACSign
                               &len);
 
     if (!res) {
-      //TODO: Set the appropriate error code
+      ec = AlgorithmErrc::SigningErr;
     }
-    sign.resize(len);
 
-    return {std::move(sign), ec};
+    sign.resize(len);
+    return { std::move(sign), ec };
   }
 
-  /*!
+  /**
    */
   static verify_result_t 
   verify(const string_view key, const string_view head, const string_view sign);
 
 };
 
-/*!
+/**
+ * Specialization of `HMACSign` class
+ * for NONE algorithm.
+ *
+ * This specialization is selected for even
+ * PEM based algorithms.
+ *
+ * The signing and verification APIs are
+ * basically no-op except that they would 
+ * set the relevant error code.
+ *
+ * NOTE: error_code would be set in the case 
+ * of usage of NONE algorithm.
+ * Users of this API are expected to check for
+ * the case explicitly.
  */
 template <>
 struct HMACSign<algo::NONE>
 {
   using hasher_type = algo::NONE;
 
-  /*!
+  /**
+   * Basically a no-op. Sets the error code to NoneAlgorithmUsed.
    */
   static sign_result_t sign(const string_view key, const string_view data)
   {
-    std::string sign;
+    (void)key;
+    (void)data;
     std::error_code ec{};
+    ec = AlgorithmErrc::NoneAlgorithmUsed;
 
-    //TODO: Set the appropriate error code for none
-    return {sign, ec};
+    return { std::string{}, ec };
   }
 
-  /*!
+  /**
    */
   static verify_result_t
   verify(const string_view key, const string_view head, const string_view sign)
@@ -281,13 +339,21 @@ struct HMACSign<algo::NONE>
     std::error_code ec{};
 
     //TODO: Set the appropriate error code for none
-    return {compare_res, ec};
+    return { compare_res, ec };
   }
 
 };
 
 
-/*!
+
+/**
+ * OpenSSL PEM based signature and verfication.
+ *
+ * The template type `Hasher` takes the type representing
+ * the PEM algorithm type from the `jwt::algo` namespace.
+ *
+ * For NONE algorithm, HMACSign<> specialization is used.
+ * See that for more details.
  */
 template <typename Hasher>
 struct PEMSign
@@ -296,7 +362,17 @@ public:
   /// The type of Hashing algorithm
   using hasher_type = Hasher;
 
-  /*!
+  /**
+   * Signs the input data using PEM encryption algorithm.
+   *
+   * Arguments:
+   *  @key : The key/secret to be used for signing.
+   *         Cannot be an empty string.
+   *  @data: The data to be signed.
+   *
+   * Exceptions:
+   *  Any allocation failure would be thrown out as
+   *  jwt::MemoryAllocationException.
    */
   static sign_result_t sign(const string_view key, const string_view data)
   {
@@ -307,27 +383,20 @@ public:
     };
 
     std::unique_ptr<EVP_PKEY, decltype(evpkey_deletor)>
-      pkey{load_key(key), evpkey_deletor};
+      pkey{load_key(key, ec), evpkey_deletor};
 
-    if (!pkey) {
-      //TODO: set valid error code
-      return {std::string{}, ec};
-    }
+    if (ec) return { std::string{}, ec };
 
     //TODO: Use stack string here ?
     std::string sign = evp_digest(pkey.get(), data, ec);
-    if (ec) {
-      //TODO: handle error_code
-      return {std::move(sign), ec};
-    }
 
-    if (Hasher::type != EVP_PKEY_EC) {
-      return {std::move(sign), ec};
-    } else {
+    if (ec) return { std::string{}, ec };
+
+    if (Hasher::type == EVP_PKEY_EC) {
       sign = public_key_ser(pkey.get(), sign, ec);
     }
 
-    return {std::move(sign), ec};
+    return { std::move(sign), ec };
   }
 
   /*!
@@ -345,7 +414,7 @@ public:
 private:
   /*!
    */
-  static EVP_PKEY* load_key(const string_view key);
+  static EVP_PKEY* load_key(const string_view key, std::error_code& ec);
 
   /*!
    */

@@ -12,6 +12,7 @@ verify_result_t HMACSign<Hasher>::verify(
     const string_view jwt_sign)
 {
   std::error_code ec{};
+  //TODO: remove these static deletors.
   static auto bio_deletor = [](BIO* ptr) {
     if (ptr) BIO_free_all(ptr);
   };
@@ -77,21 +78,27 @@ verify_result_t HMACSign<Hasher>::verify(
 }
 
 template <typename Hasher>
-EVP_PKEY* PEMSign<Hasher>::load_key(const string_view key)
+EVP_PKEY* PEMSign<Hasher>::load_key(
+    const string_view key,
+    std::error_code& ec)
 {
-  auto bio_deletor = [](BIO* ptr) {
+  static auto bio_deletor = [](BIO* ptr) {
     if (ptr) BIO_free(ptr);
   };
+
+  ec.clear();
 
   std::unique_ptr<BIO, decltype(bio_deletor)>
     bio_ptr{BIO_new_mem_buf((void*)key.data(), key.length()), bio_deletor};
 
   if (!bio_ptr) {
-    return nullptr;
+    throw MemoryAllocationException("BIO_new_mem_buf failed");
   }
 
   EVP_PKEY* pkey = PEM_read_bio_PrivateKey(bio_ptr.get(), nullptr, nullptr, nullptr);
+
   if (!pkey) {
+    ec = AlgorithmErrc::SigningErr;
     return nullptr;
   }
 
@@ -104,36 +111,37 @@ std::string PEMSign<Hasher>::evp_digest(
     const string_view data, 
     std::error_code& ec)
 {
-  auto md_deletor = [](EVP_MD_CTX* ptr) {
+  static auto md_deletor = [](EVP_MD_CTX* ptr) {
     if (ptr) EVP_MD_CTX_destroy(ptr);
   };
+
+  ec.clear();
 
   std::unique_ptr<EVP_MD_CTX, decltype(md_deletor)>
     mdctx_ptr{EVP_MD_CTX_create(), md_deletor};
 
   if (!mdctx_ptr) {
-    //TODO: set appropriate error_code
-    return std::string{};
+    throw MemoryAllocationException("EVP_MD_CTX_create failed");
   }
 
   //Initialiaze the digest algorithm
   if (EVP_DigestSignInit(
         mdctx_ptr.get(), nullptr, Hasher{}(), nullptr, pkey) != 1) {
-    //TODO: set appropriate error_code
-    return std::string{};
+    ec = AlgorithmErrc::SigningErr;
+    return {};
   }
 
   //Update the digest with the input data
   if (EVP_DigestSignUpdate(mdctx_ptr.get(), data.data(), data.length()) != 1) {
-    //TODO: set appropriate error_code
+    ec = AlgorithmErrc::SigningErr;
     return std::string{};
   }
 
   unsigned long len = 0;
 
   if (EVP_DigestSignFinal(mdctx_ptr.get(), nullptr, &len) != 1) {
-    //TODO: set appropriate error_code
-    return std::string{};
+    ec = AlgorithmErrc::SigningErr;
+    return {};
   }
 
   std::string sign;
@@ -141,8 +149,8 @@ std::string PEMSign<Hasher>::evp_digest(
 
   //Get the signature
   if (EVP_DigestSignFinal(mdctx_ptr.get(), (unsigned char*)&sign[0], &len) != 1) {
-    //TODO: set appropriate error_code
-    return std::string{};
+    ec = AlgorithmErrc::SigningErr;
+    return {};
   }
 
   return sign;
@@ -157,6 +165,7 @@ std::string PEMSign<Hasher>::public_key_ser(
   // Get the EC_KEY representing a public key and
   // (optionaly) an associated private key
   std::string new_sign;
+  ec.clear();
 
   static auto eckey_deletor = [](EC_KEY* ptr) {
     if (ptr) EC_KEY_free(ptr);
@@ -170,8 +179,8 @@ std::string PEMSign<Hasher>::public_key_ser(
     ec_key{EVP_PKEY_get1_EC_KEY(pkey), eckey_deletor};
 
   if (!ec_key) {
-    //TODO set a valid error code
-    return std::string{};
+    ec = AlgorithmErrc::SigningErr;
+    return {};
   }
 
   uint32_t degree = EC_GROUP_get_degree(EC_KEY_get0_group(ec_key.get()));
@@ -183,8 +192,8 @@ std::string PEMSign<Hasher>::public_key_ser(
            ecsig_deletor};
 
   if (!ec_sig) {
-    //TODO set a valid error code
-    return std::string{};
+    ec = AlgorithmErrc::SigningErr;
+    return {};
   }
 
   const BIGNUM* ec_sig_r = nullptr;
@@ -192,7 +201,7 @@ std::string PEMSign<Hasher>::public_key_ser(
 
 #if 1
   //Taken from https://github.com/nginnever/zogminer/issues/39
-  auto ECDSA_SIG_get0 = [](const ECDSA_SIG *sig, const BIGNUM **pr, const BIGNUM **ps)
+  static auto ECDSA_SIG_get0 = [](const ECDSA_SIG *sig, const BIGNUM **pr, const BIGNUM **ps)
   {
     if (pr != nullptr) *pr = sig->r;
     if (ps != nullptr) *ps = sig->s;
@@ -207,8 +216,8 @@ std::string PEMSign<Hasher>::public_key_ser(
   auto bn_len = (degree + 7) / 8;
 
   if ((r_len > bn_len) || (s_len > bn_len)) {
-    //TODO set a valid error code
-    return std::string{};
+    ec = AlgorithmErrc::SigningErr;
+    return {};
   }
 
   auto buf_len = 2 * bn_len;
