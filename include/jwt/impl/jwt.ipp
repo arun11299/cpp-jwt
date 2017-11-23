@@ -304,14 +304,17 @@ jwt_object jwt_decode(const string_view encoded_str, const string_view key, bool
 
   auto parts = jwt_object::three_parts(encoded_str);
 
+  //throws verification error
   jobj.header(jwt_header{parts[0]});
+  //throws verification error
   jobj.payload(jwt_payload{parts[1]});
 
   jwt_signature jsign{key};
+
   //length of the encoded header and payload only.
   //Addition of '1' to account for the '.' character.
   auto l = parts[0].length() + 1 + parts[1].length();
-  jsign.verify(jobj.header(), encoded_str.substr(0, l), encoded_str);
+  jsign.verify(jobj.header(), encoded_str.substr(0, l), parts[2]);
 
   return jobj;
 }

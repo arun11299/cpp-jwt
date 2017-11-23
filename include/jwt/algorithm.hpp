@@ -236,6 +236,58 @@ enum algorithm str_to_alg(const string_view alg) noexcept
   assert (0 && "Code not reached");
 }
 
+/**
+ */
+inline void bio_deletor(BIO* ptr)
+{
+  if (ptr) BIO_free_all(ptr);
+}
+
+/**
+ */
+inline void evp_md_ctx_deletor(EVP_MD_CTX* ptr)
+{
+  if (ptr) EVP_MD_CTX_destroy(ptr);
+}
+
+/**
+ */
+inline void ec_key_deletor(EC_KEY* ptr)
+{
+  if (ptr) EC_KEY_free(ptr);
+}
+
+/**
+ */
+inline void ec_sig_deletor(ECDSA_SIG* ptr)
+{
+  if (ptr) ECDSA_SIG_free(ptr);
+}
+
+/**
+ */
+inline void ev_pkey_deletor(EVP_PKEY* ptr)
+{
+  if (ptr) EVP_PKEY_free(ptr);
+};
+
+/// Useful typedefs
+using bio_deletor_t = decltype(&bio_deletor);
+using BIO_uptr = std::unique_ptr<BIO, bio_deletor_t>;
+
+using evp_mdctx_deletor_t = decltype(&evp_md_ctx_deletor);
+using EVP_MDCTX_uptr = std::unique_ptr<EVP_MD_CTX, evp_mdctx_deletor_t>;
+
+using eckey_deletor_t = decltype(&ec_key_deletor);
+using EC_KEY_uptr = std::unique_ptr<EC_KEY, eckey_deletor_t>;
+
+using ecsig_deletor_t = decltype(&ec_sig_deletor);
+using EC_SIG_uptr = std::unique_ptr<ECDSA_SIG, ecsig_deletor_t>;
+
+using evpkey_deletor_t = decltype(&ev_pkey_deletor);
+using EC_PKEY_uptr = std::unique_ptr<EVP_PKEY, evpkey_deletor_t>;
+
+
 
 /**
  * OpenSSL HMAC based signature and verfication.
@@ -280,7 +332,6 @@ struct HMACSign
                               data.length(),
                               reinterpret_cast<unsigned char*>(&sign[0]),
                               &len);
-
     if (!res) {
       ec = AlgorithmErrc::SigningErr;
     }
@@ -335,11 +386,13 @@ struct HMACSign<algo::NONE>
   static verify_result_t
   verify(const string_view key, const string_view head, const string_view sign)
   {
-    bool compare_res = 0;
+    (void)key;
+    (void)head;
+    (void)sign;
     std::error_code ec{};
+    ec = AlgorithmErrc::NoneAlgorithmUsed;
 
-    //TODO: Set the appropriate error code for none
-    return { compare_res, ec };
+    return { true, ec };
   }
 
 };
@@ -378,13 +431,7 @@ public:
   {
     std::error_code ec{};
 
-    static auto evpkey_deletor = [](EVP_PKEY* ptr) {
-      if (ptr) EVP_PKEY_free(ptr);
-    };
-
-    std::unique_ptr<EVP_PKEY, decltype(evpkey_deletor)>
-      pkey{load_key(key, ec), evpkey_deletor};
-
+    EC_PKEY_uptr pkey{load_key(key, ec), ev_pkey_deletor};
     if (ec) return { std::string{}, ec };
 
     //TODO: Use stack string here ?

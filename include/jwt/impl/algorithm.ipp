@@ -12,28 +12,19 @@ verify_result_t HMACSign<Hasher>::verify(
     const string_view jwt_sign)
 {
   std::error_code ec{};
-  //TODO: remove these static deletors.
-  static auto bio_deletor = [](BIO* ptr) {
-    if (ptr) BIO_free_all(ptr);
-  };
 
   std::cout << "Key: "  << key      << std::endl;
   std::cout << "Head: " << head     << std::endl;
   std::cout << "JWT: "  << jwt_sign << std::endl;
 
-  using bio_deletor_t = decltype(bio_deletor);
-  using BIO_unique_ptr = std::unique_ptr<BIO, bio_deletor_t>;
-
-  BIO_unique_ptr b64{BIO_new(BIO_f_base64()), bio_deletor};
+  BIO_uptr b64{BIO_new(BIO_f_base64()), bio_deletor};
   if (!b64) {
-    //TODO: set error code
-    return {false, ec};
+    throw MemoryAllocationException("BIO_new failed");
   }
 
   BIO* bmem = BIO_new(BIO_s_mem());
   if (!bmem) {
-    //TODO: set error code
-    return {false, ec};
+    throw MemoryAllocationException("BIO_new failed");
   }
 
   BIO_push(b64.get(), bmem);
@@ -50,7 +41,7 @@ verify_result_t HMACSign<Hasher>::verify(
                             enc_buf,
                             &enc_buf_len);
   if (!res) {
-    //TODO: set error code
+    ec = AlgorithmErrc::VerificationErr;
     return {false, ec};
   }
 
@@ -59,7 +50,7 @@ verify_result_t HMACSign<Hasher>::verify(
 
   int len = BIO_pending(bmem);
   if (len < 0) {
-    //TODO: set error code
+    ec = AlgorithmErrc::VerificationErr;
     return {false, ec};
   }
 
@@ -74,7 +65,9 @@ verify_result_t HMACSign<Hasher>::verify(
   cbuf.resize(new_len);
   std::cout << "cbuf: " << cbuf << std::endl;
 
-  return {string_view{cbuf} == jwt_sign, ec};
+  bool ret = (string_view{cbuf} == jwt_sign);
+
+  return { ret, ec };
 }
 
 template <typename Hasher>
@@ -82,14 +75,11 @@ EVP_PKEY* PEMSign<Hasher>::load_key(
     const string_view key,
     std::error_code& ec)
 {
-  static auto bio_deletor = [](BIO* ptr) {
-    if (ptr) BIO_free(ptr);
-  };
-
   ec.clear();
 
-  std::unique_ptr<BIO, decltype(bio_deletor)>
-    bio_ptr{BIO_new_mem_buf((void*)key.data(), key.length()), bio_deletor};
+  BIO_uptr bio_ptr{
+      BIO_new_mem_buf((void*)key.data(), key.length()), 
+      bio_deletor};
 
   if (!bio_ptr) {
     throw MemoryAllocationException("BIO_new_mem_buf failed");
@@ -111,14 +101,9 @@ std::string PEMSign<Hasher>::evp_digest(
     const string_view data, 
     std::error_code& ec)
 {
-  static auto md_deletor = [](EVP_MD_CTX* ptr) {
-    if (ptr) EVP_MD_CTX_destroy(ptr);
-  };
-
   ec.clear();
 
-  std::unique_ptr<EVP_MD_CTX, decltype(md_deletor)>
-    mdctx_ptr{EVP_MD_CTX_create(), md_deletor};
+  EVP_MDCTX_uptr mdctx_ptr{EVP_MD_CTX_create(), evp_md_ctx_deletor};
 
   if (!mdctx_ptr) {
     throw MemoryAllocationException("EVP_MD_CTX_create failed");
@@ -167,16 +152,7 @@ std::string PEMSign<Hasher>::public_key_ser(
   std::string new_sign;
   ec.clear();
 
-  static auto eckey_deletor = [](EC_KEY* ptr) {
-    if (ptr) EC_KEY_free(ptr);
-  };
-
-  static auto ecsig_deletor = [](ECDSA_SIG* ptr) {
-    if (ptr) ECDSA_SIG_free(ptr);
-  };
-
-  std::unique_ptr<EC_KEY, decltype(eckey_deletor)>
-    ec_key{EVP_PKEY_get1_EC_KEY(pkey), eckey_deletor};
+  EC_KEY_uptr ec_key{EVP_PKEY_get1_EC_KEY(pkey), ec_key_deletor};
 
   if (!ec_key) {
     ec = AlgorithmErrc::SigningErr;
@@ -185,11 +161,10 @@ std::string PEMSign<Hasher>::public_key_ser(
 
   uint32_t degree = EC_GROUP_get_degree(EC_KEY_get0_group(ec_key.get()));
 
-  std::unique_ptr<ECDSA_SIG, decltype(ecsig_deletor)>
-    ec_sig{d2i_ECDSA_SIG(nullptr,
-                         (const unsigned char**)&sign[0],
-                         sign.length()),
-           ecsig_deletor};
+  EC_SIG_uptr ec_sig{d2i_ECDSA_SIG(nullptr,
+                                   (const unsigned char**)&sign[0],
+                                   sign.length()),
+                     ec_sig_deletor};
 
   if (!ec_sig) {
     ec = AlgorithmErrc::SigningErr;
