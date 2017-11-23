@@ -199,6 +199,13 @@ public: // Exposed APIs
     alg_ = alg;
   }
 
+  /**
+   */
+  void algo(const string_view sv)
+  {
+    alg_ = str_to_alg(sv.data());
+  }
+
   /*!
    */
   enum algorithm algo() const noexcept
@@ -305,13 +312,13 @@ public: // Exposed APIs
 
   /**
    */
-  bool remove_claim(const std::string& cname)
+  bool remove_claim(const string_view cname)
   {
     auto itr = claim_names_.find(cname);
     if (itr == claim_names_.end()) return false;
 
     claim_names_.erase(itr);
-    payload_.erase(cname.c_str());
+    payload_.erase(cname.data());
 
     return true;
   }
@@ -519,12 +526,26 @@ public: // Exposed APIs
 
   /**
    */
+  std::string secret() const
+  {
+    return secret_;
+  }
+
+  /**
+   */
+  void secret(const string_view sv)
+  {
+    secret_.assign(sv.data(), sv.length());
+  }
+
+  /**
+   */
   template <typename T>
   jwt_payload& add_claim(const string_view name, T&& value);
 
   /**
    */
-  jwt_payload& remove_claim(const std::string& name);
+  jwt_payload& remove_claim(const string_view name);
 
   /**
    */

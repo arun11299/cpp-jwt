@@ -254,7 +254,7 @@ jwt_payload& jwt_object::add_claim(const string_view name, T&& value)
   return payload_;
 }
 
-jwt_payload& jwt_object::remove_claim(const std::string& name)
+jwt_payload& jwt_object::remove_claim(const string_view name)
 {
   payload_.remove_claim(name);
   return payload_;

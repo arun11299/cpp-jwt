@@ -34,6 +34,14 @@ void basic_jwt_object_test()
       .add_claim("time", 176353563);
 
   std::cout << jwt::to_json_str(obj3.payload(), true) << std::endl;
+
+  obj3.remove_claim(std::string{"a"});
+  std::cout << obj3.payload() << std::endl;
+
+  obj3.secret("secret");
+  obj3.header().algo("hs256");
+
+  std::cout << obj3.signature() << std::endl;
 }
 
 int main() {
