@@ -41,7 +41,7 @@ void basic_jwt_object_test()
   obj3.secret("secret");
   obj3.header().algo("hs256");
 
-  std::cout << obj3.signature() << std::endl;
+  auto dec_obj = jwt::jwt_decode(obj3.signature(), "secret");
 }
 
 int main() {

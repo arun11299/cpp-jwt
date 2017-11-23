@@ -285,10 +285,8 @@ jwt_object::three_parts(const string_view enc_str)
 
   result[1] = string_view{&enc_str[fpos + 1], spos - fpos - 1};
 
-  size_t tpos = enc_str.find_first_of('.', spos + 1);
-
-  if (tpos != string_view::npos) {
-    result[2] = string_view{&enc_str[tpos + 1], tpos - spos - 1};
+  if (spos != enc_str.length()) {
+    result[2] = string_view{&enc_str[spos + 1], enc_str.length() - spos};
   }
 
   return result;
@@ -314,7 +312,7 @@ jwt_object jwt_decode(const string_view encoded_str, const string_view key, bool
   //length of the encoded header and payload only.
   //Addition of '1' to account for the '.' character.
   auto l = parts[0].length() + 1 + parts[1].length();
-  jsign.verify(jobj.header(), encoded_str.substr(0, l), parts[2]);
+  auto res = jsign.verify(jobj.header(), encoded_str.substr(0, l), parts[2]);
 
   return jobj;
 }
