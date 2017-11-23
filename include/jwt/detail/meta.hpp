@@ -31,7 +31,7 @@ struct empty_type {};
 /**
  */
 template <typename T, typename=void>
-struct has_create_json_obj_member: std::false_type
+struct has_create_json_obj_member
 {
 };
 
@@ -72,22 +72,21 @@ template <typename T>
 struct is_mapping_concept<T,
   void_t<
     typename std::enable_if<
-      std::is_constructible<jwt::string_view, typename T::key_type>::value,
+      std::is_constructible<jwt::string_view, typename std::remove_reference_t<T>::key_type>::value,
       void
     >::type,
 
     typename std::enable_if<
-      std::is_constructible<jwt::string_view, typename T::mapped_type>::value,
+      std::is_constructible<jwt::string_view, typename std::remove_reference_t<T>::mapped_type>::value,
       void
     >::type,
 
     decltype(
-      std::declval<T&>().operator[](std::declval<const typename T::key_type&>()),
+      std::declval<T&>().operator[](std::declval<typename std::remove_reference_t<T>::key_type>()),
       std::declval<T&>().begin(),
       std::declval<T&>().end(),
       (void)0
     )
-
   >
   >: std::true_type
 {

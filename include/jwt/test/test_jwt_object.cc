@@ -11,12 +11,14 @@ void basic_jwt_object_test()
                                 {"a", "b"},
                                 {"c", "d"} 
                               }));
+
   //check with std::map
   std::map<std::string, std::string> m;
   m["a"] = "b";
   m["c"] = "d";
 
   jwt::jwt_object obj1{payload(m)};
+  
   auto obj2 = std::move(obj1);
 
   std::cout << obj2.payload() << std::endl;

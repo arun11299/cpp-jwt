@@ -109,16 +109,6 @@ using param_init_list_t = std::initializer_list<std::pair<jwt::string_view, jwt:
 
 /**
  */
-template <typename MappingConcept,
-          typename=typename jwt::detail::meta::is_mapping_concept<MappingConcept>::type>
-detail::payload_param<MappingConcept> 
-payload(MappingConcept&& mc)
-{
-  return { std::forward<MappingConcept>(mc) };
-}
-
-/**
- */
 detail::payload_param<std::unordered_map<std::string, std::string>>
 payload(const param_init_list_t& kvs)
 {
@@ -129,6 +119,18 @@ payload(const param_init_list_t& kvs)
   }
 
   return { std::move(m) };
+}
+
+/**
+ */
+template <typename MappingConcept>
+detail::payload_param<MappingConcept>
+payload(MappingConcept&& mc)
+{
+  static_assert (jwt::detail::meta::is_mapping_concept<MappingConcept>::value,
+      "Template parameter does not meet the requirements for MappingConcept.");
+
+  return { std::forward<MappingConcept>(mc) };
 }
 
 
@@ -155,16 +157,6 @@ detail::algorithm_param algorithm(jwt::algorithm alg)
 
 /**
  */
-template <typename MappingConcept,
-          typename=typename jwt::detail::meta::is_mapping_concept<MappingConcept>::type>
-detail::headers_param<MappingConcept>
-headers(MappingConcept&& mc)
-{
-  return { std::forward<MappingConcept>(mc) };
-}
-
-/**
- */
 detail::headers_param<std::map<std::string, std::string>>
 headers(const param_init_list_t& kvs)
 {
@@ -175,6 +167,18 @@ headers(const param_init_list_t& kvs)
   }
 
   return { std::move(m) };
+}
+
+/**
+ */
+template <typename MappingConcept>
+detail::headers_param<MappingConcept>
+headers(MappingConcept&& mc)
+{
+  static_assert (jwt::detail::meta::is_mapping_concept<MappingConcept>::value,
+       "Template parameter does not meet the requirements for MappingConcept.");
+
+  return { std::forward<MappingConcept>(mc) };
 }
 
 } // END namespace params
