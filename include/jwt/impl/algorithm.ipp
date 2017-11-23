@@ -70,6 +70,31 @@ verify_result_t HMACSign<Hasher>::verify(
   return { ret, ec };
 }
 
+
+template <typename Hasher>
+verify_result_t PEMSign<Hasher>::verify(
+    const string_view key,
+    const string_view head,
+    const string_view jwt_sign)
+{
+  /*
+   * unsigned char *sig = NULL;
+   * EVP_MD_CTX *mdctx = NULL;
+   * ECDSA_SIG *ec_sig = NULL;
+   * BIGNUM *ec_sig_r = NULL;
+   * BIGNUM *ec_sig_s = NULL;
+   * EVP_PKEY *pkey = NULL;
+   * const EVP_MD *alg;
+   * int type;
+   * int pkey_type;
+   * BIO *bufkey = NULL;
+   * int ret = 0;
+   * int slen;
+   */
+  std::error_code ec{};
+  return { true, ec };
+}
+
 template <typename Hasher>
 EVP_PKEY* PEMSign<Hasher>::load_key(
     const string_view key,

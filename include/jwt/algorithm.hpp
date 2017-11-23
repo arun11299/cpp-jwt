@@ -341,6 +341,25 @@ struct HMACSign
   }
 
   /**
+   * Verifies the JWT string against the signature using
+   * the provided key.
+   *
+   * Arguments:
+   *  @key : The secret/key to use for the signing.
+   *         Cannot be empty string.
+   *  @head : The part of JWT encoded string representing header
+   *          and the payload claims.
+   *  @sign : The signature part of the JWT encoded string.
+   *
+   *  Returns:
+   *    verify_result_t
+   *    verify_result_t::first set to true if verification succeeds.
+   *    false otherwise. 
+   *    verify_result_t::second set to relevant error if verification fails.
+   *
+   *  Exceptions:
+   *    Any allocation failure will result in jwt::MemoryAllocationException
+   *    being thrown.
    */
   static verify_result_t 
   verify(const string_view key, const string_view head, const string_view sign);
@@ -382,6 +401,7 @@ struct HMACSign<algo::NONE>
   }
 
   /**
+   * Basically a no-op. Sets the error code to NoneAlgorithmUsed.
    */
   static verify_result_t
   verify(const string_view key, const string_view head, const string_view sign)
@@ -446,17 +466,10 @@ public:
     return { std::move(sign), ec };
   }
 
-  /*!
+  /**
    */
   static verify_result_t
-  verify(const string_view key, const string_view head, const string_view sign)
-  {
-    bool compare_res = 0;
-    std::error_code ec{};
-
-    //TODO: Set the appropriate error code for none
-    return {compare_res, ec};
-  }
+  verify(const string_view key, const string_view head, const string_view sign);
 
 private:
   /*!

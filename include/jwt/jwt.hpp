@@ -94,7 +94,8 @@ string_view reg_claims_to_str(enum registered_claims claim) noexcept
 // Fwd declaration for friend functions to specify the 
 // default arguments
 // See: https://stackoverflow.com/a/23336823/434233
-template <typename T>
+template <typename T, typename = typename std::enable_if<
+            detail::meta::has_create_json_obj_member<T>{}>::type>
 std::string to_json_str(const T& obj, bool pretty=false);
 
 template <typename T>
@@ -106,7 +107,7 @@ struct write_interface
 {
   /*!
    */
-  template <typename T>
+  template <typename T, typename Cond>
   friend std::string to_json_str(const T& obj, bool pretty);
 
   /*!
@@ -284,7 +285,7 @@ public: // Exposed APIs
   /**
    */
   template <typename T>
-  bool add_claim(const std::string& cname, T&& cvalue, bool overwrite=false)
+  bool add_claim(const string_view cname, T&& cvalue, bool overwrite=false)
   {
     // Duplicate claim names not allowed
     // if overwrite flag is set to true.
@@ -297,8 +298,6 @@ public: // Exposed APIs
     claim_names_.emplace(cname.data(), cname.length());
 
     //Add it to the json payload
-    //TODO: claim name copied twice inside json 
-    //and in the set
     payload_[cname.data()] = std::forward<T>(cvalue);
 
     return true;
@@ -521,7 +520,7 @@ public: // Exposed APIs
   /**
    */
   template <typename T>
-  jwt_payload& add_claim(const std::string& name, T&& value);
+  jwt_payload& add_claim(const string_view name, T&& value);
 
   /**
    */

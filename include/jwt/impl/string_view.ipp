@@ -243,6 +243,75 @@ std::ostream& operator<< (std::ostream& os, basic_string_view<CharT, Traits> sv)
   return os;
 }
 
+namespace {
+
+/*
+ * Copy of gcc implementation of murmurhash
+ * hash_bytes.cc
+ */
+
+inline size_t
+unaligned_load(const char* p)
+{
+  std::size_t result;
+  std::memcpy(&result, p, sizeof(result));
+  return result;
+}
+
+inline size_t
+hash_bytes(const void* ptr, size_t len, size_t seed)
+{
+  const size_t m = 0x5bd1e995;
+  size_t hash = seed ^ len;
+  const char* buf = static_cast<const char*>(ptr);
+
+  // Mix 4 bytes at a time into the hash.
+  while(len >= 4)
+  {
+    size_t k = unaligned_load(buf);
+    k *= m;
+    k ^= k >> 24;
+    k *= m;
+    hash *= m;
+    hash ^= k;
+    buf += 4;
+    len -= 4;
+  }
+
+  // Handle the last few bytes of the input array.
+  switch(len)
+  {
+  case 3:
+    hash ^= static_cast<unsigned char>(buf[2]) << 16;
+    //FALLTHROUGH 
+  case 2:
+    hash ^= static_cast<unsigned char>(buf[1]) << 8;
+    //FALLTHROUGH
+  case 1:
+    hash ^= static_cast<unsigned char>(buf[0]);
+    hash *= m;
+  };
+
+  // Do a few final mixes of the hash.
+  hash ^= hash >> 13;
+  hash *= m;
+  hash ^= hash >> 15;
+  return hash;
+}
+}
+
 } // END namespace jwt
+
+/// Provide a hash specialization
+namespace std {
+  template <>
+  struct hash<jwt::string_view>
+  {
+    size_t operator()(const jwt::string_view& sv) const
+    {
+      return jwt::hash_bytes((void*)sv.data(), sv.length(), static_cast<size_t>(0xc70f6907UL));
+    }
+  };
+}
 
 #endif

@@ -5,7 +5,7 @@
 
 namespace jwt {
 
-template <typename T>
+template <typename T, typename Cond>
 std::string to_json_str(const T& obj, bool pretty)
 {
   return pretty ? obj.create_json_obj().dump(2)
@@ -248,7 +248,7 @@ void jwt_object::set_parameters()
 }
 
 template <typename T>
-jwt_payload& jwt_object::add_claim(const std::string& name, T&& value)
+jwt_payload& jwt_object::add_claim(const string_view name, T&& value)
 {
   payload_.add_claim(name, std::forward<T>(value));
   return payload_;
