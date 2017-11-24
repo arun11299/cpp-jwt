@@ -77,21 +77,100 @@ verify_result_t PEMSign<Hasher>::verify(
     const string_view head,
     const string_view jwt_sign)
 {
-  /*
-   * unsigned char *sig = NULL;
-   * EVP_MD_CTX *mdctx = NULL;
-   * ECDSA_SIG *ec_sig = NULL;
-   * BIGNUM *ec_sig_r = NULL;
-   * BIGNUM *ec_sig_s = NULL;
-   * EVP_PKEY *pkey = NULL;
-   * const EVP_MD *alg;
-   * int type;
-   * int pkey_type;
-   * BIO *bufkey = NULL;
-   * int ret = 0;
-   * int slen;
-   */
   std::error_code ec{};
+  std::string dec_sig = base64_uri_decode(jwt_sign.data(), jwt_sign.length());
+
+  BIO_uptr bufkey{
+      BIO_new_mem_buf((void*)key.data(), key.length()),
+      bio_deletor};
+
+  if (!bufkey) {
+    throw MemoryAllocationException("BIO_new_mem_buf failed");
+  }
+
+  EC_PKEY_uptr pkey{
+    PEM_read_bio_PUBKEY(bufkey.get(), nullptr, nullptr, nullptr),
+    ev_pkey_deletor};
+
+  if (!pkey) {
+    ec = AlgorithmErrc::VerificationErr;
+    return { false, ec };
+  }
+
+  int pkey_type = EVP_PKEY_id(pkey.get());
+
+  if (pkey_type != Hasher::type) {
+    ec = AlgorithmErrc::VerificationErr;
+    return { false, ec };
+  }
+
+  //Convert EC signature back to ASN1
+  if (Hasher::type == EVP_PKEY_EC) {
+    EC_SIG_uptr ec_sig{ECDSA_SIG_new(), ec_sig_deletor};
+    if (!ec_sig) {
+      throw MemoryAllocationException("ECDSA_SIG_new failed");
+    }
+
+    //Get the actual ec_key
+    EC_KEY_uptr ec_key{EVP_PKEY_get1_EC_KEY(pkey.get()), ec_key_deletor};
+    if (!ec_key) {
+      throw MemoryAllocationException("EVP_PKEY_get1_EC_KEY failed");
+    }
+
+    unsigned int degree = EC_GROUP_get_degree(
+        EC_KEY_get0_group(ec_key.get()));
+    
+    unsigned int bn_len = (degree + 7) / 8;
+
+    if ((bn_len * 2) != dec_sig.length()) {
+      ec = AlgorithmErrc::VerificationErr;
+      return { false, ec };
+    }
+
+    BIGNUM* ec_sig_r = BN_bin2bn((unsigned char*)dec_sig.data(), bn_len, nullptr);
+    BIGNUM* ec_sig_s = BN_bin2bn((unsigned char*)dec_sig.data() + bn_len, bn_len, nullptr);
+
+    if (!ec_sig_r || !ec_sig_s) {
+      ec = AlgorithmErrc::VerificationErr;
+      return { false, ec };
+    }
+
+    ECDSA_SIG_set0(ec_sig.get(), ec_sig_r, ec_sig_s);
+
+    size_t nlen = i2d_ECDSA_SIG(ec_sig.get(), nullptr);
+    dec_sig.resize(nlen);
+
+    auto data = reinterpret_cast<unsigned char*>(&dec_sig[0]);
+    nlen = i2d_ECDSA_SIG(ec_sig.get(), &data);
+
+    if (nlen == 0) {
+      ec = AlgorithmErrc::VerificationErr;
+      return { false, ec };
+    }
+  }
+
+  EVP_MDCTX_uptr mdctx_ptr{EVP_MD_CTX_create(), evp_md_ctx_deletor};
+  if (!mdctx_ptr) {
+    throw MemoryAllocationException("EVP_MD_CTX_create failed");
+  }
+
+  if (EVP_DigestVerifyInit(
+        mdctx_ptr.get(), nullptr, Hasher{}(), nullptr, pkey.get()) != 1) {
+    ec = AlgorithmErrc::VerificationErr;
+    return { false, ec };
+  }
+
+  if (EVP_DigestVerifyUpdate(mdctx_ptr.get(), head.data(), head.length()) != 1) {
+    ec = AlgorithmErrc::VerificationErr;
+    return { false, ec };
+  }
+
+  if (EVP_DigestVerifyFinal(
+        mdctx_ptr.get(), (unsigned char*)&dec_sig[0], dec_sig.length()) != 1) {
+    ec = AlgorithmErrc::VerificationErr;
+    return { false, ec };
+  }
+
   return { true, ec };
 }
 
@@ -198,16 +277,6 @@ std::string PEMSign<Hasher>::public_key_ser(
 
   const BIGNUM* ec_sig_r = nullptr;
   const BIGNUM* ec_sig_s = nullptr;
-
-#if 1
-  //Taken from https://github.com/nginnever/zogminer/issues/39
-  static auto ECDSA_SIG_get0 = [](const ECDSA_SIG *sig, const BIGNUM **pr, const BIGNUM **ps)
-  {
-    if (pr != nullptr) *pr = sig->r;
-    if (ps != nullptr) *ps = sig->s;
-  };
-
-#endif
 
   ECDSA_SIG_get0(ec_sig.get(), &ec_sig_r, &ec_sig_s);
 

@@ -483,6 +483,31 @@ private:
   /*!
    */
   static std::string public_key_ser(EVP_PKEY* pkey, string_view sign, std::error_code& ec);
+
+  //ATTN: Below 2 functions
+  //are Taken from https://github.com/nginnever/zogminer/issues/39
+
+  /**
+   */
+  static void ECDSA_SIG_get0(const ECDSA_SIG* sig, const BIGNUM** pr, const BIGNUM** ps)
+  {
+    if (pr != nullptr) *pr = sig->r;
+    if (ps != nullptr) *ps = sig->s;
+  };
+
+  /**
+   */
+  static int ECDSA_SIG_set0(ECDSA_SIG* sig, BIGNUM* r, BIGNUM* s)
+  { 
+    if (r == nullptr || s == nullptr) return 0;
+
+    BN_clear_free(sig->r);
+    BN_clear_free(sig->s);
+
+    sig->r = r;
+    sig->s = s;
+    return 1;
+  }
 };
 
 } // END namespace jwt
