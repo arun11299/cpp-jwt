@@ -541,11 +541,11 @@ public: // Exposed APIs
   /**
    */
   template <typename T>
-  jwt_payload& add_claim(const string_view name, T&& value);
+  jwt_object& add_claim(const string_view name, T&& value);
 
   /**
    */
-  jwt_payload& remove_claim(const string_view name);
+  jwt_object& remove_claim(const string_view name);
 
   /**
    */

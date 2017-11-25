@@ -86,6 +86,10 @@ std::string jwt_signature::encode(const jwt_header& header,
 
   std::string data = hdr_sign + '.' + pld_sign;
   auto res = sign_fn(key_, data);
+  if (res.second) {
+    std::cout << res.second.message() << std::endl;
+    return {};
+  }
  
   std::string b64hash = base64_encode(res.first.c_str(), res.first.length());
   auto new_len = base64_uri_encode(&b64hash[0], b64hash.length());
@@ -248,16 +252,16 @@ void jwt_object::set_parameters()
 }
 
 template <typename T>
-jwt_payload& jwt_object::add_claim(const string_view name, T&& value)
+jwt_object& jwt_object::add_claim(const string_view name, T&& value)
 {
   payload_.add_claim(name, std::forward<T>(value));
-  return payload_;
+  return *this;
 }
 
-jwt_payload& jwt_object::remove_claim(const string_view name)
+jwt_object& jwt_object::remove_claim(const string_view name)
 {
   payload_.remove_claim(name);
-  return payload_;
+  return *this;
 }
 
 std::string jwt_object::signature() const
