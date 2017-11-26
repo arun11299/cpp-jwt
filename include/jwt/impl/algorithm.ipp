@@ -1,8 +1,6 @@
 #ifndef CPP_JWT_ALGORITHM_IPP
 #define CPP_JWT_ALGORITHM_IPP
 
-#include <iostream>
-
 namespace jwt {
 
 template <typename Hasher>
@@ -12,10 +10,6 @@ verify_result_t HMACSign<Hasher>::verify(
     const string_view jwt_sign)
 {
   std::error_code ec{};
-
-  std::cout << "Key: "  << key      << std::endl;
-  std::cout << "Head: " << head     << std::endl;
-  std::cout << "JWT: "  << jwt_sign << std::endl;
 
   BIO_uptr b64{BIO_new(BIO_f_base64()), bio_deletor};
   if (!b64) {
@@ -63,7 +57,6 @@ verify_result_t HMACSign<Hasher>::verify(
   //Make the base64 string url safe
   auto new_len = jwt::base64_uri_encode(&cbuf[0], cbuf.length());
   cbuf.resize(new_len);
-  std::cout << "cbuf: " << cbuf << std::endl;
 
   bool ret = (string_view{cbuf} == jwt_sign);
 
@@ -174,125 +167,6 @@ verify_result_t PEMSign<Hasher>::verify(
   return { true, ec };
 }
 
-///////////////////////
-
-#define SIGN_ERROR(__err) ({ ret = __err; goto jwt_sign_sha_pem_done; })
-
-template <typename Hasher>
-void PEMSign<Hasher>::libjwt_sign(char** out, unsigned int *len, const char* str, const char* key, size_t klen)
-{
-        ECDSA_SIG *ec_sig = NULL;
-        const BIGNUM *ec_sig_r = NULL;
-        const BIGNUM *ec_sig_s = NULL;
-        const EVP_MD *alg;
-        int type;
-        EVP_PKEY *pkey = NULL;
-        int pkey_type;
-        unsigned char *sig;
-        int ret = 0;
-        size_t slen;
-
-        alg = EVP_sha256();
-        type = EVP_PKEY_EC;
-
-        BIO_uptr bufkey{
-          BIO_new_mem_buf(key, klen),
-          bio_deletor};
-
-        if (!bufkey) {
-          throw MemoryAllocationException("BIO_new_mem_buf failed");
-        }
-
-        pkey = PEM_read_bio_PrivateKey(bufkey.get(), NULL, NULL, NULL);
-        if (!pkey) {
-          return;
-        }
-
-        pkey_type = EVP_PKEY_id(pkey);
-        if (pkey_type != type) {
-          return;
-        }
-
-        EVP_MDCTX_uptr mdctx{EVP_MD_CTX_create(), evp_md_ctx_deletor};
-        if (!mdctx) return;
-
-        EVP_DigestSignInit(mdctx.get(), NULL, alg, NULL, pkey);
-        EVP_DigestSignUpdate(mdctx.get(), str, strlen(str));
-        EVP_DigestSignFinal(mdctx.get(), NULL, &slen);
-
-        sig = (unsigned char*)alloca(slen);
-
-        EVP_DigestSignFinal(mdctx.get(), sig, &slen);
-
-
-        if (pkey_type != EVP_PKEY_EC) {
-                *out = (char*)malloc(slen);
-                if (*out == NULL)
-                        SIGN_ERROR(ENOMEM);
-
-                memcpy(*out, sig, slen);
-                *len = slen;
-        } else {
-                unsigned int degree, bn_len, r_len, s_len, buf_len;
-                unsigned char *raw_buf;
-                EC_KEY *ec_key;
-
-                /* For EC we need to convert to a raw format of R/S. */
-
-                /* Get the actual ec_key */
-                ec_key = EVP_PKEY_get1_EC_KEY(pkey);
-                if (ec_key == NULL)
-                        SIGN_ERROR(ENOMEM);
-
-                degree = EC_GROUP_get_degree(EC_KEY_get0_group(ec_key));
-
-                EC_KEY_free(ec_key);
-
-                std::cout << "AAA: " << sig << std::endl;
-
-                /* Get the sig from the DER encoded version. */
-                ec_sig = d2i_ECDSA_SIG(NULL, (const unsigned char **)&sig, slen);
-                if (ec_sig == NULL)
-                        SIGN_ERROR(ENOMEM);
-
-                std::cout << "ON YOUR FACE!!" << std::endl;
-
-                ECDSA_SIG_get0(ec_sig, &ec_sig_r, &ec_sig_s);
-
-                r_len = BN_num_bytes(ec_sig_r);
-                s_len = BN_num_bytes(ec_sig_s);
-                bn_len = (degree + 7) / 8;
-                if ((r_len > bn_len) || (s_len > bn_len))
-                        SIGN_ERROR(EINVAL);
-
-                buf_len = 2 * bn_len;
-                raw_buf = (unsigned char*)alloca(buf_len);
-                if (raw_buf == NULL)
-                        SIGN_ERROR(ENOMEM);
-
-                /* Pad the bignums with leading zeroes. */
-                memset(raw_buf, 0, buf_len);
-                BN_bn2bin(ec_sig_r, raw_buf + bn_len - r_len);
-                BN_bn2bin(ec_sig_s, raw_buf + buf_len - s_len);
-
-                *out = (char*)malloc(buf_len);
-                if (*out == NULL)
-                        SIGN_ERROR(ENOMEM);
-                memcpy(*out, raw_buf, buf_len);
-                *len = buf_len;
-        }
-
-jwt_sign_sha_pem_done:
-        if (pkey)
-                EVP_PKEY_free(pkey);
-        if (ec_sig)
-                ECDSA_SIG_free(ec_sig);
-
-        return;
-}
-
-//////////////////////
-
 template <typename Hasher>
 EVP_PKEY* PEMSign<Hasher>::load_key(
     const string_view key,
@@ -334,8 +208,6 @@ std::string PEMSign<Hasher>::evp_digest(
   ec.clear();
 
   EVP_MDCTX_uptr mdctx_ptr{EVP_MD_CTX_create(), evp_md_ctx_deletor};
-  std::cout << data << std::endl;
-  std::cout << data.length() << std::endl;
 
   if (!mdctx_ptr) {
     throw MemoryAllocationException("EVP_MD_CTX_create failed");
@@ -397,8 +269,6 @@ std::string PEMSign<Hasher>::public_key_ser(
 
   auto char_ptr = &sign[0];
 
-  std::cout << "AAA: " << char_ptr << std::endl;
-
   EC_SIG_uptr ec_sig{d2i_ECDSA_SIG(nullptr,
                                    (const unsigned char**)&char_ptr,
                                    sign.length()),
@@ -406,7 +276,6 @@ std::string PEMSign<Hasher>::public_key_ser(
 
   if (!ec_sig) {
     ec = AlgorithmErrc::SigningErr;
-    std::cout << "1\n";
     return {};
   }
 
@@ -421,7 +290,6 @@ std::string PEMSign<Hasher>::public_key_ser(
 
   if ((r_len > bn_len) || (s_len > bn_len)) {
     ec = AlgorithmErrc::SigningErr;
-    std::cout << "2\n";
     return {};
   }
 

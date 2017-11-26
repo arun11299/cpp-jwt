@@ -454,7 +454,6 @@ public:
     char* out;
     unsigned int l;
     std::string ii{data.data(), data.length()};
-    libjwt_sign(&out, &l, ii.c_str(), key.data(), key.length());
 
     EC_PKEY_uptr pkey{load_key(key, ec), ev_pkey_deletor};
     if (ec) return { std::string{}, ec };
@@ -477,8 +476,6 @@ public:
   verify(const string_view key, const string_view head, const string_view sign);
 
 private:
-
-  static void libjwt_sign(char** out, unsigned int *len, const char* str, const char* key, size_t klen);
 
   /*!
    */
