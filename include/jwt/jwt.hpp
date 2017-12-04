@@ -4,6 +4,7 @@
 #include <set>
 #include <array>
 #include <string>
+#include <chrono>
 #include <ostream>
 #include <cassert>
 #include <cstring>
@@ -17,6 +18,7 @@
 
 // For convenience
 using json_t = nlohmann::json;
+using system_time_t = std::chrono::time_point<std::chrono::system_clock>;
 
 namespace jwt {
 
@@ -296,7 +298,10 @@ public: // 'tors
 public: // Exposed APIs
   /**
    */
-  template <typename T>
+  template <typename T,
+            typename=typename std::enable_if_t<
+              !std::is_same<system_time_t, std::decay_t<T>>::value>
+           >
   bool add_claim(const string_view cname, T&& cvalue, bool overwrite=false)
   {
     // Duplicate claim names not allowed
@@ -313,6 +318,17 @@ public: // Exposed APIs
     payload_[cname.data()] = std::forward<T>(cvalue);
 
     return true;
+  }
+
+  /**
+   */
+  bool add_claim(const string_view cname, system_time_t tp, bool overwrite=false)
+  {
+    return add_claim(
+        cname,
+        std::chrono::duration_cast<
+          std::chrono::seconds>(tp.time_since_epoch()).count()
+        );
   }
 
   /**
@@ -548,8 +564,14 @@ public: // Exposed APIs
 
   /**
    */
-  template <typename T>
+  template <typename T, typename Cond>
   jwt_object& add_claim(const string_view name, T&& value);
+
+  /**
+   * Specialization for time points.
+   * Eg: Users can set `exp` claim to `chrono::system_clock::now()`.
+   */
+  jwt_object& add_claim(const string_view name, system_time_t time_point);
 
   /**
    */
@@ -601,9 +623,14 @@ private: // Data Members
   std::string secret_;
 };
 
-/*!
+/**
  */
 jwt_object jwt_decode(const string_view encoded_str, const string_view key, bool validate=true);
+
+/**
+ */
+template <typename... Args>
+jwt_object decode(const string_view enc_str, const string_view key, Args&&... args);
 
 
 } // END namespace jwt

@@ -291,11 +291,23 @@ void jwt_object::set_parameters()
   return;
 }
 
-template <typename T>
+template <typename T,
+          typename=typename std::enable_if_t<
+            !std::is_same<system_time_t, std::decay_t<T>>::value>
+         >
 jwt_object& jwt_object::add_claim(const string_view name, T&& value)
 {
   payload_.add_claim(name, std::forward<T>(value));
   return *this;
+}
+
+jwt_object& jwt_object::add_claim(const string_view name, system_time_t tp)
+{
+  return add_claim(
+      name,
+      std::chrono::duration_cast<
+        std::chrono::seconds>(tp.time_since_epoch()).count()
+      );
 }
 
 jwt_object& jwt_object::remove_claim(const string_view name)

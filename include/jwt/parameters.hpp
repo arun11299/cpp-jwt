@@ -101,6 +101,47 @@ struct headers_param
   MappingConcept headers_;
 };
 
+/**
+ */
+struct verify_param
+{
+  verify_param(bool v)
+    : verify_(v)
+  {}
+
+  bool get() const { return verify_; }
+
+  bool verify_;
+};
+
+/**
+ */
+template <typename Sequence>
+struct algorithms_param
+{
+  algorithms_param(Sequence&& seq)
+    : seq_(std::forward<Sequence>(seq))
+  {}
+
+  Sequence get() && { return std::move(seq_); }
+  const Sequence& get() const& { return seq_; }
+
+  Sequence seq_;
+};
+
+/**
+ */
+struct leeway_param
+{
+  leeway_param(uint32_t v)
+    : leeway_(v)
+  {}
+
+  uint32_t get() const noexcept { return leeway_; }
+
+  uint32_t leeway_;
+};
+
 } // END namespace detail
 
 // Useful typedef
@@ -179,6 +220,22 @@ headers(MappingConcept&& mc)
        "Template parameter does not meet the requirements for MappingConcept.");
 
   return { std::forward<MappingConcept>(mc) };
+}
+
+/**
+ */
+detail::verify_param
+verify(bool v)
+{
+  return { v };
+}
+
+/**
+ */
+detail::leeway_param
+leeway(uint32_t l)
+{
+  return { l };
 }
 
 } // END namespace params

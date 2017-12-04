@@ -1,6 +1,7 @@
 #include <iostream>
 #include <map>
 #include <string>
+#include <chrono>
 #include <unordered_map>
 #include "jwt/jwt.hpp"
 
@@ -31,7 +32,9 @@ void basic_jwt_object_test()
   jwt::jwt_object obj3{payload(um)};
 
   obj3.add_claim("f", true)
-      .add_claim("time", 176353563);
+      .add_claim("time", 176353563)
+      .add_claim("exp", std::chrono::system_clock::now())
+      ;
 
   std::cout << jwt::to_json_str(obj3.payload(), true) << std::endl;
 
