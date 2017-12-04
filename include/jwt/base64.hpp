@@ -282,7 +282,8 @@ std::string base64_uri_decode(const char* data, size_t len)
 
   size_t i = 0;
 
-  for (; i < len; ++i) {
+  for (; i < len; ++i) 
+  {
     switch (data[i]) {
     case '-':
       uri_dec[i] = '+';

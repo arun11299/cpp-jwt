@@ -36,40 +36,80 @@ std::ostream& operator<< (std::ostream& os, const T& obj)
 
 //========================================================================
 
-void jwt_header::decode(const string_view enc_str)
+void jwt_header::decode(const string_view enc_str, std::error_code& ec) noexcept
 {
+  ec.clear();
   std::string json_str = base64_decode(enc_str);
-  json_t obj = json_t::parse(std::move(json_str));
+  json_t obj;
+
+  try {
+    obj = json_t::parse(std::move(json_str));
+  } catch(const std::exception& e) {
+    ec = DecodeErrc::JsonParseError;
+    return;
+  }
 
   //Look for the algorithm field
   auto alg_itr = obj.find("alg");
-  assert (alg_itr != obj.end() && "Algorithm header is missing");
-  std::error_code ec;
+  if (alg_itr == obj.end()) {
+    ec = DecodeErrc::AlgHeaderMiss;
+    return;
+  }
 
   alg_ = str_to_alg(alg_itr.value().get<std::string>());
 
-  if (alg_ != algorithm::NONE) {
+  if (alg_ != algorithm::NONE)
+  {
     auto itr = obj.find("typ");
     if (itr == obj.end()) {
-      //TODO: set error code
+      ec = DecodeErrc::TypHeaderMiss;
       return;
     }
-    auto typ = itr.value().get<std::string>();
+
+    const auto& typ = itr.value().get<std::string>();
     if (strcasecmp(typ.c_str(), "JWT")) {
-      //TODO: set error code
+      ec = DecodeErrc::TypMismatch;
       return;
     }
+
     typ_ = str_to_type(typ);
+  } else {
+    //TODO:
   }
 
   return;
 }
 
-
-void jwt_payload::decode(const string_view enc_str)
+void jwt_header::decode(const string_view enc_str) throw(DecodeError)
 {
+  std::error_code ec;
+  decode(enc_str, ec);
+  if (ec) {
+    throw DecodeError(ec.message());
+  }
+  return;
+}
+
+void jwt_payload::decode(const string_view enc_str, std::error_code& ec) noexcept
+{
+  ec.clear();
   std::string json_str = base64_decode(enc_str);
-  payload_ = json_t::parse(std::move(json_str));
+  try {
+    payload_ = json_t::parse(std::move(json_str));
+  } catch(const std::exception& e) {
+    ec = DecodeErrc::JsonParseError;
+    return;
+  }
+  return;
+}
+
+void jwt_payload::decode(const string_view enc_str) throw(DecodeError)
+{
+  std::error_code ec;
+  decode(enc_str, ec);
+  if (ec) {
+    throw DecodeError(ec.message());
+  }
   return;
 }
 
@@ -306,9 +346,9 @@ jwt_object jwt_decode(const string_view encoded_str, const string_view key, bool
 
   auto parts = jwt_object::three_parts(encoded_str);
 
-  //throws verification error
+  //throws decode error
   jobj.header(jwt_header{parts[0]});
-  //throws verification error
+  //throws decode error
   jobj.payload(jwt_payload{parts[1]});
 
   jwt_signature jsign{key};

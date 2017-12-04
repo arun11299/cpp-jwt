@@ -21,10 +21,24 @@ enum class AlgorithmFailureSource
 {
 };
 
+/**
+ * Decode error conditions
+ */
+enum class DecodeErrc
+{
+  JsonParseError = 1,
+  AlgHeaderMiss,
+  TypHeaderMiss,
+  TypMismatch,
+};
 
 /**
  */
 std::error_code make_error_code(AlgorithmErrc err);
+
+/**
+ */
+std::error_code make_error_code(DecodeErrc err);
 
 } // END namespace jwt
 
@@ -37,6 +51,9 @@ namespace std
 {
   template <>
   struct is_error_code_enum<jwt::AlgorithmErrc> : true_type {};
+
+  template <>
+  struct is_error_code_enum<jwt::DecodeErrc>: true_type {};
 }
 
 #include "jwt/impl/error_codes.ipp"

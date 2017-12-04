@@ -12,6 +12,7 @@
 #include "jwt/algorithm.hpp"
 #include "jwt/string_view.hpp"
 #include "jwt/parameters.hpp"
+#include "jwt/exceptions.hpp"
 #include "jwt/json/json.hpp"
 
 // For convenience
@@ -237,9 +238,13 @@ public: // Exposed APIs
     return base64_encode(pprint);
   }
 
-  /*!
+  /**
    */
-  void decode(const string_view enc_str);
+  void decode(const string_view enc_str, std::error_code& ec) noexcept;
+
+  /**
+   */
+  void decode(const string_view enc_str) throw(DecodeError);
 
   /*!
    */
@@ -350,8 +355,11 @@ public: // Exposed APIs
 
   /**
    */
-  //TODO: what about error_code ?
-  void decode(const string_view enc_str);
+  void decode(const string_view enc_str, std::error_code& ec) noexcept;
+
+  /**
+   */
+  void decode(const string_view enc_str) throw(DecodeError);
 
   /**
    */

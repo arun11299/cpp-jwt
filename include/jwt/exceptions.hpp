@@ -29,6 +29,19 @@ private:
   const char* msg_ = nullptr;
 };
 
+/**
+ */
+class DecodeError final: public std::runtime_error
+{
+public:
+  /**
+   */
+  DecodeError(std::string msg)
+    : std::runtime_error(std::move(msg))
+  {
+  }
+};
+
 
 } // END namespace jwt
 

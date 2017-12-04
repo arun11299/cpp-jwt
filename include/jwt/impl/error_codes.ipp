@@ -30,8 +30,37 @@ struct AlgorithmErrCategory: std::error_category
   }
 };
 
+/**
+ */
+struct DecodeErrorCategory: std::error_category
+{
+  const char* name() const noexcept override
+  {
+    return "decode";
+  }
+
+  std::string message(int ev) const override
+  {
+    switch (static_cast<DecodeErrc>(ev))
+    {
+    case DecodeErrc::AlgHeaderMiss:
+      return "missing algorithm header";
+    case DecodeErrc::TypHeaderMiss:
+      return "missing type header";
+    case DecodeErrc::TypMismatch:
+      return "type mismatch";
+    case DecodeErrc::JsonParseError:
+      return "json parse failed";
+    };
+
+    assert (0 && "Code not reached");
+  }
+};
+
 // Create global object for the error categories
 const AlgorithmErrCategory theAlgorithmErrCategory {};
+
+const DecodeErrorCategory theDecodeErrorCategory {};
 
 }
 
@@ -40,6 +69,11 @@ const AlgorithmErrCategory theAlgorithmErrCategory {};
 std::error_code make_error_code(AlgorithmErrc err)
 {
   return { static_cast<int>(err), theAlgorithmErrCategory };
+}
+
+std::error_code make_error_code(DecodeErrc err)
+{
+  return { static_cast<int>(err), theDecodeErrorCategory };
 }
 
 
