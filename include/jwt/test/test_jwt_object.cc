@@ -49,6 +49,8 @@ void basic_jwt_object_test()
 
 void jwt_object_pem_test()
 {
+  using namespace jwt::params;
+
   std::string pub_key = 
     R"(-----BEGIN PUBLIC KEY-----
 MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAEomxC9ycc8AkXSwWQpu1kN5Fmgy/sD/KJ
@@ -75,6 +77,8 @@ MIGkAgEBBDBeLCgapjZmvTatMHaYX3A02+0Ys3Tr8kda+E9DFnmCSiCOEig519fT
      ;
 
   std::cout << "pem sign " << obj.signature() << std::endl;
+  auto dec_obj = jwt::decode(obj.signature(), pub_key, algorithms({"es256"}));
+  std::cout << dec_obj.payload() << std::endl;
 }
 
 int main() {

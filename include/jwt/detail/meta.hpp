@@ -1,6 +1,7 @@
 #ifndef CPP_JWT_META_HPP
 #define CPP_JWT_META_HPP
 
+#include <iterator>
 #include <type_traits>
 #include "jwt/string_view.hpp"
 
@@ -123,17 +124,42 @@ struct is_parameter_concept<T,
 
 /**
  */
-/*
+
 template <typename T, typename=void>
 struct is_sequence_concept: std::false_type
 {
 };
 
+/// For array types
 template <typename T>
-struct is_sequence_concept<>: std::true_type
+struct is_sequence_concept<T,
+  void_t<
+    std::enable_if_t<std::is_array<std::decay_t<T>>::value>
+  >
+  >: std::true_type
 {
 };
-*/
+
+template <typename T>
+struct is_sequence_concept<T,
+  void_t<
+    std::enable_if_t<
+      std::is_base_of<
+        std::forward_iterator_tag,
+        typename std::remove_reference_t<T>::iterator::iterator_category
+      >::value
+    >,
+
+    decltype(
+      std::declval<T&>().begin(),
+      std::declval<T&>().end(),
+      (void)0
+    )
+  >
+  >: std::true_type
+{
+};
+
 
 /**
  * Find if a type is present in the typelist.
