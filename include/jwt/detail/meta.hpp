@@ -27,6 +27,11 @@ using void_t = typename make_void<T...>::type;
  */
 struct empty_type {};
 
+/**
+ * A type list.
+ */
+template <typename... T> struct list{};
+
 
 /**
  */
@@ -117,6 +122,43 @@ struct is_parameter_concept<T,
 };
 
 /**
+ */
+/*
+template <typename T, typename=void>
+struct is_sequence_concept: std::false_type
+{
+};
+
+template <typename T>
+struct is_sequence_concept<>: std::true_type
+{
+};
+*/
+
+/**
+ * Find if a type is present in the typelist.
+ * Eg: has_type<int, list<int, char, float>>{} == true
+ *     has_type<long, list<int, char, float>>{} == false
+ */
+template <typename F, typename T> struct has_type;
+
+template <typename F>
+struct has_type<F, list<>>: std::false_type
+{
+};
+
+template <typename F, typename... T>
+struct has_type<F, list<F, T...>>: std::true_type
+{
+};
+
+template <typename F, typename H, typename... T>
+struct has_type<F, list<H,T...>>: has_type<F, list<T...>>
+{
+};
+
+/**
+ * A pack of bools for the bool trick.
  */
 template <bool... V>
 struct bool_pack {};

@@ -2,6 +2,7 @@
 #define CPP_JWT_PARAMETERS_HPP
 
 #include <map>
+#include <vector>
 #include <utility>
 #include <unordered_map>
 
@@ -146,6 +147,7 @@ struct leeway_param
 
 // Useful typedef
 using param_init_list_t = std::initializer_list<std::pair<jwt::string_view, jwt::string_view>>;
+using param_seq_list_t  = std::initializer_list<jwt::string_view>;
 
 
 /**
@@ -236,6 +238,26 @@ detail::leeway_param
 leeway(uint32_t l)
 {
   return { l };
+}
+
+/**
+ */
+detail::algorithms_param<std::vector<std::string>>
+algorithms(const param_seq_list_t& seq)
+{
+  std::vector<std::string> vec;
+  vec.reserve(seq.size());
+
+  for (const auto& e: seq) { vec.emplace_back(e.data(), e.length()); }
+
+  return { std::move(vec) };
+}
+
+template <typename SequenceConcept>
+detail::algorithms_param<SequenceConcept>
+algorithms(SequenceConcept&& sc)
+{
+  return { std::forward<SequenceConcept>(sc) };
 }
 
 } // END namespace params

@@ -44,7 +44,7 @@ void basic_jwt_object_test()
   obj3.secret("secret");
   obj3.header().algo("hs256");
 
-  auto dec_obj = jwt::jwt_decode(obj3.signature(), "secret");
+  auto dec_obj = jwt::decode(obj3.signature(), "secret", algorithms({"hs256"}));
 }
 
 void jwt_object_pem_test()

@@ -629,8 +629,11 @@ jwt_object jwt_decode(const string_view encoded_str, const string_view key, bool
 
 /**
  */
-template <typename... Args>
-jwt_object decode(const string_view enc_str, const string_view key, Args&&... args);
+template <typename SequenceT, typename... Args>
+jwt_object decode(const string_view enc_str, 
+                  const string_view key, 
+                  const params::detail::algorithms_param<SequenceT>& algos, 
+                  Args&&... args);
 
 
 } // END namespace jwt
