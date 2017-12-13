@@ -306,6 +306,7 @@ public: // Exposed APIs
   {
     // Duplicate claim names not allowed
     // if overwrite flag is set to true.
+    std::cout << "Adding claim: "  << claim_names_.size() << std::endl;
     auto itr = claim_names_.find(cname);
     if (itr != claim_names_.end() && !overwrite) {
       return false;
@@ -327,8 +328,47 @@ public: // Exposed APIs
     return add_claim(
         cname,
         std::chrono::duration_cast<
-          std::chrono::seconds>(tp.time_since_epoch()).count()
+          std::chrono::seconds>(tp.time_since_epoch()).count(),
+        overwrite
         );
+  }
+
+  /**
+   */
+  template <typename T>
+  bool add_claim(enum registered_claims cname, T&& cvalue, bool overwrite=false)
+  {
+    return add_claim(
+        reg_claims_to_str(cname),
+        std::forward<T>(cvalue),
+        overwrite
+        );
+  }
+
+  /**
+   */
+  bool add_claim(enum registered_claims cname, system_time_t tp, bool overwrite=false)
+  {
+    return add_claim(
+        reg_claims_to_str(cname),
+        std::chrono::duration_cast<
+          std::chrono::seconds>(tp.time_since_epoch()).count(),
+        overwrite
+        );
+  }
+
+  /**
+   */
+  decltype(auto) get_claim_value(const string_view cname) const
+  {
+    return payload_[cname.data()];
+  }
+
+  /**
+   */
+  decltype(auto) get_claim_value(enum registered_claims cname) const
+  {
+    return get_claim_value(reg_claims_to_str(cname));
   }
 
   /**
@@ -346,9 +386,28 @@ public: // Exposed APIs
 
   /**
    */
-  bool has_claim(const std::string& cname) const noexcept
+  bool remove_claim(enum registered_claims cname)
   {
+    return remove_claim(reg_claims_to_str(cname));
+  }
+
+  /**
+   */
+  //TODO: Not all libc++ version agrees with this
+  //because count() is not made const for is_transparent
+  //based overload
+  bool has_claim(const string_view cname) const noexcept
+  {
+    std::cout << "CSZ: " << claim_names_.size() << std::endl;
+    for (auto c : claim_names_) std::cout << "Claim: " << c << std::endl;
     return claim_names_.count(cname);
+  }
+
+  /**
+   */
+  bool has_claim(enum registered_claims cname) const noexcept
+  {
+    return has_claim(reg_claims_to_str(cname));
   }
 
   /**
@@ -451,7 +510,7 @@ public: // Exposed APIs
 
   /*!
    */
-  bool verify(const jwt_header& header,
+  verify_result_t verify(const jwt_header& header,
               const string_view hdr_pld_sign,
               const string_view jwt_sign);
 
@@ -575,7 +634,22 @@ public: // Exposed APIs
 
   /**
    */
+  template <typename T>
+  jwt_object& add_claim(enum registered_claims cname, T&& value)
+  {
+    return add_claim(reg_claims_to_str(cname), std::forward<T>(value));
+  }
+
+  /**
+   */
   jwt_object& remove_claim(const string_view name);
+
+  /**
+   */
+  jwt_object& remove_claim(enum registered_claims cname)
+  {
+    return remove_claim(reg_claims_to_str(cname));
+  }
 
   /**
    */

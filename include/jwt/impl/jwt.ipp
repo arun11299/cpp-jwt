@@ -2,6 +2,7 @@
 #define JWT_IPP
 
 #include "jwt/detail/meta.hpp"
+#include <algorithm>
 
 namespace jwt {
 
@@ -100,6 +101,9 @@ void jwt_payload::decode(const string_view enc_str, std::error_code& ec) noexcep
     ec = DecodeErrc::JsonParseError;
     return;
   }
+
+  //validate the fields
+  //TODO:
   return;
 }
 
@@ -140,15 +144,12 @@ std::string jwt_signature::encode(const jwt_header& header,
   return jwt_msg;
 }
 
-bool jwt_signature::verify(const jwt_header& header,
+verify_result_t jwt_signature::verify(const jwt_header& header,
                            const string_view hdr_pld_sign,
                            const string_view jwt_sign)
 {
-  //TODO: is bool the right choice ?
   verify_func_t verify_fn = get_verify_algorithm_impl(header);
-  verify_fn(key_, hdr_pld_sign, jwt_sign);
-
-  return true;
+  return verify_fn(key_, hdr_pld_sign, jwt_sign);
 }
 
 
@@ -399,19 +400,57 @@ jwt_object decode(const string_view enc_str,
   set_decode_params(dparams, std::forward<Args>(args)...);
 
   jwt_object obj;
-
   auto parts = jwt_object::three_parts(enc_str);
+
   //throws decode error
   obj.header(jwt_header{parts[0]});
+
   //throws decode error
   obj.payload(jwt_payload{parts[1]});
+
+  //TODO: Should be part of jwt_object::verify
+  if (dparams.verify) {
+    //Verify if the algorithm set in the header
+    //is any of the one expected by the client.
+    auto fitr = std::find_if(algos.get().begin(), algos.get().end(),
+                             [&](const auto& elem) {
+                                return jwt::str_to_alg(elem) == obj.header().algo();
+                             });
+
+    if (fitr == algos.get().end()) {
+      throw VerificationError("Provided algorithms do not match with header");
+    }
+
+    //Check for the expiry timings
+    if (obj.payload().has_claim("exp")) {
+      auto curr_time = std::chrono::duration_cast<
+                          std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+      auto p_exp = obj.payload()
+                      .get_claim_value(registered_claims::expiration)
+                      .get<uint64_t>();
+
+      std::cout << curr_time << " :: " << p_exp << std::endl;
+
+      if (p_exp < curr_time) {
+        throw VerificationError("Token expired");
+      }
+    } 
+  }
 
   jwt_signature jsign{key};
  
   // Length of the encoded header and payload only.
   // Addition of '1' to account for the '.' character.
   auto l = parts[0].length() + 1 + parts[1].length();
-  auto res = jsign.verify(obj.header(), enc_str.substr(0, l), parts[2]);
+
+  verify_result_t res = jsign.verify(obj.header(), enc_str.substr(0, l), parts[2]);
+  if (res.second) {
+    throw VerificationError(res.second.message());
+  }
+
+  if (!res.first) {
+    throw VerificationError("Verification failed due to unknown reason");
+  }
 
   return obj; 
 }

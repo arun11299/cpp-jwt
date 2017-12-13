@@ -2,6 +2,7 @@
 #include <map>
 #include <string>
 #include <chrono>
+#include <ctime>
 #include <unordered_map>
 #include "jwt/jwt.hpp"
 
@@ -74,15 +75,18 @@ MIGkAgEBBDBeLCgapjZmvTatMHaYX3A02+0Ys3Tr8kda+E9DFnmCSiCOEig519fT
      .add_claim("where", "airport")
      .add_claim("time_str", "8:18pm 24 Nov 2017")
      .add_claim("id", 1)
+     .add_claim("exp", std::chrono::system_clock::now())
      ;
 
   std::cout << "pem sign " << obj.signature() << std::endl;
+  std::cout << "Get claim value for exp: " << obj.payload().get_claim_value("exp") << std::endl;
+  sleep(4);
   auto dec_obj = jwt::decode(obj.signature(), pub_key, algorithms({"es256"}));
   std::cout << dec_obj.payload() << std::endl;
 }
 
 int main() {
-  basic_jwt_object_test();
+  //basic_jwt_object_test();
   jwt_object_pem_test();
   return 0;
 }

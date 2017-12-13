@@ -2,6 +2,7 @@
 #define CPP_JWT_EXCEPTIONS_HPP
 
 #include <new>
+#include <string>
 
 namespace jwt {
 
@@ -42,6 +43,18 @@ public:
   }
 };
 
+/**
+ */
+class VerificationError final: public std::runtime_error
+{
+public:
+  /**
+   */
+  VerificationError(std::string msg)
+    : std::runtime_error(std::move(msg))
+  {
+  }
+};
 
 } // END namespace jwt
 

@@ -134,7 +134,12 @@ struct is_sequence_concept: std::false_type
 template <typename T>
 struct is_sequence_concept<T,
   void_t<
-    std::enable_if_t<std::is_array<std::decay_t<T>>::value>
+    std::enable_if_t<std::is_array<std::decay_t<T>>::value>,
+
+    std::enable_if_t<
+      std::is_constructible<jwt::string_view, 
+                            std::remove_reference_t<decltype(*std::begin(std::declval<T&>()))>>::value
+    >
   >
   >: std::true_type
 {
@@ -147,8 +152,11 @@ struct is_sequence_concept<T,
       std::is_base_of<
         std::forward_iterator_tag,
         typename std::remove_reference_t<T>::iterator::iterator_category
-      >::value
-    >,
+      >::value>,
+
+      std::enable_if_t<
+        std::is_constructible<jwt::string_view, typename std::remove_reference_t<T>::value_type>::value
+      >,
 
     decltype(
       std::declval<T&>().begin(),
