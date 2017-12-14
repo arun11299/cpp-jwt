@@ -30,6 +30,7 @@ enum class DecodeErrc
   AlgHeaderMiss,
   TypHeaderMiss,
   TypMismatch,
+  DuplClaims,
 };
 
 /**

@@ -101,9 +101,15 @@ void jwt_payload::decode(const string_view enc_str, std::error_code& ec) noexcep
     ec = DecodeErrc::JsonParseError;
     return;
   }
+  //populate the claims set
+  for (auto it = payload_.begin(); it != payload_.end(); ++it) {
+    auto ret = claim_names_.insert(it.key());
+    if (!ret.second) {
+      ec = DecodeErrc::DuplClaims;
+      break;
+    }
+  }
 
-  //validate the fields
-  //TODO:
   return;
 }
 
@@ -429,9 +435,7 @@ jwt_object decode(const string_view enc_str,
                       .get_claim_value(registered_claims::expiration)
                       .get<uint64_t>();
 
-      std::cout << curr_time << " :: " << p_exp << std::endl;
-
-      if (p_exp < curr_time) {
+      if (p_exp < (curr_time + dparams.leeway)) {
         throw VerificationError("Token expired");
       }
     } 

@@ -51,6 +51,8 @@ struct DecodeErrorCategory: std::error_category
       return "type mismatch";
     case DecodeErrc::JsonParseError:
       return "json parse failed";
+    case DecodeErrc::DuplClaims:
+      return "duplicate claims";
     };
 
     assert (0 && "Code not reached");

@@ -306,7 +306,6 @@ public: // Exposed APIs
   {
     // Duplicate claim names not allowed
     // if overwrite flag is set to true.
-    std::cout << "Adding claim: "  << claim_names_.size() << std::endl;
     auto itr = claim_names_.find(cname);
     if (itr != claim_names_.end() && !overwrite) {
       return false;
@@ -398,8 +397,6 @@ public: // Exposed APIs
   //based overload
   bool has_claim(const string_view cname) const noexcept
   {
-    std::cout << "CSZ: " << claim_names_.size() << std::endl;
-    for (auto c : claim_names_) std::cout << "Claim: " << c << std::endl;
     return claim_names_.count(cname);
   }
 
