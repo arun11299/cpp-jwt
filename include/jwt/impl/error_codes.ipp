@@ -59,10 +59,41 @@ struct DecodeErrorCategory: std::error_category
   }
 };
 
+/**
+ */
+struct VerificationErrorCategory: std::error_category
+{
+  const char* name() const noexcept override
+  {
+    return "verification";
+  }
+
+  std::string message(int ev) const override
+  {
+    switch (static_cast<VerificationErrc>(ev))
+    {
+    case VerificationErrc::InvalidAlgorithm:
+      return "invalid algorithm";
+    case VerificationErrc::TokenExpired:
+      return "token expired";
+    case VerificationErrc::InvalidIssuer:
+      return "invalid issuer";
+    case VerificationErrc::InvalidAudience:
+      return "invalid audience";
+    case VerificationErrc::ImmatureSignature:
+      return "immature signature";
+    };
+
+    assert (0 && "Code not reached");
+  }
+};
+
 // Create global object for the error categories
 const AlgorithmErrCategory theAlgorithmErrCategory {};
 
 const DecodeErrorCategory theDecodeErrorCategory {};
+
+const VerificationErrorCategory theVerificationErrorCategory {};
 
 }
 
@@ -78,6 +109,10 @@ std::error_code make_error_code(DecodeErrc err)
   return { static_cast<int>(err), theDecodeErrorCategory };
 }
 
+std::error_code make_error_code(VerificationErrc err)
+{
+  return { static_cast<int>(err), theVerificationErrorCategory };
+}
 
 } // END namespace jwt
 

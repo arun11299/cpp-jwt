@@ -79,14 +79,16 @@ MIGkAgEBBDBeLCgapjZmvTatMHaYX3A02+0Ys3Tr8kda+E9DFnmCSiCOEig519fT
      ;
 
   std::cout << "pem sign " << obj.signature() << std::endl;
-  std::cout << "Get claim value for exp: " << obj.payload().get_claim_value("exp") << std::endl;
+  std::cout << "Get claim value for exp: " << 
+    obj.payload().get_claim_value<uint64_t>("exp") << std::endl;
+
   sleep(4);
   auto dec_obj = jwt::decode(obj.signature(), pub_key, algorithms({"es256"}));
   std::cout << dec_obj.payload() << std::endl;
 }
 
 int main() {
-  //basic_jwt_object_test();
-  jwt_object_pem_test();
+  basic_jwt_object_test();
+  //jwt_object_pem_test();
   return 0;
 }

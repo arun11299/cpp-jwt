@@ -35,11 +35,26 @@ enum class DecodeErrc
 
 /**
  */
+enum class VerificationErrc
+{
+  InvalidAlgorithm = 1,
+  TokenExpired,
+  InvalidIssuer,
+  InvalidAudience,
+  ImmatureSignature,
+};
+
+/**
+ */
 std::error_code make_error_code(AlgorithmErrc err);
 
 /**
  */
 std::error_code make_error_code(DecodeErrc err);
+
+/**
+ */
+std::error_code make_error_code(VerificationErrc err);
 
 } // END namespace jwt
 
@@ -55,6 +70,9 @@ namespace std
 
   template <>
   struct is_error_code_enum<jwt::DecodeErrc>: true_type {};
+
+  template <>
+  struct is_error_code_enum<jwt::VerificationErrc>: true_type {};
 }
 
 #include "jwt/impl/error_codes.ipp"

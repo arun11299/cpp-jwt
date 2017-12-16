@@ -2,6 +2,7 @@
 #define CPP_JWT_PARAMETERS_HPP
 
 #include <map>
+#include <string>
 #include <vector>
 #include <utility>
 #include <unordered_map>
@@ -141,6 +142,34 @@ struct leeway_param
   uint32_t get() const noexcept { return leeway_; }
 
   uint32_t leeway_;
+};
+
+/**
+ */
+struct audience_param
+{
+  audience_param(std::string aud)
+    : aud_(std::move(aud))
+  {}
+
+  const std::string& get() const& noexcept { return aud_; }
+  std::string get() && noexcept { return aud_; }
+
+  std::string aud_;
+};
+
+/**
+ */
+struct issuer_param
+{
+  issuer_param(std::string iss)
+    : iss_(std::move(iss))
+  {}
+
+  const std::string& get() const& noexcept { return iss_; }
+  std::string get() && noexcept { return iss_; }
+
+  std::string iss_;
 };
 
 } // END namespace detail

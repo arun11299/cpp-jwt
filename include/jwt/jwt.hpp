@@ -358,16 +358,18 @@ public: // Exposed APIs
 
   /**
    */
+  template <typename T>
   decltype(auto) get_claim_value(const string_view cname) const
   {
-    return payload_[cname.data()];
+    return payload_[cname.data()].get<T>();
   }
 
   /**
    */
+  template <typename T>
   decltype(auto) get_claim_value(enum registered_claims cname) const
   {
-    return get_claim_value(reg_claims_to_str(cname));
+    return get_claim_value<T>(reg_claims_to_str(cname));
   }
 
   /**
@@ -650,7 +652,28 @@ public: // Exposed APIs
 
   /**
    */
+  bool has_claim(const string_view cname) const noexcept
+  {
+    return payload().has_claim(cname);
+  }
+
+  /**
+   */
+  bool has_claim(enum registered_claims cname) const noexcept
+  {
+    return payload().has_claim(cname);
+  }
+
+  /**
+   */
   std::string signature() const;
+
+  /**
+   */
+  template <typename Params, typename SequenceT>
+  std::error_code verify(
+      const Params& dparams,
+      const params::detail::algorithms_param<SequenceT>& algos) const;
 
 private: // private APIs
   /**

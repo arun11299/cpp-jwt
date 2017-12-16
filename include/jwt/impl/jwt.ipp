@@ -330,6 +330,71 @@ std::string jwt_object::signature() const
   return jws.encode(header_, payload_);
 }
 
+template <typename Params, typename SequenceT>
+std::error_code jwt_object::verify(
+    const Params& dparams,
+    const params::detail::algorithms_param<SequenceT>& algos) const
+{
+  std::error_code ec{};
+
+  //Verify if the algorithm set in the header
+  //is any of the one expected by the client.
+  auto fitr = std::find_if(algos.get().begin(), 
+                           algos.get().end(),
+                           [&](const auto& elem) 
+                           {
+                             return jwt::str_to_alg(elem) == header().algo();
+                           });
+
+  if (fitr == algos.get().end()) {
+    ec = VerificationErrc::InvalidAlgorithm;
+    return ec;
+  }
+
+  //Check for the expiry timings
+  if (has_claim(registered_claims::expiration)) {
+    auto curr_time = 
+        std::chrono::duration_cast<
+                 std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+
+    auto p_exp = payload()
+                 .get_claim_value<uint64_t>(registered_claims::expiration);
+
+    if (p_exp < (curr_time + dparams.leeway)) {
+      ec = VerificationErrc::TokenExpired;
+      return ec;
+    }
+  } 
+
+  //Check for issuer
+  if (dparams.has_issuer &&
+      has_claim(registered_claims::issuer)) 
+  {
+    jwt::string_view p_issuer = payload()
+                                .get_claim_value<std::string>(registered_claims::issuer);
+
+    if (p_issuer.data() != dparams.issuer) {
+      ec = VerificationErrc::InvalidIssuer;
+      return ec;
+    }
+  }
+
+  //Check for audience
+  if (dparams.has_aud &&
+      has_claim(registered_claims::audience)) 
+  {
+    jwt::string_view p_aud = payload()
+                             .get_claim_value<std::string>(registered_claims::audience);
+
+    if (p_aud.data() != dparams.aud) {
+      ec = VerificationErrc::InvalidAudience;
+      return ec;
+    }
+  }
+
+  return ec;
+}
+
 
 std::array<string_view, 3>
 jwt_object::three_parts(const string_view enc_str)
@@ -349,7 +414,7 @@ jwt_object::three_parts(const string_view enc_str)
   result[1] = string_view{&enc_str[fpos + 1], spos - fpos - 1};
 
   if (spos != enc_str.length()) {
-    result[2] = string_view{&enc_str[spos + 1], enc_str.length() - spos};
+    result[2] = string_view{&enc_str[spos + 1], enc_str.length() - spos - 1};
   }
 
   return result;
@@ -376,6 +441,23 @@ void set_decode_params(DecodeParams& dparams, params::detail::verify_param v, Re
   return;
 }
 
+template <typename DecodeParams, typename... Rest>
+void set_decode_params(DecodeParams& dparams, params::detail::issuer_param i, Rest&&... args)
+{
+  dparams.issuer = std::move(i).get();
+  dparams.has_issuer = true;
+  set_decode_params(dparams, std::forward<Rest>(args)...);
+  return;
+}
+
+template <typename DecodeParams, typename... Rest>
+void set_decode_params(DecodeParams& dparams, params::detail::audience_param a, Rest&&... args)
+{
+  dparams.aud = std::move(a).get();
+  dparams.has_aud = true;
+  set_decode_params(dparams, std::forward<Rest>(args)...);
+}
+
 template <typename DecodeParams>
 void set_decode_params(DecodeParams& dparams)
 {
@@ -400,6 +482,14 @@ jwt_object decode(const string_view enc_str,
     bool verify = true;
     /// Leeway parameter. Defaulted to zero seconds.
     uint32_t leeway = 0;
+    ///The issuer
+    //TODO: optional type
+    bool has_issuer = false;
+    std::string issuer;
+    ///The audience
+    //TODO: optional type
+    bool has_aud = false;
+    std::string aud;
   };
 
   decode_params dparams{};
@@ -414,31 +504,8 @@ jwt_object decode(const string_view enc_str,
   //throws decode error
   obj.payload(jwt_payload{parts[1]});
 
-  //TODO: Should be part of jwt_object::verify
   if (dparams.verify) {
-    //Verify if the algorithm set in the header
-    //is any of the one expected by the client.
-    auto fitr = std::find_if(algos.get().begin(), algos.get().end(),
-                             [&](const auto& elem) {
-                                return jwt::str_to_alg(elem) == obj.header().algo();
-                             });
-
-    if (fitr == algos.get().end()) {
-      throw VerificationError("Provided algorithms do not match with header");
-    }
-
-    //Check for the expiry timings
-    if (obj.payload().has_claim("exp")) {
-      auto curr_time = std::chrono::duration_cast<
-                          std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-      auto p_exp = obj.payload()
-                      .get_claim_value(registered_claims::expiration)
-                      .get<uint64_t>();
-
-      if (p_exp < (curr_time + dparams.leeway)) {
-        throw VerificationError("Token expired");
-      }
-    } 
+    std::error_code ec = obj.verify(dparams, algos);
   }
 
   jwt_signature jsign{key};
