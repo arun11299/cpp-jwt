@@ -470,10 +470,15 @@ template <typename SequenceT, typename... Args>
 jwt_object decode(const string_view enc_str,
                   const string_view key,
                   const params::detail::algorithms_param<SequenceT>& algos,
+                  std::error_code& ec,
                   Args&&... args)
 {
+  ec.clear();
+  jwt_object obj;
+
   if (algos.get().size() == 0) {
-    throw DecodeError("Algorithms list cannot be empty");
+    ec = DecodeErrc::EmptyAlgoList;
+    return obj;
   }
 
   struct decode_params
@@ -495,7 +500,6 @@ jwt_object decode(const string_view enc_str,
   decode_params dparams{};
   set_decode_params(dparams, std::forward<Args>(args)...);
 
-  jwt_object obj;
   auto parts = jwt_object::three_parts(enc_str);
 
   //throws decode error
@@ -505,7 +509,9 @@ jwt_object decode(const string_view enc_str,
   obj.payload(jwt_payload{parts[1]});
 
   if (dparams.verify) {
-    std::error_code ec = obj.verify(dparams, algos);
+    ec = obj.verify(dparams, algos);
+
+    if (ec) return obj;
   }
 
   jwt_signature jsign{key};
@@ -514,16 +520,41 @@ jwt_object decode(const string_view enc_str,
   // Addition of '1' to account for the '.' character.
   auto l = parts[0].length() + 1 + parts[1].length();
 
+  //MemoryAllocationError is not caught
   verify_result_t res = jsign.verify(obj.header(), enc_str.substr(0, l), parts[2]);
   if (res.second) {
-    throw VerificationError(res.second.message());
+    ec = res.second;
+    return obj;
   }
 
   if (!res.first) {
-    throw VerificationError("Verification failed due to unknown reason");
+    ec = VerificationErrc::InvalidSignature;
+    return obj;
   }
 
   return obj; 
+}
+
+
+
+template <typename SequenceT, typename... Args>
+jwt_object decode(const string_view enc_str,
+                  const string_view key,
+                  const params::detail::algorithms_param<SequenceT>& algos,
+                  Args&&... args)
+{
+  std::error_code ec{};
+  auto jwt_obj = decode(enc_str,
+                        key,
+                        algos,
+                        ec,
+                        std::forward<Args>(args)...);
+
+  if (ec) {
+    jwt_throw_exception(ec);
+  }
+
+  return jwt_obj;
 }
 
 } // END namespace jwt

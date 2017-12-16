@@ -722,11 +722,21 @@ private: // Data Members
 jwt_object jwt_decode(const string_view encoded_str, const string_view key, bool validate=true);
 
 /**
+ * NOTE: Memory allocation exceptions are not caught.
  */
 template <typename SequenceT, typename... Args>
 jwt_object decode(const string_view enc_str, 
                   const string_view key, 
                   const params::detail::algorithms_param<SequenceT>& algos, 
+                  std::error_code& ec,
+                  Args&&... args);
+
+/**
+ */
+template <typename SequenceT, typename... Args>
+jwt_object decode(const string_view enc_str,
+                  const string_view key,
+                  const params::detail::algorithms_param<SequenceT>& algos,
                   Args&&... args);
 
 

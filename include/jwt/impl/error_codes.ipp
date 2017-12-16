@@ -43,6 +43,8 @@ struct DecodeErrorCategory: std::error_category
   {
     switch (static_cast<DecodeErrc>(ev))
     {
+    case DecodeErrc::EmptyAlgoList:
+      return "empty algorithm list";
     case DecodeErrc::AlgHeaderMiss:
       return "missing algorithm header";
     case DecodeErrc::TypHeaderMiss:
@@ -82,6 +84,8 @@ struct VerificationErrorCategory: std::error_category
       return "invalid audience";
     case VerificationErrc::ImmatureSignature:
       return "immature signature";
+    case VerificationErrc::InvalidSignature:
+      return "invalid signature";
     };
 
     assert (0 && "Code not reached");

@@ -26,7 +26,8 @@ enum class AlgorithmFailureSource
  */
 enum class DecodeErrc
 {
-  JsonParseError = 1,
+  EmptyAlgoList = 1,
+  JsonParseError,
   AlgHeaderMiss,
   TypHeaderMiss,
   TypMismatch,
@@ -42,6 +43,7 @@ enum class VerificationErrc
   InvalidIssuer,
   InvalidAudience,
   ImmatureSignature,
+  InvalidSignature,
 };
 
 /**
