@@ -557,6 +557,61 @@ jwt_object decode(const string_view enc_str,
   return jwt_obj;
 }
 
+
+void jwt_throw_exception(const std::error_code& ec)
+{
+  const auto& cat = ec.category();
+
+  if (&cat == &theVerificationErrorCategory)
+  {
+    switch (ec.value()) {
+    case VerificationErrc::InvalidAlgorithm:
+    {
+      throw InvalidAlgorithmError(ec.message());
+    }
+    case VerificationErrc::TokenExpired:
+    {
+      throw TokenExpiredError(ec.message());
+    }
+    case VerificationErrc::InvalidIssuer:
+    {
+      throw InvalidIssuerError(ec.message());
+    }
+    case VerificationErrc::InvalidAudience:
+    {
+      throw InvalidAudienceError(ec.message());
+    }
+    case VerificationErrc::ImmatureSignature:
+    {
+      throw ImmatureSignatureError(ec.message());
+    }
+    case VerificationErrc::InvalidSignature:
+    {
+      throw InvalidSignatureError(ec.message());
+    }
+    default:
+      assert (0 && "Unknown error code");
+    };
+  }
+
+  if (&cat == &theDecodeErrorCategory)
+  {
+    throw DecodeError(ec.message());
+  }
+
+  if (&cat == &theAlgorithmErrCategory)
+  {
+    switch (ec.value()) {
+    case AlgorithmErrc::VerificationErr:
+      throw InvalidSignatureError(ec.message());
+    default:
+      assert (0 && "Unknown error code or not to be treated as an error");
+    };
+  }
+
+  assert (0 && "Unknown error code category");
+}
+
 } // END namespace jwt
 
 

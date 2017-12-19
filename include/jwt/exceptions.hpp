@@ -45,13 +45,91 @@ public:
 
 /**
  */
-class VerificationError final: public std::runtime_error
+class VerificationError : public std::runtime_error
 {
 public:
   /**
    */
   VerificationError(std::string msg)
     : std::runtime_error(std::move(msg))
+  {
+  }
+};
+
+/**
+ */
+class InvalidAlgorithmError final: public VerificationError
+{
+public:
+  /**
+   */
+  InvalidAlgorithmError(std::string msg)
+    : VerificationError(std::move(msg))
+  {
+  }
+};
+
+/**
+ */
+class TokenExpiredError final: public VerificationError
+{
+public:
+  /**
+   */
+  TokenExpiredError(std::string msg)
+    : VerificationError(std::move(msg))
+  {
+  }
+};
+
+/**
+ */
+class InvalidIssuerError final: public VerificationError
+{
+public:
+  /**
+   */
+  InvalidIssuerError(std::string msg)
+    : VerificationError(std::move(msg))
+  {
+  }
+};
+
+/**
+ */
+class InvalidAudienceError final: public VerificationError
+{
+public:
+  /**
+   */
+  InvalidAudienceError(std::string msg)
+    : VerificationError(std::move(msg))
+  {
+  }
+};
+
+/**
+ */
+class ImmatureSignatureError final: public VerificationError
+{
+public:
+  /**
+   */
+  ImmatureSignatureError(std::string msg)
+    : VerificationError(std::move(msg))
+  {
+  }
+};
+
+/**
+ */
+class InvalidSignatureError final: public VerificationError
+{
+public:
+  /**
+   */
+  InvalidSignatureError(std::string msg)
+    : VerificationError(std::move(msg))
   {
   }
 };
