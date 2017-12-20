@@ -139,15 +139,21 @@ std::string jwt_signature::encode(const jwt_header& header,
 
   std::string hdr_sign = header.base64_encode();
   std::string pld_sign = payload.base64_encode();
-
   std::string data = hdr_sign + '.' + pld_sign;
+
   auto res = sign_fn(key_, data);
-  if (res.second) {
+
+  if (res.second && res.second != AlgorithmErrc::NoneAlgorithmUsed) {
     ec = res.second;
     return {};
   }
- 
-  std::string b64hash = base64_encode(res.first.c_str(), res.first.length());
+
+  std::string b64hash;
+
+  if (!res.second) {
+    b64hash = base64_encode(res.first.c_str(), res.first.length());
+  }
+
   auto new_len = base64_uri_encode(&b64hash[0], b64hash.length());
   b64hash.resize(new_len);
 
@@ -439,9 +445,6 @@ jwt_object::three_parts(const string_view enc_str)
   result[0] = string_view{&enc_str[0], fpos};
 
   size_t spos = enc_str.find_first_of('.', fpos + 1);
-  if (spos == string_view::npos) {
-    //TODO: Check for none algorithm
-  }
 
   result[1] = string_view{&enc_str[fpos + 1], spos - fpos - 1};
 
@@ -546,22 +549,27 @@ jwt_object decode(const string_view enc_str,
     if (ec) return obj;
   }
 
-  jwt_signature jsign{key};
+  //Verify the signature only if some algorithm was used
+  if (obj.header().algo() != algorithm::NONE) {
+    jwt_signature jsign{key};
  
-  // Length of the encoded header and payload only.
-  // Addition of '1' to account for the '.' character.
-  auto l = parts[0].length() + 1 + parts[1].length();
+    // Length of the encoded header and payload only.
+    // Addition of '1' to account for the '.' character.
+    auto l = parts[0].length() + 1 + parts[1].length();
 
-  //MemoryAllocationError is not caught
-  verify_result_t res = jsign.verify(obj.header(), enc_str.substr(0, l), parts[2]);
-  if (res.second) {
-    ec = res.second;
-    return obj;
-  }
+    //MemoryAllocationError is not caught
+    verify_result_t res = jsign.verify(obj.header(), enc_str.substr(0, l), parts[2]);
+    if (res.second) {
+      ec = res.second;
+      return obj;
+    }
 
-  if (!res.first) {
-    ec = VerificationErrc::InvalidSignature;
-    return obj;
+    if (!res.first) {
+      ec = VerificationErrc::InvalidSignature;
+      return obj;
+    }
+  } else {
+    ec = AlgorithmErrc::NoneAlgorithmUsed;
   }
 
   return obj; 
@@ -639,6 +647,11 @@ void jwt_throw_exception(const std::error_code& ec)
       case AlgorithmErrc::VerificationErr:
       {
         throw InvalidSignatureError(ec.message());
+      }
+      case AlgorithmErrc::NoneAlgorithmUsed:
+      {
+        //Not an error actually.
+        break;
       }
       default:
         assert (0 && "Unknown error code or not to be treated as an error");
