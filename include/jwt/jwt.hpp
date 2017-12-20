@@ -505,7 +505,8 @@ public: // Exposed APIs
   /*!
    */
   std::string encode(const jwt_header& header, 
-                     const jwt_payload& payload);
+                     const jwt_payload& payload,
+                     std::error_code& ec);
 
   /*!
    */
@@ -665,6 +666,11 @@ public: // Exposed APIs
   }
 
   /**
+   */
+  std::string signature(std::error_code& ec) const;
+
+  /**
+   * Exception throwing version.
    */
   std::string signature() const;
 

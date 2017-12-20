@@ -451,8 +451,6 @@ public:
   {
     std::error_code ec{};
 
-    char* out;
-    unsigned int l;
     std::string ii{data.data(), data.length()};
 
     EC_PKEY_uptr pkey{load_key(key, ec), ev_pkey_deletor};

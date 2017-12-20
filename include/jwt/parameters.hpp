@@ -2,6 +2,7 @@
 #define CPP_JWT_PARAMETERS_HPP
 
 #include <map>
+#include <chrono>
 #include <string>
 #include <vector>
 #include <utility>
@@ -12,6 +13,9 @@
 #include "jwt/string_view.hpp"
 
 namespace jwt {
+
+using system_time_t = std::chrono::time_point<std::chrono::system_clock>;
+
 namespace params {
 
 
@@ -172,6 +176,24 @@ struct issuer_param
   std::string iss_;
 };
 
+/**
+ */
+struct nbf_param
+{
+  nbf_param(const jwt::system_time_t tp)
+    : duration_(std::chrono::duration_cast<
+        std::chrono::seconds>(tp.time_since_epoch()).count())
+  {}
+
+  nbf_param(const uint64_t epoch)
+    : duration_(epoch)
+  {}
+ 
+  uint64_t get() const noexcept { return duration_; }
+
+  uint64_t duration_;
+};
+
 } // END namespace detail
 
 // Useful typedef
@@ -287,6 +309,38 @@ detail::algorithms_param<SequenceConcept>
 algorithms(SequenceConcept&& sc)
 {
   return { std::forward<SequenceConcept>(sc) };
+}
+
+/**
+ */
+detail::audience_param
+aud(const string_view aud)
+{
+  return { aud.data() };
+}
+
+/**
+ */
+detail::issuer_param
+issuer(const string_view iss)
+{
+  return { iss.data() };
+}
+
+/**
+ */
+detail::nbf_param
+nbf(const system_time_t tp)
+{
+  return { tp };
+}
+
+/**
+ */
+detail::nbf_param
+nbf(const uint64_t epoch)
+{
+  return { epoch };
 }
 
 } // END namespace params

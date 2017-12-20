@@ -32,6 +32,19 @@ private:
 
 /**
  */
+class SigningError : public std::runtime_error
+{
+public:
+  /**
+   */
+  SigningError(std::string msg)
+    : std::runtime_error(std::move(msg))
+  {
+  }
+};
+
+/**
+ */
 class DecodeError final: public std::runtime_error
 {
 public:

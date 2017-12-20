@@ -6,6 +6,10 @@
 
 namespace jwt {
 
+/**
+ */
+static void jwt_throw_exception(const std::error_code& ec);
+
 template <typename T, typename Cond>
 std::string to_json_str(const T& obj, bool pretty)
 {
@@ -124,9 +128,11 @@ void jwt_payload::decode(const string_view enc_str) throw(DecodeError)
 }
 
 std::string jwt_signature::encode(const jwt_header& header,
-                                  const jwt_payload& payload)
+                                  const jwt_payload& payload,
+                                  std::error_code& ec)
 {
   std::string jwt_msg;
+  ec.clear();
   //TODO: Optimize allocations
 
   sign_func_t sign_fn = get_sign_algorithm_impl(header);
@@ -137,7 +143,7 @@ std::string jwt_signature::encode(const jwt_header& header,
   std::string data = hdr_sign + '.' + pld_sign;
   auto res = sign_fn(key_, data);
   if (res.second) {
-    std::cout << res.second.message() << std::endl;
+    ec = res.second;
     return {};
   }
  
@@ -323,11 +329,21 @@ jwt_object& jwt_object::remove_claim(const string_view name)
   return *this;
 }
 
+std::string jwt_object::signature(std::error_code& ec) const
+{
+  ec.clear();
+  jwt_signature jws{secret_};
+  return jws.encode(header_, payload_, ec);
+}
+
 std::string jwt_object::signature() const
 {
-  jwt_signature jws{secret_};
-
-  return jws.encode(header_, payload_);
+  std::error_code ec;
+  std::string res = signature(ec);
+  if (ec) {
+    throw SigningError(ec.message());
+  }
+  return res;
 }
 
 template <typename Params, typename SequenceT>
@@ -388,6 +404,22 @@ std::error_code jwt_object::verify(
 
     if (p_aud.data() != dparams.aud) {
       ec = VerificationErrc::InvalidAudience;
+      return ec;
+    }
+  }
+
+  //Check for NBF
+  if (has_claim(registered_claims::not_before))
+  {
+    auto curr_time =
+            std::chrono::duration_cast<
+              std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+
+    auto p_exp = payload()
+                 .get_claim_value<uint64_t>(registered_claims::not_before);
+
+    if ((p_exp - dparams.leeway) < curr_time) {
+      ec = VerificationErrc::ImmatureSignature;
       return ec;
     }
   }
@@ -564,33 +596,34 @@ void jwt_throw_exception(const std::error_code& ec)
 
   if (&cat == &theVerificationErrorCategory)
   {
-    switch (ec.value()) {
-    case VerificationErrc::InvalidAlgorithm:
+    switch (static_cast<VerificationErrc>(ec.value()))
     {
-      throw InvalidAlgorithmError(ec.message());
-    }
-    case VerificationErrc::TokenExpired:
-    {
-      throw TokenExpiredError(ec.message());
-    }
-    case VerificationErrc::InvalidIssuer:
-    {
-      throw InvalidIssuerError(ec.message());
-    }
-    case VerificationErrc::InvalidAudience:
-    {
-      throw InvalidAudienceError(ec.message());
-    }
-    case VerificationErrc::ImmatureSignature:
-    {
-      throw ImmatureSignatureError(ec.message());
-    }
-    case VerificationErrc::InvalidSignature:
-    {
-      throw InvalidSignatureError(ec.message());
-    }
-    default:
-      assert (0 && "Unknown error code");
+      case VerificationErrc::InvalidAlgorithm:
+      {
+        throw InvalidAlgorithmError(ec.message());
+      }
+      case VerificationErrc::TokenExpired:
+      {
+        throw TokenExpiredError(ec.message());
+      }
+      case VerificationErrc::InvalidIssuer:
+      {
+        throw InvalidIssuerError(ec.message());
+      }
+      case VerificationErrc::InvalidAudience:
+      {
+        throw InvalidAudienceError(ec.message());
+      }
+      case VerificationErrc::ImmatureSignature:
+      {
+        throw ImmatureSignatureError(ec.message());
+      }
+      case VerificationErrc::InvalidSignature:
+      {
+        throw InvalidSignatureError(ec.message());
+      }
+      default:
+        assert (0 && "Unknown error code");
     };
   }
 
@@ -601,11 +634,14 @@ void jwt_throw_exception(const std::error_code& ec)
 
   if (&cat == &theAlgorithmErrCategory)
   {
-    switch (ec.value()) {
-    case AlgorithmErrc::VerificationErr:
-      throw InvalidSignatureError(ec.message());
-    default:
-      assert (0 && "Unknown error code or not to be treated as an error");
+    switch (static_cast<AlgorithmErrc>(ec.value()))
+    {
+      case AlgorithmErrc::VerificationErr:
+      {
+        throw InvalidSignatureError(ec.message());
+      }
+      default:
+        assert (0 && "Unknown error code or not to be treated as an error");
     };
   }
 
