@@ -8,7 +8,7 @@ namespace jwt {
 
 /**
  */
-static void jwt_throw_exception(const std::error_code& ec);
+static inline void jwt_throw_exception(const std::error_code& ec);
 
 template <typename T, typename Cond>
 std::string to_json_str(const T& obj, bool pretty)
