@@ -11,6 +11,7 @@ enum class AlgorithmErrc
 {
   SigningErr = 1,
   VerificationErr,
+  KeyNotFoundErr,
   NoneAlgorithmUsed, // Not an actual error!
 };
 

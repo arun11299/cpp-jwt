@@ -338,6 +338,15 @@ jwt_object& jwt_object::remove_claim(const string_view name)
 std::string jwt_object::signature(std::error_code& ec) const
 {
   ec.clear();
+
+  //key/secret should be set for any algorithm except NONE
+  if (header().algo() != jwt::algorithm::NONE) {
+    if (secret_.length() == 0) {
+      ec = AlgorithmErrc::KeyNotFoundErr;
+      return {};
+    }
+  }
+
   jwt_signature jws{secret_};
   return jws.encode(header_, payload_, ec);
 }

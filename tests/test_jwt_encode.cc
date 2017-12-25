@@ -138,9 +138,7 @@ TEST (EncodeTest, StrEncodeHS512WithKey)
 
   jwt::string_view key = "00112233445566778899";
 
-  //TODO: map of jwt::string_view not working
-
-  std::map<std::string, std::string> p;
+  std::map<jwt::string_view, jwt::string_view> p;
   p["aud"] = "rift.io";
   p["sub"] = "nothing much";
 
@@ -178,6 +176,43 @@ TEST (EncodeTest, StrEncodeChangeAlg)
   std::string enc_str = obj.signature();
 
   EXPECT_EQ (expected_none_sign, enc_str);
+}
+
+TEST (EncodeTest, StrEncodeNoKey)
+{
+  using namespace jwt::params;
+
+  jwt::jwt_object obj{algorithm(jwt::algorithm::HS512),
+                      payload({{"iss", "arn-ml"}})
+                      };
+
+  std::error_code ec;
+  std::string enc_str = obj.signature(ec);
+
+  ASSERT_TRUE (ec);
+  EXPECT_EQ (ec.value(), static_cast<int>(jwt::AlgorithmErrc::KeyNotFoundErr));
+}
+
+TEST (EncodeTest, StrEncodeNoneAlgWithKey)
+{
+  using namespace jwt::params;
+
+  const jwt::string_view secret1 = "abcdefghijklmnopqrstuvwxyz";
+  const jwt::string_view secret2 = "0123456789qwertybabe";
+
+  jwt::jwt_object obj{algorithm("NONE"),
+                      payload({{"iss", "arn-ml"}}),
+                      secret(secret1)};
+
+  std::error_code ec;
+  std::string enc_str1 = obj.signature(ec);
+  ASSERT_FALSE (ec);
+
+  obj.secret(secret2);
+  std::string enc_str2 = obj.signature(ec);
+  ASSERT_FALSE (ec);
+
+  EXPECT_EQ (enc_str1, enc_str2);
 }
 
 int main(int argc, char **argv) 

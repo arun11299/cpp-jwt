@@ -22,6 +22,8 @@ struct AlgorithmErrCategory: std::error_category
       return "signing failed";
     case AlgorithmErrc::VerificationErr:
       return "verification failed";
+    case AlgorithmErrc::KeyNotFoundErr:
+      return "key not provided";
     case AlgorithmErrc::NoneAlgorithmUsed:
       return "none algorithm used";
     };
