@@ -300,7 +300,9 @@ public: // Exposed APIs
    */
   template <typename T,
             typename=typename std::enable_if_t<
-              !std::is_same<system_time_t, std::decay_t<T>>::value>
+              !std::is_same<system_time_t, std::decay_t<T>>::value ||
+              !std::is_same<jwt::string_view, std::decay_t<T>>::value
+              >
            >
   bool add_claim(const string_view cname, T&& cvalue, bool overwrite=false)
   {
@@ -318,6 +320,13 @@ public: // Exposed APIs
     payload_[cname.data()] = std::forward<T>(cvalue);
 
     return true;
+  }
+
+  /**
+   */
+  bool add_claim(const string_view cname, const string_view cvalue, bool overwrite=false)
+  {
+    return add_claim(cname, std::string{cvalue.data(), cvalue.length()}, overwrite);
   }
 
   /**

@@ -155,6 +155,31 @@ TEST (EncodeTest, StrEncodeHS512WithKey)
   EXPECT_EQ (enc_str, expected_sign);
 }
 
+TEST (EncodeTest, StrEncodeChangeAlg)
+{
+  using namespace jwt::params;
+
+  const char* expected_none_sign = 
+    "eyJhbGciOiJOT05FIiwidHlwIjoiSldUIn0.eyJhdWQiOiJyaWZ0LmlvIiwiZXhwIjoxNTEzODYzMzcxLCJzdWIiOiJub3RoaW5nIG11Y2gifQ.";
+
+  jwt::string_view key = "00112233445566778899";
+
+  std::map<std::string, jwt::string_view> p;
+  p["aud"] = "rift.io";
+  p["sub"] = "nothing much";
+
+  jwt::jwt_object obj{algorithm(jwt::algorithm::HS512),
+                      secret(key),
+                      payload(std::move(p))
+                     };
+  obj.add_claim("exp", 1513863371);
+
+  obj.header().algo("none");
+  std::string enc_str = obj.signature();
+
+  EXPECT_EQ (expected_none_sign, enc_str);
+}
+
 int main(int argc, char **argv) 
 {
   ::testing::InitGoogleTest(&argc, argv);
