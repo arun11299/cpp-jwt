@@ -9,7 +9,7 @@ TEST (DecodeTest, InvalidFinalDotForNoneAlg)
     "eyJhbGciOiJOT05FIiwidHlwIjoiSldUIn0.eyJhdWQiOiJyaWZ0LmlvIiwiZXhwIjoxNTEzODYzMzcxLCJzdWIiOiJub3RoaW5nIG11Y2gifQ";
 
   std::error_code ec;
-  auto obj = jwt::decode(inv_enc_str, "", algorithms({"none", "hs256"}), ec);
+  auto obj = jwt::decode(inv_enc_str, algorithms({"none", "hs256"}), ec);
 
   ASSERT_TRUE (ec);
   EXPECT_EQ (ec.value(), static_cast<int>(jwt::DecodeErrc::SignatureFormatError));
@@ -22,7 +22,7 @@ TEST (DecodeTest, DecodeNoneAlgSign)
     "eyJhbGciOiJOT05FIiwidHlwIjoiSldUIn0.eyJhdWQiOiJyaWZ0LmlvIiwiZXhwIjoxNTEzODYzMzcxLCJzdWIiOiJub3RoaW5nIG11Y2gifQ.";
 
   std::error_code ec;
-  auto obj = jwt::decode(enc_str, "", algorithms({"none"}), ec, verify(false));
+  auto obj = jwt::decode(enc_str, algorithms({"none"}), ec, verify(false));
   EXPECT_TRUE (ec);
   EXPECT_EQ (ec.value(), static_cast<int>(jwt::AlgorithmErrc::NoneAlgorithmUsed));
 
@@ -45,7 +45,7 @@ TEST (DecodeTest, DecodeWrongAlgo)
     "eyJhbGciOiJOT05FIiwidHlwIjoiSldUIn0.eyJhdWQiOiJyaWZ0LmlvIiwiZXhwIjoxNTEzODYzMzcxLCJzdWIiOiJub3RoaW5nIG11Y2gifQ.";
 
   std::error_code ec;
-  auto obj = jwt::decode(enc_str, "", algorithms({"hs256"}), ec, verify(true));
+  auto obj = jwt::decode(enc_str, algorithms({"hs256"}), ec, secret(""), verify(true));
   EXPECT_TRUE (ec);
   EXPECT_EQ (ec.value(), static_cast<int>(jwt::VerificationErrc::InvalidAlgorithm));
 }
@@ -58,7 +58,7 @@ TEST (DecodeTest, DecodeInvalidHeader)
     "ehbGciOiJOT05FIiwidHlwIjoiSldUIn0.eyJhdWQiOiJyaWZ0LmlvIiwiZXhwIjoxNTEzODYzMzcxLCJzdWIiOiJub3RoaW5nIG11Y2gifQ.";
 
   std::error_code ec;
-  auto obj = jwt::decode(enc_str, "", algorithms({"hs256"}), ec, verify(true));
+  auto obj = jwt::decode(enc_str, algorithms({"hs256"}), ec, secret(""), verify(true));
   ASSERT_TRUE (ec);
   EXPECT_EQ (ec.value(), static_cast<int>(jwt::DecodeErrc::JsonParseError));
 
@@ -72,7 +72,7 @@ TEST (DecodeTest, DecodeInvalidPayload)
     "eyJhbGciOiJOT05FIiwidHlwIjoiSldUIn0.eyfhuWcikiJyaWZ0LmlvIiwiZXhwIsexNTEzODYzMzcxLCJzdWIiOiJub3RoaW5nIG11Y2gifQ.";
 
   std::error_code ec;
-  auto obj = jwt::decode(enc_str, "", algorithms({"none"}), ec, verify(true));
+  auto obj = jwt::decode(enc_str, algorithms({"none"}), ec, verify(true));
   ASSERT_TRUE (ec);
 
   EXPECT_EQ (ec.value(), static_cast<int>(jwt::DecodeErrc::JsonParseError));
@@ -88,7 +88,7 @@ TEST (DecodeTest, DecodeHS256)
    "jk7bRQKTLvs1RcuvMc2B_rt6WBYPoVPirYi_QRBPiuk";
 
   std::error_code ec;
-  auto obj = jwt::decode(enc_str, "secret", algorithms({"none", "hs256"}), ec, verify(false));
+  auto obj = jwt::decode(enc_str, algorithms({"none", "hs256"}), ec, verify(false), secret("secret"));
   ASSERT_FALSE (ec);
 
   EXPECT_TRUE (obj.has_claim("iss"));
@@ -108,10 +108,10 @@ TEST (DecodeTest, DecodeHS384)
     "eyJhdWQiOiJyaWZ0LmlvIiwiZXhwIjoxNTEzODYzMzcxLCJzdWIiOiJub3RoaW5nIG11Y2gifQ."
     "cGN4FZCe9Y2c1dA-jP71IXGnYbJRc4OaUTa5m7N7ybF5h6wBwxWQ-pdcxYchjDBL";
 
-  const jwt::string_view secret = "0123456789abcdefghijklmnopqrstuvwxyz";
+  const jwt::string_view key = "0123456789abcdefghijklmnopqrstuvwxyz";
 
   std::error_code ec;
-  auto obj = jwt::decode(enc_str, secret, algorithms({"none", "hs384"}), ec, verify(false));
+  auto obj = jwt::decode(enc_str, algorithms({"none", "hs384"}), ec, verify(false), secret(key));
   ASSERT_FALSE (ec);
 
   EXPECT_TRUE (obj.has_claim("sub"));
@@ -127,17 +127,16 @@ TEST (DecodeTest, DecodeHS512)
   "eyJhdWQiOiJyaWZ0LmlvIiwiZXhwIjoxNTEzODYzMzcxLCJzdWIiOiJub3RoaW5nIG11Y2gifQ."
   "vQ-1JSFN1kPjUI3URP6AFK5z8V7xLhyhw-76QWhQg9Xcy-IgrJ-bCTYLBjgaprrcEWwpSnBQnP3QnIxYK0HEaQ";
 
-  const jwt::string_view secret = "00112233445566778899";
+  const jwt::string_view key = "00112233445566778899";
 
   std::error_code ec;
-  auto obj = jwt::decode(enc_str, secret, algorithms({"none", "hs384", "hs512"}), ec, verify(false));
+  auto obj = jwt::decode(enc_str, algorithms({"none", "hs384", "hs512"}), ec, verify(false), secret(key));
 
   ASSERT_FALSE (ec);
 
   EXPECT_TRUE (obj.has_claim("sub"));
   EXPECT_TRUE (obj.payload().has_claim_with_value("sub", "nothing much"));
 }
-
 
 int main(int argc, char* argv[]) {
   ::testing::InitGoogleTest(&argc, argv);

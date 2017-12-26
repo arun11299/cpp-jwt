@@ -731,6 +731,9 @@ private: // private APIs
 public: //TODO: Not good
   /// Decode parameters
   template <typename DecodeParams, typename... Rest>
+  static void set_decode_params(DecodeParams& dparams, params::detail::secret_param s, Rest&&... args);
+
+  template <typename DecodeParams, typename... Rest>
   static void set_decode_params(DecodeParams& dparams, params::detail::leeway_param l, Rest&&... args);
 
   template <typename DecodeParams, typename... Rest>
@@ -766,7 +769,6 @@ jwt_object jwt_decode(const string_view encoded_str, const string_view key, bool
  */
 template <typename SequenceT, typename... Args>
 jwt_object decode(const string_view enc_str, 
-                  const string_view key, 
                   const params::detail::algorithms_param<SequenceT>& algos, 
                   std::error_code& ec,
                   Args&&... args);
@@ -775,7 +777,6 @@ jwt_object decode(const string_view enc_str,
  */
 template <typename SequenceT, typename... Args>
 jwt_object decode(const string_view enc_str,
-                  const string_view key,
                   const params::detail::algorithms_param<SequenceT>& algos,
                   Args&&... args);
 

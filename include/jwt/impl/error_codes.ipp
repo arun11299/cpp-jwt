@@ -59,6 +59,10 @@ struct DecodeErrorCategory: std::error_category
       return "json parse failed";
     case DecodeErrc::DuplClaims:
       return "duplicate claims";
+    case DecodeErrc::KeyNotPresent:
+      return "key not present";
+    case DecodeErrc::KeyNotRequiredForNoneAlg:
+      return "key not required for NONE algorithm";
     };
 
     assert (0 && "Code not reached");

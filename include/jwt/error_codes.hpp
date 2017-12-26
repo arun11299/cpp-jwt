@@ -34,6 +34,8 @@ enum class DecodeErrc
   TypHeaderMiss,
   TypMismatch,
   DuplClaims,
+  KeyNotPresent,
+  KeyNotRequiredForNoneAlg,
 };
 
 /**

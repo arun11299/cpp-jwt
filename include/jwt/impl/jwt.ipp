@@ -464,13 +464,19 @@ jwt_object::three_parts(const string_view enc_str)
   return result;
 }
 
+template <typename DecodeParams, typename... Rest>
+void jwt_object::set_decode_params(DecodeParams& dparams, params::detail::secret_param s, Rest&&... args)
+{
+  dparams.secret.assign(s.get().data(), s.get().length());
+  dparams.has_secret = true;
+  jwt_object::set_decode_params(dparams, std::forward<Rest>(args)...);
+}
 
 template <typename DecodeParams, typename... Rest>
 void jwt_object::set_decode_params(DecodeParams& dparams, params::detail::leeway_param l, Rest&&... args)
 {
   dparams.leeway = l.get();
   jwt_object::set_decode_params(dparams, std::forward<Rest>(args)...);
-  return;
 }
 
 template <typename DecodeParams, typename... Rest>
@@ -478,7 +484,6 @@ void jwt_object::set_decode_params(DecodeParams& dparams, params::detail::verify
 {
   dparams.verify = v.get();
   jwt_object::set_decode_params(dparams, std::forward<Rest>(args)...);
-  return;
 }
 
 template <typename DecodeParams, typename... Rest>
@@ -487,7 +492,6 @@ void jwt_object::set_decode_params(DecodeParams& dparams, params::detail::issuer
   dparams.issuer = std::move(i).get();
   dparams.has_issuer = true;
   jwt_object::set_decode_params(dparams, std::forward<Rest>(args)...);
-  return;
 }
 
 template <typename DecodeParams, typename... Rest>
@@ -508,7 +512,6 @@ void jwt_object::set_decode_params(DecodeParams& dparams)
 
 template <typename SequenceT, typename... Args>
 jwt_object decode(const string_view enc_str,
-                  const string_view key,
                   const params::detail::algorithms_param<SequenceT>& algos,
                   std::error_code& ec,
                   Args&&... args)
@@ -523,14 +526,21 @@ jwt_object decode(const string_view enc_str,
 
   struct decode_params
   {
+    /// key to decode the JWS
+    bool has_secret = false;
+    std::string secret;
+
     /// Verify parameter. Defaulted to true.
     bool verify = true;
+
     /// Leeway parameter. Defaulted to zero seconds.
     uint32_t leeway = 0;
+
     ///The issuer
     //TODO: optional type
     bool has_issuer = false;
     std::string issuer;
+
     ///The audience
     //TODO: optional type
     bool has_aud = false;
@@ -571,6 +581,15 @@ jwt_object decode(const string_view enc_str,
       ec = DecodeErrc::SignatureFormatError;
       return obj;
     }
+
+    if (!dparams.has_secret) {
+      ec = DecodeErrc::KeyNotPresent;
+      return obj;
+    }
+  } else {
+    if (dparams.has_secret) {
+      ec = DecodeErrc::KeyNotRequiredForNoneAlg;
+    }
   }
 
   //throws decode error
@@ -589,7 +608,7 @@ jwt_object decode(const string_view enc_str,
 
   //Verify the signature only if some algorithm was used
   if (obj.header().algo() != algorithm::NONE) {
-    jwt_signature jsign{key};
+    jwt_signature jsign{dparams.secret};
  
     // Length of the encoded header and payload only.
     // Addition of '1' to account for the '.' character.
@@ -617,13 +636,11 @@ jwt_object decode(const string_view enc_str,
 
 template <typename SequenceT, typename... Args>
 jwt_object decode(const string_view enc_str,
-                  const string_view key,
                   const params::detail::algorithms_param<SequenceT>& algos,
                   Args&&... args)
 {
   std::error_code ec{};
   auto jwt_obj = decode(enc_str,
-                        key,
                         algos,
                         ec,
                         std::forward<Args>(args)...);
@@ -680,6 +697,11 @@ void jwt_throw_exception(const std::error_code& ec)
       case DecodeErrc::SignatureFormatError:
       {
         throw SignatureFormatError(ec.message());
+      }
+      case DecodeErrc::KeyNotRequiredForNoneAlg:
+      {
+        // Not an error. Just to be ignored.
+        break;
       }
       default:
       {
