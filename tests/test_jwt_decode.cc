@@ -99,9 +99,47 @@ TEST (DecodeTest, DecodeHS256)
   EXPECT_FALSE (obj.payload().has_claim_with_value(jwt::registered_claims::issued_at, 1513862372));
 }
 
+TEST (DecodeTest, DecodeHS384)
+{
+  using namespace jwt::params;
+
+  const char* enc_str =
+    "eyJhbGciOiJIUzM4NCIsInR5cCI6IkpXVCJ9."
+    "eyJhdWQiOiJyaWZ0LmlvIiwiZXhwIjoxNTEzODYzMzcxLCJzdWIiOiJub3RoaW5nIG11Y2gifQ."
+    "cGN4FZCe9Y2c1dA-jP71IXGnYbJRc4OaUTa5m7N7ybF5h6wBwxWQ-pdcxYchjDBL";
+
+  const jwt::string_view secret = "0123456789abcdefghijklmnopqrstuvwxyz";
+
+  std::error_code ec;
+  auto obj = jwt::decode(enc_str, secret, algorithms({"none", "hs384"}), ec, verify(false));
+  ASSERT_FALSE (ec);
+
+  EXPECT_TRUE (obj.has_claim("sub"));
+  EXPECT_TRUE (obj.payload().has_claim_with_value("sub", "nothing much"));
+}
+
+TEST (DecodeTest, DecodeHS512)
+{
+  using namespace jwt::params;
+
+  const char* enc_str = 
+  "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9."
+  "eyJhdWQiOiJyaWZ0LmlvIiwiZXhwIjoxNTEzODYzMzcxLCJzdWIiOiJub3RoaW5nIG11Y2gifQ."
+  "vQ-1JSFN1kPjUI3URP6AFK5z8V7xLhyhw-76QWhQg9Xcy-IgrJ-bCTYLBjgaprrcEWwpSnBQnP3QnIxYK0HEaQ";
+
+  const jwt::string_view secret = "00112233445566778899";
+
+  std::error_code ec;
+  auto obj = jwt::decode(enc_str, secret, algorithms({"none", "hs384", "hs512"}), ec, verify(false));
+
+  ASSERT_FALSE (ec);
+
+  EXPECT_TRUE (obj.has_claim("sub"));
+  EXPECT_TRUE (obj.payload().has_claim_with_value("sub", "nothing much"));
+}
+
 
 int main(int argc, char* argv[]) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
-  return 0;
 }
