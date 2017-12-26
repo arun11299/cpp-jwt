@@ -45,12 +45,25 @@ public:
 
 /**
  */
-class DecodeError final: public std::runtime_error
+class DecodeError: public std::runtime_error
 {
 public:
   /**
    */
   DecodeError(std::string msg)
+    : std::runtime_error(std::move(msg))
+  {
+  }
+};
+
+/**
+ */
+class SignatureFormatError final : public std::runtime_error
+{
+public:
+  /**
+   */
+  SignatureFormatError(std::string msg)
     : std::runtime_error(std::move(msg))
   {
   }

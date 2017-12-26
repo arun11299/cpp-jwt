@@ -544,10 +544,32 @@ jwt_object decode(const string_view enc_str,
   decode_params dparams{};
   set_decode_params(dparams, std::forward<Args>(args)...);
 
+  //Signature must have atleast 2 dots
+  auto dot_cnt = std::count_if(std::begin(enc_str), std::end(enc_str),
+                               [](char ch) { return ch == '.'; });
+  if (dot_cnt < 2) {
+    ec = DecodeErrc::SignatureFormatError;
+    return obj;
+  }
+
   auto parts = jwt_object::three_parts(enc_str);
 
   //throws decode error
   obj.header(jwt_header{parts[0]});
+
+  //If the algorithm is not NONE, it must not
+  //have more than two dots ('.') and the split
+  //must result in three strings with some length.
+  if (obj.header().algo() != jwt::algorithm::NONE) {
+    if (dot_cnt > 2) {
+      ec = DecodeErrc::SignatureFormatError;
+      return obj;
+    }
+    if (parts[2].length() == 0) {
+      ec = DecodeErrc::SignatureFormatError;
+      return obj;
+    }
+  }
 
   //throws decode error
   obj.payload(jwt_payload{parts[1]});
@@ -646,7 +668,19 @@ void jwt_throw_exception(const std::error_code& ec)
 
   if (&cat == &theDecodeErrorCategory)
   {
-    throw DecodeError(ec.message());
+    switch (static_cast<DecodeErrc>(ec.value()))
+    {
+      case DecodeErrc::SignatureFormatError:
+      {
+        throw SignatureFormatError(ec.message());
+      }
+      default:
+      {
+        throw DecodeError(ec.message());
+      }
+    };
+
+    assert (0 && "Unknown error code");
   }
 
   if (&cat == &theAlgorithmErrCategory)

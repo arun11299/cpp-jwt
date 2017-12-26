@@ -28,6 +28,7 @@ enum class AlgorithmFailureSource
 enum class DecodeErrc
 {
   EmptyAlgoList = 1,
+  SignatureFormatError,
   JsonParseError,
   AlgHeaderMiss,
   TypHeaderMiss,

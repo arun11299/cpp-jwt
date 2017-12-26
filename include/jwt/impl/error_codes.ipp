@@ -47,6 +47,8 @@ struct DecodeErrorCategory: std::error_category
     {
     case DecodeErrc::EmptyAlgoList:
       return "empty algorithm list";
+    case DecodeErrc::SignatureFormatError:
+      return "signature format is incorrect";
     case DecodeErrc::AlgHeaderMiss:
       return "missing algorithm header";
     case DecodeErrc::TypHeaderMiss:
