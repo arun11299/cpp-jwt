@@ -421,12 +421,20 @@ public: // Exposed APIs
   /**
    */
   template <typename T>
-  bool has_claim_with_value(const std::string& cname, T&& cvalue) const
+  bool has_claim_with_value(const string_view cname, T&& cvalue) const
   {
     auto itr = claim_names_.find(cname);
     if (itr == claim_names_.end()) return false;
 
-    return (cvalue == payload_[cname]);
+    return (cvalue == payload_[cname.data()]);
+  }
+
+  /**
+   */
+  template <typename T>
+  bool has_claim_with_value(registered_claims cname, T&& value) const
+  {
+    return has_claim_with_value(reg_claims_to_str(cname), std::forward<T>(value));
   }
 
   /**

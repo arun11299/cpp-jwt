@@ -3,7 +3,7 @@
 #include "gtest/gtest.h"
 #include "jwt/jwt.hpp"
 
-TEST (EncodeTest, StrEncodeHS2561)
+TEST (EncodeTest, StrEncodeHS256_1)
 {
   using namespace jwt::params;
 
@@ -30,7 +30,7 @@ TEST (EncodeTest, StrEncodeHS2561)
   EXPECT_EQ (enc_str, expected_sign);
 }
 
-TEST (EncodeTest, StrEncodeHS2562)
+TEST (EncodeTest, StrEncodeHS256_2)
 {
   using namespace jwt::params;
 
