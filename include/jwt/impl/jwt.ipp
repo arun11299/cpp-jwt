@@ -581,15 +581,6 @@ jwt_object decode(const string_view enc_str,
       ec = DecodeErrc::SignatureFormatError;
       return obj;
     }
-
-    if (!dparams.has_secret) {
-      ec = DecodeErrc::KeyNotPresent;
-      return obj;
-    }
-  } else {
-    if (dparams.has_secret) {
-      ec = DecodeErrc::KeyNotRequiredForNoneAlg;
-    }
   }
 
   //throws decode error
@@ -607,7 +598,12 @@ jwt_object decode(const string_view enc_str,
   }
 
   //Verify the signature only if some algorithm was used
-  if (obj.header().algo() != algorithm::NONE) {
+  if (obj.header().algo() != algorithm::NONE)
+  {
+    if (!dparams.has_secret) {
+      ec = DecodeErrc::KeyNotPresent;
+      return obj;
+    }
     jwt_signature jsign{dparams.secret};
  
     // Length of the encoded header and payload only.
@@ -697,6 +693,10 @@ void jwt_throw_exception(const std::error_code& ec)
       case DecodeErrc::SignatureFormatError:
       {
         throw SignatureFormatError(ec.message());
+      }
+      case DecodeErrc::KeyNotPresent:
+      {
+        throw KeyNotPresentError(ec.message());
       }
       case DecodeErrc::KeyNotRequiredForNoneAlg:
       {

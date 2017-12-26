@@ -58,16 +58,30 @@ public:
 
 /**
  */
-class SignatureFormatError final : public std::runtime_error
+class SignatureFormatError final : public DecodeError
 {
 public:
   /**
    */
   SignatureFormatError(std::string msg)
-    : std::runtime_error(std::move(msg))
+    : DecodeError(std::move(msg))
   {
   }
 };
+
+/**
+ */
+class KeyNotPresentError final : public DecodeError
+{
+public:
+  /**
+   */
+  KeyNotPresentError(std::string msg)
+    : DecodeError(std::move(msg))
+  {
+  }
+};
+
 
 /**
  */
