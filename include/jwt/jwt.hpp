@@ -720,6 +720,23 @@ private: // private APIs
    */
   void set_parameters();
 
+public: //TODO: Not good
+  /// Decode parameters
+  template <typename DecodeParams, typename... Rest>
+  static void set_decode_params(DecodeParams& dparams, params::detail::leeway_param l, Rest&&... args);
+
+  template <typename DecodeParams, typename... Rest>
+  static void set_decode_params(DecodeParams& dparams, params::detail::verify_param v, Rest&&... args);
+
+  template <typename DecodeParams, typename... Rest>
+  static void set_decode_params(DecodeParams& dparams, params::detail::issuer_param i, Rest&&... args);
+
+  template <typename DecodeParams, typename... Rest>
+  static void set_decode_params(DecodeParams& dparams, params::detail::audience_param a, Rest&&... args);
+
+  template <typename DecodeParams>
+  static void set_decode_params(DecodeParams& dparams);
+
 private: // Data Members
 
   /// JWT header section

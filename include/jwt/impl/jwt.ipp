@@ -306,7 +306,7 @@ void jwt_object::set_parameters(
 
 void jwt_object::set_parameters()
 {
-  //setinel call
+  //sentinel call
   return;
 }
 
@@ -465,50 +465,46 @@ jwt_object::three_parts(const string_view enc_str)
 }
 
 
-//====================================================================
-
-namespace { // Anonymous namespace
-
 template <typename DecodeParams, typename... Rest>
-void set_decode_params(DecodeParams& dparams, params::detail::leeway_param l, Rest&&... args)
+void jwt_object::set_decode_params(DecodeParams& dparams, params::detail::leeway_param l, Rest&&... args)
 {
   dparams.leeway = l.get();
-  set_decode_params(dparams, std::forward<Rest>(args)...);
+  jwt_object::set_decode_params(dparams, std::forward<Rest>(args)...);
   return;
 }
 
 template <typename DecodeParams, typename... Rest>
-void set_decode_params(DecodeParams& dparams, params::detail::verify_param v, Rest&&... args)
+void jwt_object::set_decode_params(DecodeParams& dparams, params::detail::verify_param v, Rest&&... args)
 {
   dparams.verify = v.get();
-  set_decode_params(dparams, std::forward<Rest>(args)...);
+  jwt_object::set_decode_params(dparams, std::forward<Rest>(args)...);
   return;
 }
 
 template <typename DecodeParams, typename... Rest>
-void set_decode_params(DecodeParams& dparams, params::detail::issuer_param i, Rest&&... args)
+void jwt_object::set_decode_params(DecodeParams& dparams, params::detail::issuer_param i, Rest&&... args)
 {
   dparams.issuer = std::move(i).get();
   dparams.has_issuer = true;
-  set_decode_params(dparams, std::forward<Rest>(args)...);
+  jwt_object::set_decode_params(dparams, std::forward<Rest>(args)...);
   return;
 }
 
 template <typename DecodeParams, typename... Rest>
-void set_decode_params(DecodeParams& dparams, params::detail::audience_param a, Rest&&... args)
+void jwt_object::set_decode_params(DecodeParams& dparams, params::detail::audience_param a, Rest&&... args)
 {
   dparams.aud = std::move(a).get();
   dparams.has_aud = true;
-  set_decode_params(dparams, std::forward<Rest>(args)...);
+  jwt_object::set_decode_params(dparams, std::forward<Rest>(args)...);
 }
 
 template <typename DecodeParams>
-void set_decode_params(DecodeParams& dparams)
+void jwt_object::set_decode_params(DecodeParams& dparams)
 {
   return;
 }
 
-} // END anonymous namespace
+//==================================================================
 
 template <typename SequenceT, typename... Args>
 jwt_object decode(const string_view enc_str,
@@ -542,7 +538,7 @@ jwt_object decode(const string_view enc_str,
   };
 
   decode_params dparams{};
-  set_decode_params(dparams, std::forward<Args>(args)...);
+  jwt_object::set_decode_params(dparams, std::forward<Args>(args)...);
 
   //Signature must have atleast 2 dots
   auto dot_cnt = std::count_if(std::begin(enc_str), std::end(enc_str),
@@ -555,7 +551,13 @@ jwt_object decode(const string_view enc_str,
   auto parts = jwt_object::three_parts(enc_str);
 
   //throws decode error
-  obj.header(jwt_header{parts[0]});
+  jwt_header hdr{};
+  hdr.decode(parts[0], ec);
+  if (ec) {
+    return obj;
+  }
+  //obj.header(jwt_header{parts[0]});
+  obj.header(std::move(hdr));
 
   //If the algorithm is not NONE, it must not
   //have more than two dots ('.') and the split
@@ -572,7 +574,12 @@ jwt_object decode(const string_view enc_str,
   }
 
   //throws decode error
-  obj.payload(jwt_payload{parts[1]});
+  jwt_payload payload{};
+  payload.decode(parts[1], ec);
+  if (ec) {
+    return obj;
+  }
+  obj.payload(std::move(payload));
 
   if (dparams.verify) {
     ec = obj.verify(dparams, algos);
@@ -700,8 +707,7 @@ void jwt_throw_exception(const std::error_code& ec)
         assert (0 && "Unknown error code or not to be treated as an error");
     };
   }
-
-  assert (0 && "Unknown error code category");
+  return;
 }
 
 } // END namespace jwt
