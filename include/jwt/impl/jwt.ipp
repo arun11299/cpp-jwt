@@ -443,7 +443,7 @@ std::error_code jwt_object::verify(
     auto p_exp = payload()
                  .get_claim_value<uint64_t>(registered_claims::not_before);
 
-    if ((p_exp - dparams.leeway) < curr_time) {
+    if ((p_exp - dparams.leeway) > curr_time) {
       ec = VerificationErrc::ImmatureSignature;
       return ec;
     }

@@ -762,7 +762,7 @@ public: // 'tors
    *
    * 4. headers : Can pass a initializer list of pairs or any associative
    * containers which models `MappingConcept` (see `meta::is_mapping_concept`)
-   * to populate header. Can be used to set JTI.
+   * to populate header. Not much useful unless JWE is supported.
    */
   template <typename... Args>
   jwt_object(Args&&... args);
@@ -1026,9 +1026,11 @@ private: // Data Members
  * Optional parameters that can be passed:
  * 1. verify : A boolean flag to indicate whether
  * the signature should be verified or not.
+ * Set to `true` by default.
  *
  * 2. leeway : Number of seconds that can be added (in case of exp)
  * or subtracted (in case of nbf) to be more lenient.
+ * Set to `0` by default.
  *
  * 3. algorithms : Takes in a sequence of algorithms which the client
  * expects the signature to be decoded with.
