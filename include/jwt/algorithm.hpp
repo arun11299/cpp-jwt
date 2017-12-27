@@ -52,12 +52,12 @@ using sign_result_t = std::pair<std::string, std::error_code>;
 /// The result type of verification function
 using verify_result_t = std::pair<bool, std::error_code>;
 /// The function pointer type for the signing function
-using sign_func_t   = sign_result_t (*) (const string_view key, 
-                                         const string_view data);
+using sign_func_t   = sign_result_t (*) (const jwt::string_view key, 
+                                         const jwt::string_view data);
 /// The function pointer type for the verifying function
-using verify_func_t = verify_result_t (*) (const string_view key,
-                                           const string_view head,
-                                           const string_view jwt_sign);
+using verify_func_t = verify_result_t (*) (const jwt::string_view key,
+                                           const jwt::string_view head,
+                                           const jwt::string_view jwt_sign);
 
 namespace algo {
 
@@ -216,7 +216,7 @@ enum class algorithm
  * Convert the algorithm enum class type to
  * its stringified form.
  */
-string_view alg_to_str(enum algorithm alg) noexcept
+jwt::string_view alg_to_str(enum algorithm alg) noexcept
 {
   switch (alg) {
     case algorithm::HS256: return "HS256";
@@ -240,7 +240,7 @@ string_view alg_to_str(enum algorithm alg) noexcept
  * Convert stringified algorithm to enum class.
  * The string comparison is case insesitive.
  */
-enum algorithm str_to_alg(const string_view alg) noexcept
+enum algorithm str_to_alg(const jwt::string_view alg) noexcept
 {
   if (!alg.length()) return algorithm::NONE;
 
@@ -339,7 +339,7 @@ struct HMACSign
    *    Any allocation failure will result in jwt::MemoryAllocationException
    *    being thrown.
    */
-  static sign_result_t sign(const string_view key, const string_view data)
+  static sign_result_t sign(const jwt::string_view key, const jwt::string_view data)
   {
     std::string sign;
     sign.resize(EVP_MAX_MD_SIZE);
@@ -384,7 +384,7 @@ struct HMACSign
    *    being thrown.
    */
   static verify_result_t 
-  verify(const string_view key, const string_view head, const string_view sign);
+  verify(const jwt::string_view key, const jwt::string_view head, const jwt::string_view sign);
 
 };
 
@@ -412,7 +412,7 @@ struct HMACSign<algo::NONE>
   /**
    * Basically a no-op. Sets the error code to NoneAlgorithmUsed.
    */
-  static sign_result_t sign(const string_view key, const string_view data)
+  static sign_result_t sign(const jwt::string_view key, const jwt::string_view data)
   {
     (void)key;
     (void)data;
@@ -426,7 +426,7 @@ struct HMACSign<algo::NONE>
    * Basically a no-op. Sets the error code to NoneAlgorithmUsed.
    */
   static verify_result_t
-  verify(const string_view key, const string_view head, const string_view sign)
+  verify(const jwt::string_view key, const jwt::string_view head, const jwt::string_view sign)
   {
     (void)key;
     (void)head;
@@ -469,7 +469,7 @@ public:
    *  Any allocation failure would be thrown out as
    *  jwt::MemoryAllocationException.
    */
-  static sign_result_t sign(const string_view key, const string_view data)
+  static sign_result_t sign(const jwt::string_view key, const jwt::string_view data)
   {
     std::error_code ec{};
 
@@ -493,21 +493,21 @@ public:
   /**
    */
   static verify_result_t
-  verify(const string_view key, const string_view head, const string_view sign);
+  verify(const jwt::string_view key, const jwt::string_view head, const jwt::string_view sign);
 
 private:
 
   /*!
    */
-  static EVP_PKEY* load_key(const string_view key, std::error_code& ec);
+  static EVP_PKEY* load_key(const jwt::string_view key, std::error_code& ec);
 
   /*!
    */
-  static std::string evp_digest(EVP_PKEY* pkey, const string_view data, std::error_code& ec);
+  static std::string evp_digest(EVP_PKEY* pkey, const jwt::string_view data, std::error_code& ec);
 
   /*!
    */
-  static std::string public_key_ser(EVP_PKEY* pkey, string_view sign, std::error_code& ec);
+  static std::string public_key_ser(EVP_PKEY* pkey, jwt::string_view sign, std::error_code& ec);
 
   //ATTN: Below 2 functions
   //are Taken from https://github.com/nginnever/zogminer/issues/39

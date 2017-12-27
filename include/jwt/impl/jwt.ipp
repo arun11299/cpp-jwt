@@ -63,7 +63,7 @@ std::ostream& operator<< (std::ostream& os, const T& obj)
 
 //========================================================================
 
-void jwt_header::decode(const string_view enc_str, std::error_code& ec)
+void jwt_header::decode(const jwt::string_view enc_str, std::error_code& ec)
 {
   ec.clear();
   std::string json_str = base64_decode(enc_str);
@@ -107,7 +107,7 @@ void jwt_header::decode(const string_view enc_str, std::error_code& ec)
   return;
 }
 
-void jwt_header::decode(const string_view enc_str)
+void jwt_header::decode(const jwt::string_view enc_str)
 {
   std::error_code ec;
   decode(enc_str, ec);
@@ -117,7 +117,7 @@ void jwt_header::decode(const string_view enc_str)
   return;
 }
 
-void jwt_payload::decode(const string_view enc_str, std::error_code& ec)
+void jwt_payload::decode(const jwt::string_view enc_str, std::error_code& ec)
 {
   ec.clear();
   std::string json_str = base64_decode(enc_str);
@@ -139,7 +139,7 @@ void jwt_payload::decode(const string_view enc_str, std::error_code& ec)
   return;
 }
 
-void jwt_payload::decode(const string_view enc_str)
+void jwt_payload::decode(const jwt::string_view enc_str)
 {
   std::error_code ec;
   decode(enc_str, ec);
@@ -185,8 +185,8 @@ std::string jwt_signature::encode(const jwt_header& header,
 }
 
 verify_result_t jwt_signature::verify(const jwt_header& header,
-                           const string_view hdr_pld_sign,
-                           const string_view jwt_sign)
+                           const jwt::string_view hdr_pld_sign,
+                           const jwt::string_view jwt_sign)
 {
   verify_func_t verify_fn = get_verify_algorithm_impl(header);
   return verify_fn(key_, hdr_pld_sign, jwt_sign);
@@ -336,13 +336,13 @@ template <typename T,
           typename=typename std::enable_if_t<
             !std::is_same<system_time_t, std::decay_t<T>>::value>
          >
-jwt_object& jwt_object::add_claim(const string_view name, T&& value)
+jwt_object& jwt_object::add_claim(const jwt::string_view name, T&& value)
 {
   payload_.add_claim(name, std::forward<T>(value));
   return *this;
 }
 
-jwt_object& jwt_object::add_claim(const string_view name, system_time_t tp)
+jwt_object& jwt_object::add_claim(const jwt::string_view name, system_time_t tp)
 {
   return add_claim(
       name,
@@ -351,7 +351,7 @@ jwt_object& jwt_object::add_claim(const string_view name, system_time_t tp)
       );
 }
 
-jwt_object& jwt_object::remove_claim(const string_view name)
+jwt_object& jwt_object::remove_claim(const jwt::string_view name)
 {
   payload_.remove_claim(name);
   return *this;
@@ -475,22 +475,22 @@ std::error_code jwt_object::verify(
 }
 
 
-std::array<string_view, 3>
-jwt_object::three_parts(const string_view enc_str)
+std::array<jwt::string_view, 3>
+jwt_object::three_parts(const jwt::string_view enc_str)
 {
-  std::array<string_view, 3> result;
+  std::array<jwt::string_view, 3> result;
 
   size_t fpos = enc_str.find_first_of('.');
-  assert (fpos != string_view::npos);
+  assert (fpos != jwt::string_view::npos);
 
-  result[0] = string_view{&enc_str[0], fpos};
+  result[0] = jwt::string_view{&enc_str[0], fpos};
 
   size_t spos = enc_str.find_first_of('.', fpos + 1);
 
-  result[1] = string_view{&enc_str[fpos + 1], spos - fpos - 1};
+  result[1] = jwt::string_view{&enc_str[fpos + 1], spos - fpos - 1};
 
   if (spos != enc_str.length()) {
-    result[2] = string_view{&enc_str[spos + 1], enc_str.length() - spos - 1};
+    result[2] = jwt::string_view{&enc_str[spos + 1], enc_str.length() - spos - 1};
   }
 
   return result;
@@ -543,7 +543,7 @@ void jwt_object::set_decode_params(DecodeParams& dparams)
 //==================================================================
 
 template <typename SequenceT, typename... Args>
-jwt_object decode(const string_view enc_str,
+jwt_object decode(const jwt::string_view enc_str,
                   const params::detail::algorithms_param<SequenceT>& algos,
                   std::error_code& ec,
                   Args&&... args)
@@ -663,7 +663,7 @@ jwt_object decode(const string_view enc_str,
 
 
 template <typename SequenceT, typename... Args>
-jwt_object decode(const string_view enc_str,
+jwt_object decode(const jwt::string_view enc_str,
                   const params::detail::algorithms_param<SequenceT>& algos,
                   Args&&... args)
 {

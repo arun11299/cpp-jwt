@@ -27,9 +27,9 @@ namespace jwt {
 
 template <typename Hasher>
 verify_result_t HMACSign<Hasher>::verify(
-    const string_view key,
-    const string_view head,
-    const string_view jwt_sign)
+    const jwt::string_view key,
+    const jwt::string_view head,
+    const jwt::string_view jwt_sign)
 {
   std::error_code ec{};
 
@@ -80,7 +80,7 @@ verify_result_t HMACSign<Hasher>::verify(
   auto new_len = jwt::base64_uri_encode(&cbuf[0], cbuf.length());
   cbuf.resize(new_len);
 
-  bool ret = (string_view{cbuf} == jwt_sign);
+  bool ret = (jwt::string_view{cbuf} == jwt_sign);
 
   return { ret, ec };
 }
@@ -88,9 +88,9 @@ verify_result_t HMACSign<Hasher>::verify(
 
 template <typename Hasher>
 verify_result_t PEMSign<Hasher>::verify(
-    const string_view key,
-    const string_view head,
-    const string_view jwt_sign)
+    const jwt::string_view key,
+    const jwt::string_view head,
+    const jwt::string_view jwt_sign)
 {
   std::error_code ec{};
   std::string dec_sig = base64_uri_decode(jwt_sign.data(), jwt_sign.length());
@@ -191,7 +191,7 @@ verify_result_t PEMSign<Hasher>::verify(
 
 template <typename Hasher>
 EVP_PKEY* PEMSign<Hasher>::load_key(
-    const string_view key,
+    const jwt::string_view key,
     std::error_code& ec)
 {
   ec.clear();
@@ -224,7 +224,7 @@ EVP_PKEY* PEMSign<Hasher>::load_key(
 template <typename Hasher>
 std::string PEMSign<Hasher>::evp_digest(
     EVP_PKEY* pkey, 
-    const string_view data, 
+    const jwt::string_view data, 
     std::error_code& ec)
 {
   ec.clear();
@@ -270,7 +270,7 @@ std::string PEMSign<Hasher>::evp_digest(
 template <typename Hasher>
 std::string PEMSign<Hasher>::public_key_ser(
     EVP_PKEY* pkey, 
-    string_view sign, 
+    jwt::string_view sign, 
     std::error_code& ec)
 {
   // Get the EC_KEY representing a public key and
