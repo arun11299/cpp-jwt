@@ -762,7 +762,7 @@ public: // 'tors
    *
    * 4. headers : Can pass a initializer list of pairs or any associative
    * containers which models `MappingConcept` (see `meta::is_mapping_concept`)
-   * to populate header. Not much use.
+   * to populate header. Can be used to set JTI.
    */
   template <typename... Args>
   jwt_object(Args&&... args);

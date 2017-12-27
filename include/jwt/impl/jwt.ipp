@@ -391,7 +391,7 @@ std::error_code jwt_object::verify(
     auto p_exp = payload()
                  .get_claim_value<uint64_t>(registered_claims::expiration);
 
-    if (p_exp < (curr_time + dparams.leeway)) {
+    if (curr_time > (p_exp + dparams.leeway)) {
       ec = VerificationErrc::TokenExpired;
       return ec;
     }
