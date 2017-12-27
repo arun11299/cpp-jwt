@@ -41,7 +41,7 @@ std::ostream& operator<< (std::ostream& os, const T& obj)
 
 //========================================================================
 
-void jwt_header::decode(const string_view enc_str, std::error_code& ec) noexcept
+void jwt_header::decode(const string_view enc_str, std::error_code& ec)
 {
   ec.clear();
   std::string json_str = base64_decode(enc_str);
@@ -85,7 +85,7 @@ void jwt_header::decode(const string_view enc_str, std::error_code& ec) noexcept
   return;
 }
 
-void jwt_header::decode(const string_view enc_str) throw(DecodeError)
+void jwt_header::decode(const string_view enc_str)
 {
   std::error_code ec;
   decode(enc_str, ec);
@@ -95,7 +95,7 @@ void jwt_header::decode(const string_view enc_str) throw(DecodeError)
   return;
 }
 
-void jwt_payload::decode(const string_view enc_str, std::error_code& ec) noexcept
+void jwt_payload::decode(const string_view enc_str, std::error_code& ec)
 {
   ec.clear();
   std::string json_str = base64_decode(enc_str);
@@ -117,7 +117,7 @@ void jwt_payload::decode(const string_view enc_str, std::error_code& ec) noexcep
   return;
 }
 
-void jwt_payload::decode(const string_view enc_str) throw(DecodeError)
+void jwt_payload::decode(const string_view enc_str)
 {
   std::error_code ec;
   decode(enc_str, ec);

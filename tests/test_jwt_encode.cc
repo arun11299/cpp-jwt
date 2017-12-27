@@ -1,7 +1,29 @@
 #include <iostream>
 #include <map>
+#include <chrono>
 #include "gtest/gtest.h"
 #include "jwt/jwt.hpp"
+
+TEST (EncodeTest, TestRemoveClaim)
+{
+  using namespace jwt::params;
+
+  jwt::jwt_object obj{algorithm("hs256"), secret("secret")};
+
+  obj.add_claim("iss", "arun.muralidharan")
+     .add_claim("sub", "admin")
+     .add_claim("id", "a-b-c-d-e-f-1-2-3")
+     .add_claim("iat", 1513862371)
+     .add_claim("exp", std::chrono::system_clock::now());
+
+  EXPECT_TRUE (obj.has_claim(jwt::registered_claims::expiration));
+
+  obj.remove_claim("exp");
+  EXPECT_FALSE (obj.has_claim(jwt::registered_claims::expiration));
+
+  obj.remove_claim(jwt::registered_claims::subject);
+  EXPECT_FALSE (obj.has_claim("sub"));
+}
 
 TEST (EncodeTest, StrEncodeHS256_1)
 {
