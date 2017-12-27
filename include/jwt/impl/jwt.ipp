@@ -398,26 +398,36 @@ std::error_code jwt_object::verify(
   } 
 
   //Check for issuer
-  if (dparams.has_issuer &&
-      has_claim(registered_claims::issuer)) 
+  if (dparams.has_issuer)
   {
-    jwt::string_view p_issuer = payload()
-                                .get_claim_value<std::string>(registered_claims::issuer);
+    if (has_claim(registered_claims::issuer))
+    {
+      jwt::string_view p_issuer = payload()
+                                  .get_claim_value<std::string>(registered_claims::issuer);
 
-    if (p_issuer.data() != dparams.issuer) {
+      if (p_issuer.data() != dparams.issuer) {
+        ec = VerificationErrc::InvalidIssuer;
+        return ec;
+      }
+    } else {
       ec = VerificationErrc::InvalidIssuer;
       return ec;
     }
   }
 
   //Check for audience
-  if (dparams.has_aud &&
-      has_claim(registered_claims::audience)) 
+  if (dparams.has_aud)
   {
-    jwt::string_view p_aud = payload()
-                             .get_claim_value<std::string>(registered_claims::audience);
+    if (has_claim(registered_claims::audience))
+    {
+      jwt::string_view p_aud = payload()
+                               .get_claim_value<std::string>(registered_claims::audience);
 
-    if (p_aud.data() != dparams.aud) {
+      if (p_aud.data() != dparams.aud) {
+        ec = VerificationErrc::InvalidAudience;
+        return ec;
+      }
+    } else {
       ec = VerificationErrc::InvalidAudience;
       return ec;
     }

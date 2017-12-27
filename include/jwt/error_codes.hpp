@@ -17,6 +17,7 @@ enum class AlgorithmErrc
 
 /**
  * Algorithm error conditions
+ * TODO: Remove it or use it!
  */
 enum class AlgorithmFailureSource
 {
@@ -27,18 +28,29 @@ enum class AlgorithmFailureSource
  */
 enum class DecodeErrc
 {
+  // No algorithms provided in decode API
   EmptyAlgoList = 1,
+  // The JWT signature has incorrect format
   SignatureFormatError,
+  // The JSON library failed to parse 
   JsonParseError,
+  // Algorithm field in header is missing
   AlgHeaderMiss,
+  // Type field in header is missing
   TypHeaderMiss,
+  // Unexpected type field value
   TypMismatch,
+  // Found duplicate claims
   DuplClaims,
+  // Key/Secret not passed as decode argument
   KeyNotPresent,
+  // Key/secret passed as argument for NONE algorithm.
+  // Not a hard error.
   KeyNotRequiredForNoneAlg,
 };
 
 /**
+ * Errors handled during verification process.
  */
 enum class VerificationErrc
 {

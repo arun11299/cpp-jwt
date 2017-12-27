@@ -749,6 +749,20 @@ public: // 'tors
    * Takes a variadic set of parameters.
    * Each type must satisfy the
    * `ParameterConcept` concept.
+   *
+   * The parameters that can be passed:
+   * 1. payload : Can pass a initializer list of pairs or any associative
+   * containers which models `MappingConcept` (see `meta::is_mapping_concept`) 
+   * to populate claims. Use `add_claim` for more controlled additions.
+   *
+   * 2. secret : The secret to be used for generating and verification
+   * of JWT signature. Not required for NONE algorithm.
+   *
+   * 3. algorithm : The algorithm to be used for signing and decoding.
+   *
+   * 4. headers : Can pass a initializer list of pairs or any associative
+   * containers which models `MappingConcept` (see `meta::is_mapping_concept`)
+   * to populate header. Not much use.
    */
   template <typename... Args>
   jwt_object(Args&&... args);
@@ -1008,6 +1022,22 @@ private: // Data Members
  * This version reports error back using `std::error_code`.
  *
  * NOTE: Memory allocation exceptions are not caught.
+ *
+ * Optional parameters that can be passed:
+ * 1. verify : A boolean flag to indicate whether
+ * the signature should be verified or not.
+ *
+ * 2. leeway : Number of seconds that can be added (in case of exp)
+ * or subtracted (in case of nbf) to be more lenient.
+ *
+ * 3. algorithms : Takes in a sequence of algorithms which the client
+ * expects the signature to be decoded with.
+ *
+ * 4. aud : The audience the client expects to be in the claim.
+ * NOTE: It is case-sensitive.
+ *
+ * 5. issuer: The issuer the client expects to be in the claim.
+ * NOTE: It is case-sensitive
  */
 template <typename SequenceT, typename... Args>
 jwt_object decode(const string_view enc_str, 

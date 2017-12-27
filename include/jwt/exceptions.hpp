@@ -7,6 +7,8 @@
 namespace jwt {
 
 /**
+ * Exception for allocation related failures in the 
+ * OpenSSL C APIs.
  */
 class MemoryAllocationException final: public std::bad_alloc
 {
@@ -31,6 +33,8 @@ private:
 };
 
 /**
+ * Exception thrown for failures in OpenSSL
+ * APIs while signing.
  */
 class SigningError : public std::runtime_error
 {
@@ -44,6 +48,7 @@ public:
 };
 
 /**
+ * Exception thrown for decode related errors.
  */
 class DecodeError: public std::runtime_error
 {
@@ -57,6 +62,8 @@ public:
 };
 
 /**
+ * A derived decode error for signature format
+ * error.
  */
 class SignatureFormatError final : public DecodeError
 {
@@ -70,6 +77,8 @@ public:
 };
 
 /**
+ * A derived decode error for Key argument not present
+ * error. Only thrown if the algorithm set is not NONE.
  */
 class KeyNotPresentError final : public DecodeError
 {
@@ -84,6 +93,9 @@ public:
 
 
 /**
+ * Base class exception for all kinds of verification errors.
+ * Verification errors are thrown only when the verify
+ * decode parameter is set to true.
  */
 class VerificationError : public std::runtime_error
 {
@@ -97,6 +109,9 @@ public:
 };
 
 /**
+ * Derived from VerificationError.
+ * Thrown when the algorithm decoded in the header
+ * is incorrect.
  */
 class InvalidAlgorithmError final: public VerificationError
 {
@@ -110,6 +125,9 @@ public:
 };
 
 /**
+ * Derived from VerificationError.
+ * Thrown when the token is expired at the
+ * time of decoding.
  */
 class TokenExpiredError final: public VerificationError
 {
@@ -123,6 +141,9 @@ public:
 };
 
 /**
+ * Derived from VerificationError.
+ * Thrown when the issuer claim does not match
+ * with the one provided as part of decode argument.
  */
 class InvalidIssuerError final: public VerificationError
 {
@@ -136,6 +157,9 @@ public:
 };
 
 /**
+ * Derived from VerificationError.
+ * Thrown when the audience claim does not match
+ * with the one provided as part of decode argument.
  */
 class InvalidAudienceError final: public VerificationError
 {
@@ -149,6 +173,9 @@ public:
 };
 
 /**
+ * Derived from VerificationError.
+ * Thrown when the token is decoded at a time before
+ * as specified in the `nbf` claim.
  */
 class ImmatureSignatureError final: public VerificationError
 {
@@ -162,6 +189,8 @@ public:
 };
 
 /**
+ * Derived from VerificationError.
+ * Thrown when the signature does not match in the verification process.
  */
 class InvalidSignatureError final: public VerificationError
 {
