@@ -110,12 +110,20 @@ struct VerificationErrorCategory: std::error_category
       return "token expired";
     case VerificationErrc::InvalidIssuer:
       return "invalid issuer";
+    case VerificationErrc::InvalidSubject:
+      return "invalid subject";
     case VerificationErrc::InvalidAudience:
       return "invalid audience";
+    case VerificationErrc::InvalidIAT:
+      return "invalid iat";
+    case VerificationErrc::InvalidJTI:
+      return "invalid jti";
     case VerificationErrc::ImmatureSignature:
       return "immature signature";
     case VerificationErrc::InvalidSignature:
       return "invalid signature";
+    case VerificationErrc::TypeConversionError:
+      return "type conversion error";
     };
 
     assert (0 && "Code not reached");

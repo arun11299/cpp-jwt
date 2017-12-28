@@ -455,6 +455,23 @@ std::error_code jwt_object::verify(
     }
   }
 
+  //Check the subject
+  if (dparams.has_sub)
+  {
+    if (has_claim(registered_claims::subject))
+    {
+      jwt::string_view p_sub = payload()
+                               .get_claim_value<std::string>(registered_claims::subject);
+      if (p_sub.data() != dparams.sub) {
+        ec = VerificationErrc::InvalidSubject;
+        return ec;
+      }
+    } else {
+      ec = VerificationErrc::InvalidSubject;
+      return ec;
+    }
+  }
+
   //Check for NBF
   if (has_claim(registered_claims::not_before))
   {
@@ -467,6 +484,27 @@ std::error_code jwt_object::verify(
 
     if ((p_exp - dparams.leeway) > curr_time) {
       ec = VerificationErrc::ImmatureSignature;
+      return ec;
+    }
+  }
+
+  //Check IAT validation
+  if (dparams.validate_iat) {
+    if (!has_claim(registered_claims::issued_at)) {
+      ec = VerificationErrc::InvalidIAT;
+      return ec;
+    } else {
+      // Will throw type conversion error
+      auto val = payload()
+                 .get_claim_value<uint64_t>(registered_claims::issued_at);
+      (void)val;
+    }
+  }
+
+  //Check JTI validation
+  if (dparams.validate_jti) {
+    if (!has_claim("jti")) {
+      ec = VerificationErrc::InvalidJTI;
       return ec;
     }
   }
@@ -534,6 +572,28 @@ void jwt_object::set_decode_params(DecodeParams& dparams, params::detail::audien
   jwt_object::set_decode_params(dparams, std::forward<Rest>(args)...);
 }
 
+template <typename DecodeParams, typename... Rest>
+void jwt_object::set_decode_params(DecodeParams& dparams, params::detail::subject_param s, Rest&&... args)
+{
+  dparams.sub = std::move(s).get();
+  dparams.has_sub = true;
+  jwt_object::set_decode_params(dparams, std::forward<Rest>(args)...);
+}
+
+template <typename DecodeParams, typename... Rest>
+void jwt_object::set_decode_params(DecodeParams& dparams, params::detail::validate_iat_param v, Rest&&... args)
+{
+  dparams.validate_iat = v.get();
+  jwt_object::set_decode_params(dparams, std::forward<Rest>(args)...);
+}
+
+template <typename DecodeParams, typename... Rest>
+void jwt_object::set_decode_params(DecodeParams& dparams, params::detail::validate_jti_param v, Rest&&... args)
+{
+  dparams.validate_jti = v.get();
+  jwt_object::set_decode_params(dparams, std::forward<Rest>(args)...);
+}
+
 template <typename DecodeParams>
 void jwt_object::set_decode_params(DecodeParams& dparams)
 {
@@ -577,6 +637,17 @@ jwt_object decode(const jwt::string_view enc_str,
     //TODO: optional type
     bool has_aud = false;
     std::string aud;
+
+    //The subject
+    //TODO: optional type
+    bool has_sub = false;
+    std::string sub;
+
+    //Validate IAT
+    bool validate_iat = false;
+
+    //Validate JTI
+    bool validate_jti = false;
   };
 
   decode_params dparams{};
@@ -624,7 +695,11 @@ jwt_object decode(const jwt::string_view enc_str,
   obj.payload(std::move(payload));
 
   if (dparams.verify) {
-    ec = obj.verify(dparams, algos);
+    try {
+      ec = obj.verify(dparams, algos);
+    } catch (const json_ns::detail::type_error& e) {
+      ec = VerificationErrc::TypeConversionError;
+    }
 
     if (ec) return obj;
   }
@@ -705,6 +780,18 @@ void jwt_throw_exception(const std::error_code& ec)
       {
         throw InvalidAudienceError(ec.message());
       }
+      case VerificationErrc::InvalidSubject:
+      {
+        throw InvalidSubjectError(ec.message());
+      }
+      case VerificationErrc::InvalidIAT:
+      {
+        throw InvalidIATError(ec.message());
+      }
+      case VerificationErrc::InvalidJTI:
+      {
+        throw InvalidJTIError(ec.message());
+      }
       case VerificationErrc::ImmatureSignature:
       {
         throw ImmatureSignatureError(ec.message());
@@ -712,6 +799,10 @@ void jwt_throw_exception(const std::error_code& ec)
       case VerificationErrc::InvalidSignature:
       {
         throw InvalidSignatureError(ec.message());
+      }
+      case VerificationErrc::TypeConversionError:
+      {
+        throw TypeConversionError(ec.message());
       }
       default:
         assert (0 && "Unknown error code");

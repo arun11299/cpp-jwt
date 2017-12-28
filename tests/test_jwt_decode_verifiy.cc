@@ -167,6 +167,20 @@ TEST (DecodeVerify, InvalidAudienceTest)
   EXPECT_EQ (ec.value(), static_cast<int>(jwt::VerificationErrc::InvalidAudience));
 }
 
+TEST (DecodeVerify, InvalidIATTest)
+{
+  using namespace jwt::params;
+
+  jwt::jwt_object obj{algorithm("hs256"), secret("secret"), payload({{"sub", "test"}, {"aud", "www"}})};
+
+  obj.add_claim("iat", "what?");
+  auto enc_str = obj.signature();
+
+  std::error_code ec;
+  auto dec_obj = jwt::decode(enc_str, algorithms({"hs256"}), ec, secret("secret"), validate_iat(true));
+  EXPECT_EQ (ec.value(), static_cast<int>(jwt::VerificationErrc::TypeConversionError));
+}
+
 int main(int argc, char* argv[]) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

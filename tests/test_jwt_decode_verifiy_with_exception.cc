@@ -164,6 +164,18 @@ TEST (DecodeVerifyExp, KeyNotPresentTest)
                 jwt::KeyNotPresentError);
 }
 
+TEST (DecodeVerifyExp, InvalidSubjectTest)
+{
+  using namespace jwt::params;
+
+  jwt::jwt_object obj{algorithm("hs256"), secret("secret"), payload({{"sub", "test"}, {"aud", "www"}})};
+
+  auto enc_str = obj.signature();
+
+  EXPECT_THROW (jwt::decode(enc_str, algorithms({"hs256"}), secret("secret"), sub("TEST")),
+                jwt::InvalidSubjectError);
+}
+
 int main(int argc, char* argv[]) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

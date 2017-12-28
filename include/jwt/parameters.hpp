@@ -200,6 +200,46 @@ struct issuer_param
 
 /**
  */
+struct subject_param
+{
+  subject_param(std::string sub)
+    : sub_(std::move(sub))
+  {}
+
+  const std::string& get() const& noexcept { return sub_; }
+  std::string get() && noexcept { return sub_; }
+
+  std::string sub_;
+};
+
+/**
+ */
+struct validate_iat_param
+{
+  validate_iat_param(bool v)
+    : iat_(v)
+  {}
+
+  bool get() const noexcept { return iat_; }
+
+  bool iat_;
+};
+
+/**
+ */
+struct validate_jti_param
+{
+  validate_jti_param(bool v)
+    : jti_(v)
+  {}
+
+  bool get() const noexcept { return jti_; }
+
+  bool jti_;
+};
+
+/**
+ */
 struct nbf_param
 {
   nbf_param(const jwt::system_time_t tp)
@@ -336,7 +376,7 @@ algorithms(SequenceConcept&& sc)
 /**
  */
 detail::audience_param
-aud(const string_view aud)
+aud(const jwt::string_view aud)
 {
   return { aud.data() };
 }
@@ -344,9 +384,33 @@ aud(const string_view aud)
 /**
  */
 detail::issuer_param
-issuer(const string_view iss)
+issuer(const jwt::string_view iss)
 {
   return { iss.data() };
+}
+
+/**
+ */
+detail::subject_param
+sub(const jwt::string_view subj)
+{
+  return { subj.data() };
+}
+
+/**
+ */
+detail::validate_iat_param
+validate_iat(bool v)
+{
+  return { v };
+}
+
+/**
+ */
+detail::validate_jti_param
+validate_jti(bool v)
+{
+  return { v };
 }
 
 /**

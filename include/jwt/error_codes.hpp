@@ -79,9 +79,16 @@ enum class VerificationErrc
   InvalidAlgorithm = 1,
   TokenExpired,
   InvalidIssuer,
+  InvalidSubject,
+  InvalidIAT,
+  //Checks for the existence of JTI
+  //if validate_jti is passed in decode
+  InvalidJTI,
   InvalidAudience,
   ImmatureSignature,
   InvalidSignature,
+  // Invalid value type used for known claims
+  TypeConversionError,
 };
 
 /**

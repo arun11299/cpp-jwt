@@ -196,6 +196,54 @@ public:
 
 /**
  * Derived from VerificationError.
+ * Thrown when the subject claim does not match
+ * with the one provided as part of decode argument.
+ */
+class InvalidSubjectError final: public VerificationError
+{
+public:
+  /**
+   */
+  InvalidSubjectError(std::string msg)
+    : VerificationError(std::move(msg))
+  {
+  }
+};
+
+/**
+ * Derived from VerificationError.
+ * Thrown when verify_iat parameter is passed to
+ * decode and IAT is not present.
+ */
+class InvalidIATError final: public VerificationError
+{
+public:
+  /**
+   */
+  InvalidIATError(std::string msg)
+    : VerificationError(std::move(msg))
+  {
+  }
+};
+
+/**
+ * Derived from VerificationError.
+ * Thrown when validate_jti is asked for
+ * in decode and jti claim is not present.
+ */
+class InvalidJTIError final: public VerificationError
+{
+public:
+  /**
+   */
+  InvalidJTIError(std::string msg)
+    : VerificationError(std::move(msg))
+  {
+  }
+};
+
+/**
+ * Derived from VerificationError.
  * Thrown when the token is decoded at a time before
  * as specified in the `nbf` claim.
  */
@@ -220,6 +268,22 @@ public:
   /**
    */
   InvalidSignatureError(std::string msg)
+    : VerificationError(std::move(msg))
+  {
+  }
+};
+
+/**
+ * Derived from VerificationError.
+ * Thrown when there type expectation mismatch
+ * while verifying the values of registered claim names.
+ */
+class TypeConversionError final: public VerificationError
+{
+public:
+  /**
+   */
+  TypeConversionError(std::string msg)
     : VerificationError(std::move(msg))
   {
   }

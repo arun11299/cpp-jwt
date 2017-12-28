@@ -41,6 +41,7 @@ SOFTWARE.
 // For convenience
 using json_t = nlohmann::json;
 using system_time_t = std::chrono::time_point<std::chrono::system_clock>;
+namespace json_ns = nlohmann;
 
 namespace jwt {
 
@@ -1024,6 +1025,15 @@ public: //TODO: Not good
   template <typename DecodeParams, typename... Rest>
   static void set_decode_params(DecodeParams& dparams, params::detail::audience_param a, Rest&&... args);
 
+  template <typename DecodeParams, typename... Rest>
+  static void set_decode_params(DecodeParams& dparams, params::detail::subject_param a, Rest&&... args);
+
+  template <typename DecodeParams, typename... Rest>
+  static void set_decode_params(DecodeParams& dparams, params::detail::validate_iat_param v, Rest&&... args);
+
+  template <typename DecodeParams, typename... Rest>
+  static void set_decode_params(DecodeParams& dparams, params::detail::validate_jti_param v, Rest&&... args);
+
   template <typename DecodeParams>
   static void set_decode_params(DecodeParams& dparams);
 
@@ -1042,6 +1052,9 @@ private: // Data Members
 /**
  * Decode the JWT signature to create the `jwt_object`.
  * This version reports error back using `std::error_code`.
+ *
+ * If any of the registered claims are found in wrong format
+ * then sets TypeConversion error in the error_code.
  *
  * NOTE: Memory allocation exceptions are not caught.
  *
@@ -1062,6 +1075,14 @@ private: // Data Members
  *
  * 5. issuer: The issuer the client expects to be in the claim.
  * NOTE: It is case-sensitive
+ *
+ * 6. sub: The subject the client expects to be in the claim.
+ *
+ * 7. validate_iat: Checks if IAT claim is present or not
+ * and the type is uint64_t or not. If claim is not present
+ * then set InvalidIAT error.
+ *
+ * 8. validate_jti: Checks if jti claim is present or not.
  */
 template <typename SequenceT, typename... Args>
 jwt_object decode(const jwt::string_view enc_str, 
