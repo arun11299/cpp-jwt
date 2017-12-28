@@ -5,15 +5,13 @@
 cmake_minimum_required (VERSION 2.8.11)
 project (cpp-jwt)
 
-set(CMAKE_CXX_STANDARD 14)
-
 SET( CMAKE_CXX_FLAGS  "-std=c++14" )
 
 include_directories (include)
 
-find_package(OpenSSL REQUIRED)
+#find_package(OpenSSL REQUIRED)
 include_directories(${OPENSSL_INCLUDE_DIR})
-list(APPEND LIB_LIST ${OPENSSL_LIBRARIES})
+link_directories(${OPENSSL_LIBRARIES})
 
 # Recurse into the "Hello" and "Demo" subdirectories. This does not actually
 # cause another cmake executable to run. The same process will walk through

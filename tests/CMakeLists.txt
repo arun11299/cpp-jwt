@@ -1,4 +1,15 @@
 
-add_library(libgtest IMPORTED STATIC GLOBAL)
-add_executable (test_jwt_encode test_jwt_encode.cc)
+include_directories(${OPENSSL_INCLUDE_DIR})
+link_directories(${OPENSSL_LIBRARIES})
+
+add_executable(test_jwt_encode test_jwt_encode.cc)
 target_link_libraries(test_jwt_encode ssl crypto gtest)
+
+add_executable(test_jwt_decode test_jwt_decode.cc)
+target_link_libraries(test_jwt_decode ssl crypto gtest)
+
+add_executable(test_jwt_decode_verifiy test_jwt_decode_verifiy.cc)
+target_link_libraries(test_jwt_decode_verifiy ssl crypto gtest)
+
+add_executable(test_jwt_decode_verifiy_with_exception test_jwt_decode_verifiy_with_exception.cc)
+target_link_libraries(test_jwt_decode_verifiy_with_exception ssl crypto gtest)

@@ -1,0 +1,1 @@
+cmake -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2j/ -DOPENSSL_LIBRARIES=/usr/local/Cellar/openssl/1.0.2j/lib/ -DOPENSSL_INCLUDE_DIR=/usr/local/Cellar/openssl/1.0.2j/include/
