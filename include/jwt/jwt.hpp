@@ -563,7 +563,7 @@ public: // Exposed APIs
   /**
    * Checks whether a claim is present in the payload 
    * or not.
-   * @note: Claim name is case insensitive for this API.
+   * @note: Claim name is case sensitive for this API.
    */
   //TODO: Not all libc++ version agrees with this
   //because count() is not made const for is_transparent
@@ -659,25 +659,25 @@ private:
 
     bool operator()(const std::string& lhs, const std::string& rhs) const
     {
-      int ret = strcasecmp(lhs.c_str(), rhs.c_str());
+      int ret = strcmp(lhs.c_str(), rhs.c_str());
       return (ret < 0);
     }
 
     bool operator()(const jwt::string_view lhs, const jwt::string_view rhs) const
     {
-      int ret = strcasecmp(lhs.data(), rhs.data());
+      int ret = strcmp(lhs.data(), rhs.data());
       return (ret < 0);
     }
 
     bool operator()(const std::string& lhs, const jwt::string_view rhs) const
     {
-      int ret = strcasecmp(lhs.data(), rhs.data());
+      int ret = strcmp(lhs.data(), rhs.data());
       return (ret < 0);
     }
 
     bool operator()(const jwt::string_view lhs, const std::string& rhs) const
     {
-      int ret = strcasecmp(lhs.data(), rhs.data());
+      int ret = strcmp(lhs.data(), rhs.data());
       return (ret < 0);
     }
   };

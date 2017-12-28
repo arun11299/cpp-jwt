@@ -93,7 +93,9 @@ TEST (DecodeTest, DecodeHS256)
 
   EXPECT_TRUE (obj.has_claim("iss"));
   EXPECT_TRUE (obj.payload().has_claim_with_value("iss", "arun.muralidharan"));
-  EXPECT_TRUE (obj.has_claim("IAT"));
+
+  //Case sensitive search
+  EXPECT_FALSE (obj.has_claim("IAT"));
   EXPECT_TRUE (obj.payload().has_claim_with_value(jwt::registered_claims::issued_at, 1513862371));
 
   EXPECT_FALSE (obj.payload().has_claim_with_value(jwt::registered_claims::issued_at, 1513862372));
