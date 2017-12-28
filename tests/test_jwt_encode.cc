@@ -237,6 +237,28 @@ TEST (EncodeTest, StrEncodeNoneAlgWithKey)
   EXPECT_EQ (enc_str1, enc_str2);
 }
 
+TEST (EncodeTest, OverwriteClaimsTest)
+{
+  using namespace jwt::params;
+
+  jwt::jwt_object obj{algorithm("NONE"),
+                      payload({
+                                {"iss", "arn-ml"},
+                                {"x-pld1", "data1"},
+                                {"x-pld2", "data2"},
+                                {"x-pld3", "123"}
+                              })
+                     };
+
+  bool ret = obj.payload().add_claim("x-pld1", "1data");
+  EXPECT_FALSE (ret);
+
+  ret = obj.payload().add_claim("x-pld1", "1data", true/*overwrite*/);
+  EXPECT_TRUE (ret);
+
+  EXPECT_TRUE (obj.payload().has_claim_with_value("x-pld1", "1data"));
+}
+
 int main(int argc, char **argv) 
 {
   ::testing::InitGoogleTest(&argc, argv);
