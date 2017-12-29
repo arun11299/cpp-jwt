@@ -67,18 +67,17 @@ void jwt_header::decode(const jwt::string_view enc_str, std::error_code& ec)
 {
   ec.clear();
   std::string json_str = base64_decode(enc_str);
-  json_t obj;
 
   try {
-    obj = json_t::parse(std::move(json_str));
+    payload_ = json_t::parse(std::move(json_str));
   } catch(const std::exception& e) {
     ec = DecodeErrc::JsonParseError;
     return;
   }
 
   //Look for the algorithm field
-  auto alg_itr = obj.find("alg");
-  if (alg_itr == obj.end()) {
+  auto alg_itr = payload_.find("alg");
+  if (alg_itr == payload_.end()) {
     ec = DecodeErrc::AlgHeaderMiss;
     return;
   }
@@ -87,13 +86,14 @@ void jwt_header::decode(const jwt::string_view enc_str, std::error_code& ec)
 
   if (alg_ != algorithm::NONE)
   {
-    auto itr = obj.find("typ");
-    if (itr == obj.end()) {
+    auto itr = payload_.find("typ");
+    if (itr == payload_.end()) {
       ec = DecodeErrc::TypHeaderMiss;
       return;
     }
 
     const auto& typ = itr.value().get<std::string>();
+
     if (strcasecmp(typ.c_str(), "JWT")) {
       ec = DecodeErrc::TypMismatch;
       return;
@@ -102,6 +102,15 @@ void jwt_header::decode(const jwt::string_view enc_str, std::error_code& ec)
     typ_ = str_to_type(typ);
   } else {
     //TODO:
+  }
+
+  // Populate header
+  for (auto it = payload_.begin(); it != payload_.end(); ++it) {
+    auto ret = headers_.insert(it.key());
+    if (!ret.second) {
+      ec = DecodeErrc::DuplClaims;
+      break;
+    }
   }
 
   return;

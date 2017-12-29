@@ -1,0 +1,1 @@
+/Library/Developer/CommandLineTools/usr/bin/c++   -std=c++14 -DCERT_ROOT_DIR="\"/Users/amuralid/dev_test/cpp-jwt/examples/certs\"" -Wl,-search_paths_first -Wl,-headerpad_max_install_names  CMakeFiles/simple_ex1.dir/simple_ex1.cc.o  -o simple_ex1  -L/usr/local/Cellar/openssl/1.0.2j/lib  -lssl -lcrypto -lgtest -Wl,-rpath,/usr/local/Cellar/openssl/1.0.2j/lib 
