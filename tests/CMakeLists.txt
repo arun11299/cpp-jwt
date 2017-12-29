@@ -19,3 +19,6 @@ target_link_libraries(test_jwt_decode_verifiy_with_exception ssl crypto gtest)
 
 add_executable(test_jwt_rsa test_jwt_rsa.cc)
 target_link_libraries(test_jwt_rsa ssl crypto gtest)
+
+add_executable(test_jwt_es test_jwt_es.cc)
+target_link_libraries(test_jwt_es ssl crypto gtest)

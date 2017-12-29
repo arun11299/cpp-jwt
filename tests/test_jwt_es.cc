@@ -1,0 +1,118 @@
+#include <iostream>
+#include <fstream>
+#include <map>
+#include <chrono>
+
+#include "gtest/gtest.h"
+#include "jwt/jwt.hpp"
+
+#define EC384_PUB_KEY CERT_ROOT_DIR "/ec_certs/ec384_pub.pem"
+#define EC384_PRIV_KEY CERT_ROOT_DIR "/ec_certs/ec384_priv.pem"
+
+std::string read_from_file(const std::string& path)
+{
+  std::string contents;
+  std::ifstream is{path, std::ifstream::binary};
+
+  if (is) {
+    // get length of file:
+    is.seekg (0, is.end);
+    auto length = is.tellg();
+    is.seekg (0, is.beg);
+    contents.resize(length);
+
+    is.read(&contents[0], length);
+    if (!is) {
+      is.close();
+      return {};
+    }
+  }
+
+  is.close();
+  return contents;
+}
+
+TEST (ESAlgo, ES256EncodingDecodingTest)
+{
+  using namespace jwt::params;
+
+  std::string key = read_from_file(EC384_PRIV_KEY);
+  ASSERT_TRUE (key.length());
+
+  jwt::jwt_object obj{algorithm("ES256"), secret(key)};
+
+  obj.add_claim("iss", "arun.muralidharan")
+     .add_claim("aud", "all")
+     .add_claim("exp", 1513862371)
+     ;
+
+  std::error_code ec;
+  auto enc_str = obj.signature(ec);
+  EXPECT_FALSE (ec);
+
+  key = read_from_file(EC384_PUB_KEY);
+  ASSERT_TRUE (key.length());
+
+  auto dec_obj = jwt::decode(enc_str, algorithms({"es256"}), ec, verify(false), secret(key));
+  EXPECT_FALSE (ec);
+
+  EXPECT_EQ (dec_obj.header().algo(), jwt::algorithm::ES256);
+  EXPECT_TRUE (dec_obj.has_claim("iss"));
+  EXPECT_TRUE (dec_obj.has_claim("aud"));
+  EXPECT_TRUE (dec_obj.has_claim("exp"));
+
+  EXPECT_FALSE (dec_obj.has_claim("sub"));
+}
+
+TEST (ESAlgo, ES384EncodingDecodingTest)
+{
+  using namespace jwt::params;
+
+  std::string key = read_from_file(EC384_PRIV_KEY);
+  ASSERT_TRUE (key.length());
+
+  jwt::jwt_object obj{algorithm("ES384"), secret(key)};
+
+  obj.add_claim("iss", "arun.muralidharan")
+     .add_claim("aud", "all")
+     .add_claim("exp", 1513862371)
+     ;
+
+  auto enc_str = obj.signature();
+
+  key = read_from_file(EC384_PUB_KEY);
+  ASSERT_TRUE (key.length());
+
+  auto dec_obj = jwt::decode(enc_str, algorithms({"es384"}), verify(false), secret(key));
+
+  EXPECT_EQ (dec_obj.header().algo(), jwt::algorithm::ES384);
+}
+
+TEST (ESAlgo, ES512EncodingDecodingTest)
+{
+  using namespace jwt::params;
+
+  std::string key = read_from_file(EC384_PRIV_KEY);
+  ASSERT_TRUE (key.length());
+
+  jwt::jwt_object obj{algorithm("ES512"), secret(key)};
+
+  obj.add_claim("iss", "arun.muralidharan")
+     .add_claim("aud", "all")
+     .add_claim("exp", 1513862371)
+     ;
+
+  auto enc_str = obj.signature();
+
+  key = read_from_file(EC384_PUB_KEY);
+  ASSERT_TRUE (key.length());
+
+  auto dec_obj = jwt::decode(enc_str, algorithms({"es512"}), verify(false), secret(key));
+
+  EXPECT_EQ (dec_obj.header().algo(), jwt::algorithm::ES512);
+}
+
+int main(int argc, char* argv[]) {
+  ::testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}
