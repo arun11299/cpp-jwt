@@ -111,6 +111,21 @@ depend:
 .PHONY : depend
 
 # Convenience name for target.
+examples/CMakeFiles/simple_ex2.dir/rule:
+	cd /Users/amuralid/dev_test/cpp-jwt && $(MAKE) -f CMakeFiles/Makefile2 examples/CMakeFiles/simple_ex2.dir/rule
+.PHONY : examples/CMakeFiles/simple_ex2.dir/rule
+
+# Convenience name for target.
+simple_ex2: examples/CMakeFiles/simple_ex2.dir/rule
+
+.PHONY : simple_ex2
+
+# fast build rule for target.
+simple_ex2/fast:
+	cd /Users/amuralid/dev_test/cpp-jwt && $(MAKE) -f examples/CMakeFiles/simple_ex2.dir/build.make examples/CMakeFiles/simple_ex2.dir/build
+.PHONY : simple_ex2/fast
+
+# Convenience name for target.
 examples/CMakeFiles/simple_ex1.dir/rule:
 	cd /Users/amuralid/dev_test/cpp-jwt && $(MAKE) -f CMakeFiles/Makefile2 examples/CMakeFiles/simple_ex1.dir/rule
 .PHONY : examples/CMakeFiles/simple_ex1.dir/rule
@@ -152,6 +167,33 @@ simple_ex1.cc.s:
 	cd /Users/amuralid/dev_test/cpp-jwt && $(MAKE) -f examples/CMakeFiles/simple_ex1.dir/build.make examples/CMakeFiles/simple_ex1.dir/simple_ex1.cc.s
 .PHONY : simple_ex1.cc.s
 
+simple_ex2.o: simple_ex2.cc.o
+
+.PHONY : simple_ex2.o
+
+# target to build an object file
+simple_ex2.cc.o:
+	cd /Users/amuralid/dev_test/cpp-jwt && $(MAKE) -f examples/CMakeFiles/simple_ex2.dir/build.make examples/CMakeFiles/simple_ex2.dir/simple_ex2.cc.o
+.PHONY : simple_ex2.cc.o
+
+simple_ex2.i: simple_ex2.cc.i
+
+.PHONY : simple_ex2.i
+
+# target to preprocess a source file
+simple_ex2.cc.i:
+	cd /Users/amuralid/dev_test/cpp-jwt && $(MAKE) -f examples/CMakeFiles/simple_ex2.dir/build.make examples/CMakeFiles/simple_ex2.dir/simple_ex2.cc.i
+.PHONY : simple_ex2.cc.i
+
+simple_ex2.s: simple_ex2.cc.s
+
+.PHONY : simple_ex2.s
+
+# target to generate assembly for a file
+simple_ex2.cc.s:
+	cd /Users/amuralid/dev_test/cpp-jwt && $(MAKE) -f examples/CMakeFiles/simple_ex2.dir/build.make examples/CMakeFiles/simple_ex2.dir/simple_ex2.cc.s
+.PHONY : simple_ex2.cc.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -160,10 +202,14 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
+	@echo "... simple_ex2"
 	@echo "... simple_ex1"
 	@echo "... simple_ex1.o"
 	@echo "... simple_ex1.i"
 	@echo "... simple_ex1.s"
+	@echo "... simple_ex2.o"
+	@echo "... simple_ex2.i"
+	@echo "... simple_ex2.s"
 .PHONY : help
 
 
