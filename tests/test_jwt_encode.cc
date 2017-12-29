@@ -259,6 +259,31 @@ TEST (EncodeTest, OverwriteClaimsTest)
   EXPECT_TRUE (obj.payload().has_claim_with_value("x-pld1", "1data"));
 }
 
+TEST (EncodeTest, HeaderParamTest)
+{
+  using namespace jwt::params;
+
+  jwt::jwt_object obj{
+    headers({
+      {"alg", "none"},
+      {"typ", "jwt"},
+      }),
+    payload({
+      {"iss", "arun.muralidharan"},
+      {"sub", "nsfw"},
+      {"x-pld", "not my ex"}
+    })
+  };
+
+  bool ret = obj.header().add_header("kid", 1234567);
+  EXPECT_TRUE (ret);
+
+  ret = obj.header().add_header("crit", std::array<std::string, 1>{"exp"});
+  EXPECT_TRUE (ret);
+
+  std::cout << obj.header() << std::endl;
+}
+
 int main(int argc, char **argv) 
 {
   ::testing::InitGoogleTest(&argc, argv);

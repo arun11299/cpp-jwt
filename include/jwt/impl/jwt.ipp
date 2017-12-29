@@ -322,7 +322,10 @@ template <typename Map, typename... Rest>
 void jwt_object::set_parameters(
     params::detail::headers_param<Map>&& header, Rest&&... rargs)
 {
-  //TODO: add kid support
+  for (const auto& elem : header.get()) {
+    header_.add_header(std::move(elem.first), std::move(elem.second));
+  }
+
   set_parameters(std::forward<Rest>(rargs)...);
 }
 
