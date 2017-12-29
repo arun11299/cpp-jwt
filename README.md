@@ -28,6 +28,7 @@
 - [Error Codes & Exceptions](#errorcodeexception)
 - [Additional Header Data](#additionalheaderdata)
 - [Things for improvement](#improvement)
+- [LICENSE](#license)
 
 
 ## What is it ?
@@ -146,4 +147,39 @@ Few good resources on this material which I found useful are:
     }
   ```
 
+The <code>jwt_object</code> class is basically a composition of the JWT component classes, which are <code>jwt_header</code> & <code>jwt_payload</code>. For convenience <code>jwt_object</code> exposes only few important APIs to the user, the remaining APIs under <code>jwt_header</code> and <code>jwt_payload</code> can be accessed by calling <code>jwt_object::header()</code> and <code>jwt_object::payload()</code> APIs.
+
+
+## API Philosophy
+I wanted to make the code easy to read and at the same time make most of the standard library and the modern features.
+It also uses some metaprogramming tricks to enforce type checks and give better error messages.
+
+The design of `parameters` alleviates the pain of remembering positional arguments. Also makes the APIs more extensible for future enhancements.
+
+The library has 2 sets of APIs for encoding and decoding:
+  - API which takes an instance of <code>std::error_code</code>
+    These APIs will report the errors by setting the `error_code`. This does not mean that these API would not throw. Memory allocation errors would still be thrown instead of setting the error_code.
+  - API which throws exceptions
+    All the errors would be thrown as exception.
+
+## Support
+<strong>Algorithms and features supported</strong>
+- [x] HS256
+- [x] HS384
+- [x] HS512
+- [x] RS256
+- [x] RS384
+- [x] RS512
+- [x] ES256
+- [x] ES384
+- [x] ES512
+- [x] Sign
+- [x] Verify
+- [x] iss (issuer) check
+- [x] sub (subject) check
+- [x] aud (audience) check
+- [x] exp (expiration time) check
+- [x] nbf (not before time) check
+- [x] iat (issued at) check
+- [x] jti (JWT id) check
 
