@@ -22,9 +22,9 @@
 - [Thanks to...](#thanksto)
 - [Installation](#installation)
 - [Parameters](#parameters)
-- [Claim Data TYpes](#claimdatatypes)
+- [Claim Data Types](#claimdatatypes)
 - [Advanced Examples](#advancedexamples)
-- [JWS Verification](#jwsverification)
+- [JWT Verification](#jwsverification)
 - [Error Codes & Exceptions](#errorcodeexception)
 - [Additional Header Data](#additionalheaderdata)
 - [Things for improvement](#improvement)
@@ -36,9 +36,9 @@ For the uninitiated, JSON Web Token(JWT) is a JSON based standard (<a href="http
 This assertion can be used in some kind of bearer authentication mechanism that the server will provide to clients, and the clients can make use of the provided assertion for accessing resources.
 
 Few good resources on this material which I found useful are:
-  - <a href="https://scotch.io/tutorials/the-anatomy-of-a-json-web-token">Anatomy of JWT</a>
-  - <a href="https://auth0.com/learn/json-web-tokens/">Learn JWT</a> 
-  - <a href="https://tools.ietf.org/html/rfc7519">RFC 7519</a>
+  <a href="https://scotch.io/tutorials/the-anatomy-of-a-json-web-token">Anatomy of JWT</a>
+  <a href="https://auth0.com/learn/json-web-tokens/">Learn JWT</a> 
+  <a href="https://tools.ietf.org/html/rfc7519">RFC 7519</a>
 
 
 ## Example
@@ -211,11 +211,14 @@ There are two sets of parameters which can be used for creating `jwt_object` and
 All the parameters are basically a function which returns an instance of a type which are modelled after <code>ParameterConcept</code> (see <code>jwt::detail::meta::is_parameter_concept</code>).
 
 
-- <code>jwt_object</code> creation parameters
+- <strong><code>jwt_object</code> creation parameters</strong>
   - <strong>payload</strong>
+
     Used to populate the claims while creating the `jwt_object` instance.
+
     There are two overloads of this function:
     - Takes Initializer list of <code>pair<string_view, string_view></code>
+
       Easy to pass claims with string values which are all known at the time of object creation.
       Can be used like:
       ```cpp
@@ -231,6 +234,7 @@ All the parameters are basically a function which returns an instance of a type 
       Claim values which are not strings/string_views cannot be used.
 
     - Takes any type which models <code>MappingConcept</code> (see <code>detail::meta::is_mapping_concept</code>)
+
       This overload can accept <code>std::map</code> or <code>std::unordered_map</code> like containers.
       Can be used like:
       ```cpp
@@ -251,18 +255,22 @@ All the parameters are basically a function which returns an instance of a type 
       ```
 
   - <strong>secret</strong>
+
     Used to pass the key which could be some random string or public certificate data as string.
     The passed string type must be convertible to <code>jwt::string_view</code>
 
   - <strong>algorithm</strong>
+
     Used to pass the type of algorithm to use for encoding.
     There are two overloads of this function:
     - Takes <code>jwt::string_view</code>
+
       Can pass the algorithm value in any case. It is case agnostic.
 
     - Takes value of type <code>enum class jwt::algorithm</code>
 
   - <strong>headers</strong>
+
     Used to populate fields in JWT header. It is very similar to `payload` function parameter.
     There are two overloads for this function which are similar to how <code>payload</code> function is.
     This parameter can be used to add headers other that <strong>alg</strong> and <strong>typ</strong>.
@@ -283,8 +291,10 @@ All the parameters are basically a function which returns an instance of a type 
     ```
 
 
-- Decoding parameters
+- <strong>Decoding parameters</strong>
+
   - <strong>algorithms</strong>
+
     This is a mandatory parameter which takes a sequence of algorithms (as string) which the user would like to permit when validating the JWT. The value in the header for "alg" would be matched against the provided sequence of values. If nothing matches <code>InvalidAlgorithmError</code> exception or <code>InvalidAlgorithm</code> error would be set based upon the API being used.
 
     There are two overloads for this function:
@@ -301,34 +311,41 @@ All the parameters are basically a function which returns an instance of a type 
   ```
 
   - <strong>secret</strong>
+
     Optional parameter. To be supplied only when the algorithm used is not "NONE". Else would throw/set <code>KeyNotPresentError</code> / <code>KeyNotPresent</code> exception/error.
 
   - <strong>leeway</strong>
+
     Optional parameter. Used with validation of "Expiration" and "Not Before" claims.
     The value passed should be `seconds` to account for clock skew.
     Default value is `0` seconds.
 
   - <strong>verify</strong>
+
     Optional parameter. Suggests if verification of claims should be done or not.
     Takes a boolean value.
     By default verification is turned on.
 
   - <strong>issuer</strong>
+
     Optional parameter.
     Takes a string value.
     Validates the passed issuer value against the one present in the decoded JWT object. If the values do not match <code>InvalidIssuerError</code> or <code>InvalidIssuer</code> exception or error_code is thrown/set.
 
   - <strong>aud</strong>
+
     Optional parameter.
     Takes a string value.
     Validates the passed audience value against the one present in the decoded JWT object. If the values do not match <code>InvalidAudienceError</code> or <code>InvalidAudience</code> exception or error_code is thrown/set.
 
   - <strong>sub</strong>
+
     Optional parameter.
     Takes a string value.
     Validates the passed subject value against the one present in the decoded JWT object. If the values do not match <code>InvalidSubjectError</code> or <code>InvalidSubject</code> exception or error_code is thrown/set.
 
   - <strong>validate_iat</strong>
+
     Optional parameter.
     Takes a boolean value.
     Validates the IAT claim. Only checks whether the field is present and is of correct type. If not throws/sets <code>InvalidIATError</code> or <code>InvalidIAT</code>.
@@ -336,10 +353,31 @@ All the parameters are basically a function which returns an instance of a type 
     Default value is false.
 
   - <strong>validate_jti</strong>
+
     Optional parameter. 
     Takes a boolean value.
     Validates the JTI claim. Only checks for the presence of the claim. If  not throws or sets <code>InvalidJTIError</code> or <code>InvalidJTI</code>.
 
     Default is false.
 
+
+## Claim Data Types
+    For the registered claim types the library assumes specific data types for the claim values. Using anything else is not supported and would result in runtime JSON parse error.
+
+    Claim                 |  Data Type
+    -----------------------------------
+    Expiration(exp)       |  uint64_t (Epoch time in seconds)
+    -----------------------------------
+    Not Before(nbf)       |  uint64_t (Epoch time in seconds)
+    -----------------------------------
+    Issuer(iss)           |  string
+    -----------------------------------
+    Audience(aud)         |  string
+    -----------------------------------
+    Issued At(iat)        |  uint64_t (Epoch time in seconds)
+    -----------------------------------
+    Subject(sub)          |  string
+    -----------------------------------
+    JTI(jti)              | <Value type not checked by library. Upto application.>
+    -----------------------------------
 
