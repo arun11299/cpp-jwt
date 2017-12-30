@@ -144,8 +144,8 @@ struct is_parameter_concept<T,
 };
 
 /**
+ * Models SequenceConcept
  */
-
 template <typename T, typename=void>
 struct is_sequence_concept: std::false_type
 {

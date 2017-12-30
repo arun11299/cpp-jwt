@@ -21,9 +21,9 @@
 - [External Dependencies](#externaldependencies)
 - [Thanks to...](#thanksto)
 - [Installation](#installation)
-- [API Categories](#apicategories)
-- [Advanced Examples](#advancedexamples)
 - [Parameters](#parameters)
+- [Claim Data TYpes](#claimdatatypes)
+- [Advanced Examples](#advancedexamples)
 - [JWS Verification](#jwsverification)
 - [Error Codes & Exceptions](#errorcodeexception)
 - [Additional Header Data](#additionalheaderdata)
@@ -182,4 +182,164 @@ The library has 2 sets of APIs for encoding and decoding:
 - [x] nbf (not before time) check
 - [x] iat (issued at) check
 - [x] jti (JWT id) check
+- [x] JWS header addition support. For eg "kid" support.
+
+## External Dependencies
+  - <strong>OpenSSL </strong>(Version >= 1.0.2j)
+    Might work with older version as well, but I did not check that.
+  - <strong>Google Test Framework</strong>
+    For running the tests
+  - <strong>nlohmann JSON library</strong>
+    The awesome JSON library :)
+
+## Thanks to...
+    - <a href="https://github.com/benmcollins/libjwt">ben-collins JWT library</a>
+    - Howard Hinnant for the stack allocator
+    - libstd++ code (I took the hashing code for string_view)
+
+## Installation
+Use the C++ package manager..... just kidding :)
+This is a header only library, so you can just add it to your include path and start using it. The only somewhat tricky part is to link it with openssl library. Check out the cmake file for building it properly.
+
+For example one can run cmake like:
+```
+cmake -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2j/ -DOPENSSL_LIBRARIES=/usr/local/Cellar/openssl/1.0.2j/lib/ -DOPENSSL_INCLUDE_DIR=/usr/local/Cellar/openssl/1.0.2j/include/
+```
+
+## Parameters
+There are two sets of parameters which can be used for creating `jwt_object` and for decoding.
+All the parameters are basically a function which returns an instance of a type which are modelled after <code>ParameterConcept</code> (see <code>jwt::detail::meta::is_parameter_concept</code>).
+
+
+- <code>jwt_object</code> creation parameters
+  - <strong>payload</strong>
+    Used to populate the claims while creating the `jwt_object` instance.
+    There are two overloads of this function:
+    - Takes Initializer list of <code>pair<string_view, string_view></code>
+      Easy to pass claims with string values which are all known at the time of object creation.
+      Can be used like:
+      ```cpp
+      jwt_object obj {
+        payload({
+            {"iss", "some-guy"},
+            {"sub", "something"},
+            {"X-pld", "data1"}
+          }),
+          ... // Add other parameters
+      };
+      ```
+      Claim values which are not strings/string_views cannot be used.
+
+    - Takes any type which models <code>MappingConcept</code> (see <code>detail::meta::is_mapping_concept</code>)
+      This overload can accept <code>std::map</code> or <code>std::unordered_map</code> like containers.
+      Can be used like:
+      ```cpp
+      map<string, string> m;
+      m["iss"] = "some-guy";
+      m["sub"] = "something";
+      m["X-pld"] = "data1";
+
+      jwt_object obj{
+        payload(std::move(m)),
+        ... // Add other parameters
+      };
+      //OR
+      jwt_object obj{
+        payload(m),
+        ... // Add other parameters
+      };
+      ```
+
+  - <strong>secret</strong>
+    Used to pass the key which could be some random string or public certificate data as string.
+    The passed string type must be convertible to <code>jwt::string_view</code>
+
+  - <strong>algorithm</strong>
+    Used to pass the type of algorithm to use for encoding.
+    There are two overloads of this function:
+    - Takes <code>jwt::string_view</code>
+      Can pass the algorithm value in any case. It is case agnostic.
+
+    - Takes value of type <code>enum class jwt::algorithm</code>
+
+  - <strong>headers</strong>
+    Used to populate fields in JWT header. It is very similar to `payload` function parameter.
+    There are two overloads for this function which are similar to how <code>payload</code> function is.
+    This parameter can be used to add headers other that <strong>alg</strong> and <strong>typ</strong>.
+
+    Same as the case with payload, only string values can be used with this. For adding values of other
+    data types, use <code>add_header</code> API of <code>jwt_header</code> class.
+
+    For example adding `kid` header with other additional data fields.
+    ```cpp
+    jwt_object obj{
+      algorithm("HS256"),
+      headers({
+        {"kid", "12-34-56"},
+        {"xtra", "header"}
+      })
+      ... // Add other parameters
+    };
+    ```
+
+
+- Decoding parameters
+  - <strong>algorithms</strong>
+    This is a mandatory parameter which takes a sequence of algorithms (as string) which the user would like to permit when validating the JWT. The value in the header for "alg" would be matched against the provided sequence of values. If nothing matches <code>InvalidAlgorithmError</code> exception or <code>InvalidAlgorithm</code> error would be set based upon the API being used.
+
+    There are two overloads for this function:
+    - Takes initializer-list of string values
+    - Takes in any type which satifies the <strong>SequenceConcept</strong> (see <code>idetail::meta::is_sequence_concept</code>)
+
+  ```cpp
+  jwt::decode(algorithms({"none", "hs256", "rs256"}), ...);
+  
+  OR
+
+  std::vector<std::string> algs{"none", "hs256", "rs256"};
+  jwt::decode(algorithms(algs), ...);
+  ```
+
+  - <strong>secret</strong>
+    Optional parameter. To be supplied only when the algorithm used is not "NONE". Else would throw/set <code>KeyNotPresentError</code> / <code>KeyNotPresent</code> exception/error.
+
+  - <strong>leeway</strong>
+    Optional parameter. Used with validation of "Expiration" and "Not Before" claims.
+    The value passed should be `seconds` to account for clock skew.
+    Default value is `0` seconds.
+
+  - <strong>verify</strong>
+    Optional parameter. Suggests if verification of claims should be done or not.
+    Takes a boolean value.
+    By default verification is turned on.
+
+  - <strong>issuer</strong>
+    Optional parameter.
+    Takes a string value.
+    Validates the passed issuer value against the one present in the decoded JWT object. If the values do not match <code>InvalidIssuerError</code> or <code>InvalidIssuer</code> exception or error_code is thrown/set.
+
+  - <strong>aud</strong>
+    Optional parameter.
+    Takes a string value.
+    Validates the passed audience value against the one present in the decoded JWT object. If the values do not match <code>InvalidAudienceError</code> or <code>InvalidAudience</code> exception or error_code is thrown/set.
+
+  - <strong>sub</strong>
+    Optional parameter.
+    Takes a string value.
+    Validates the passed subject value against the one present in the decoded JWT object. If the values do not match <code>InvalidSubjectError</code> or <code>InvalidSubject</code> exception or error_code is thrown/set.
+
+  - <strong>validate_iat</strong>
+    Optional parameter.
+    Takes a boolean value.
+    Validates the IAT claim. Only checks whether the field is present and is of correct type. If not throws/sets <code>InvalidIATError</code> or <code>InvalidIAT</code>.
+
+    Default value is false.
+
+  - <strong>validate_jti</strong>
+    Optional parameter. 
+    Takes a boolean value.
+    Validates the JTI claim. Only checks for the presence of the claim. If  not throws or sets <code>InvalidJTIError</code> or <code>InvalidJTI</code>.
+
+    Default is false.
+
 
