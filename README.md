@@ -6,7 +6,9 @@
 
 <br/>
 
+<div align="center">
 <img src="https://jwt.io/assets/logo.svg" />
+</div>
 
 <br/>
 
