@@ -181,6 +181,19 @@ TEST (DecodeVerify, InvalidIATTest)
   EXPECT_EQ (ec.value(), static_cast<int>(jwt::VerificationErrc::TypeConversionError));
 }
 
+TEST (DecodeVerify, InvalidSignatureTest)
+{
+  using namespace jwt::params;
+
+  std::error_code ec;
+  auto dec_obj = jwt::decode("", algorithms({"hs256"}), ec, secret("secret"), validate_iat(true));
+  EXPECT_EQ (ec.value(), static_cast<int>(jwt::DecodeErrc::SignatureFormatError));
+
+  ec.clear();
+  dec_obj = jwt::decode("abcdsdfhbsdhjfbsdj.", algorithms({"hs256"}), ec, secret("secret"), validate_iat(true));
+  EXPECT_EQ (ec.value(), static_cast<int>(jwt::DecodeErrc::SignatureFormatError));
+}
+
 int main(int argc, char* argv[]) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
