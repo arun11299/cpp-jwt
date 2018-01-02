@@ -20,20 +20,20 @@
 </div>
 
 ## Table of Contents
-- [What is it ?](#What is it ?)
-- [Example](#Example)
-- [API Philosophy](#API Philosophy)
-- [Support](#Support)
-- [External Dependencies](#External Dependencies)
-- [Thanks to...](#Thanks to...)
-- [Installation](#Installation)
-- [Parameters](#Parameters)
-- [Claim Data Types](#Claim Data Types)
-- [Advanced Examples](#Advanced Examples)
-- [Error Codes & Exceptions](#Error Codes & Exceptions)
-- [Additional Header Data](#Additional Header Data)
-- [Things for improvement](#Things for improvement)
-- [LICENSE](#LICENSE)
+- [What is it ?](#whatisit)
+- [Example](#example)
+- [API Philosophy](#apiphilosophy)
+- [Support](#support)
+- [External Dependencies](#externaldependencies)
+- [Thanks to...](#thanksto)
+- [Installation](#installation)
+- [Parameters](#parameters)
+- [Claim Data Types](#claimdatatypes)
+- [Advanced Examples](#advancedexamples)
+- [Error Codes & Exceptions](#errorcodeexception)
+- [Additional Header Data](#additionalheaderdata)
+- [Things for improvement](#improvement)
+- [LICENSE](#license)
 
 
 ## What is it ?
