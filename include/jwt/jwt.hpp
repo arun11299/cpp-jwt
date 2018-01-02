@@ -660,7 +660,7 @@ public: // Exposed APIs
   //based overload
   bool has_claim(const jwt::string_view cname) const noexcept
   {
-    return claim_names_.count(cname);
+    return claim_names_.find(cname) != std::end(claim_names_);
   }
 
   /**
