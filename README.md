@@ -6,6 +6,10 @@
 
 <br/>
 
+<img src="https://jwt.io/assets/logo.svg" />
+
+<br/>
+
 <div align="center">
   <sub>
     A little library built with lots of ❤︎  for working with JWT easier.
