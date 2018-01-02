@@ -24,7 +24,6 @@
 - [Parameters](#parameters)
 - [Claim Data Types](#claimdatatypes)
 - [Advanced Examples](#advancedexamples)
-- [JWT Verification](#jwsverification)
 - [Error Codes & Exceptions](#errorcodeexception)
 - [Additional Header Data](#additionalheaderdata)
 - [Things for improvement](#improvement)
@@ -362,7 +361,7 @@ All the parameters are basically a function which returns an instance of a type 
 
 
 ## Claim Data Types
-    For the registered claim types the library assumes specific data types for the claim values. Using anything else is not supported and would result in runtime JSON parse error.
+For the registered claim types the library assumes specific data types for the claim values. Using anything else is not supported and would result in runtime JSON parse error.
 
     Claim                 |  Data Type
     -----------------------------------
@@ -381,3 +380,317 @@ All the parameters are basically a function which returns an instance of a type 
     JTI(jti)              | <Value type not checked by library. Upto application.>
     -----------------------------------
 
+
+## Advanced Examples
+We will see few complete examples which makes use of error code checks and exception handling. 
+The examples are taken from the "tests" section. Users are requested to checkout the tests to find out more ways to use this library.
+
+Expiration verification example (uses error_code):
+```cpp
+#include <cassert>
+#include <iostream>
+#include "jwt/jwt.hpp"
+
+int main() {
+  using namespace jwt::params;
+
+  jwt::jwt_object obj{algorithm("hs256"), secret("secret")};
+  obj.add_claim("iss", "arun.muralidharan")
+     .add_claim("exp", std::chrono::system_clock::now() - std::chrono::seconds{1})
+     ;
+
+  std::error_code ec;
+  auto enc_str = obj.signature(ec);
+  assert (!ec);
+
+  auto dec_obj = jwt::decode(enc_str, algorithms({"hs256"}), ec, secret("secret"), verify(true));
+  assert (ec);
+  assert (ec.value() == static_cast<int>(jwt::VerificationErrc::TokenExpired));
+
+  return 0;
+}
+```
+
+Expiration verification example (uses exception):
+```cpp
+#include <cassert>
+#include <iostream>
+#include "jwt/jwt.hpp"
+
+int main() {
+  using namespace jwt::params;
+
+  jwt::jwt_object obj{algorithm("hs256"), secret("secret")};
+
+  obj.add_claim("iss", "arun.muralidharan")
+     .add_claim("exp", std::chrono::system_clock::now() - std::chrono::seconds{1})
+     ;
+
+  auto enc_str = obj.signature();
+
+  try {
+    auto dec_obj = jwt::decode(enc_str, algorithms({"hs256"}), secret("secret"), verify(true));
+  } catch (const jwt::TokenExpiredError& e) {
+    //Handle Token expired exception here
+    //...
+  } catch (const jwt::SignatureFormatError& e) {
+    //Handle invalid signature format error
+    //...
+  } catch (const jwt::DecodeError& e) {
+    //Handle all kinds of other decode errors
+    //... 
+  } catch (const jwt::VerificationError& e) {
+    // Handle the base verification error.
+    //NOTE: There are other derived types of verification errors
+    // which will be discussed in next topic.
+  } catch (...) {
+    std::cerr << "Caught unknown exception\n";
+  }
+
+  return 0;
+}
+```
+
+Invalid issuer test(uses error_code):
+```cpp
+#include <cassert>
+#include <iostream>
+#include "jwt/jwt.hpp"
+
+int main() {
+  using namespace jwt::params;
+
+  jwt::jwt_object obj{algorithm("hs256"), secret("secret"), payload({{"sub", "test"}})};
+
+  std::error_code ec;
+  auto enc_str = obj.signature(ec);
+  assert (!ec);
+
+  auto dec_obj = jwt::decode(enc_str, algorithms({"hs256"}), ec, secret("secret"), issuer("arun.muralidharan"));
+  assert (ec);
+
+  assert (ec.value() == static_cast<int>(jwt::VerificationErrc::InvalidIssuer));
+
+  return 0;
+}
+```
+
+## Error Codes & Exceptions
+The library as we saw earlier supports error reporting via both exceptions and error_code.
+
+<strong>Error codes:</strong>
+
+The error codes are divided into different categories:
+- Algorithm Errors
+
+  Used for reporting errors at the time of encoding / signature creation.
+  ```cpp
+  enum class AlgorithmErrc
+  {
+    SigningErr = 1,
+    VerificationErr,
+    KeyNotFoundErr,
+    NoneAlgorithmUsed, // Not an actual error!
+  };
+  ```
+
+  <strong>NOTE:</strong> <code>NoneAlgorithmUsed</code> will be set in the error_code, but it usually should not be treated as a hard error when NONE algorithm is used intentionally.
+
+- Decode Errors
+
+  Used for reporting errors at the time of decoding. Different categories of decode errors are:
+  ```cpp
+  enum class DecodeErrc
+  {
+    // No algorithms provided in decode API
+    EmptyAlgoList = 1,
+    // The JWT signature has incorrect format
+    SignatureFormatError,
+    // The JSON library failed to parse
+    JsonParseError,
+    // Algorithm field in header is missing
+    AlgHeaderMiss,
+    // Type field in header is missing
+    TypHeaderMiss,
+    // Unexpected type field value
+    TypMismatch,
+    // Found duplicate claims
+    DuplClaims,
+    // Key/Secret not passed as decode argument
+    KeyNotPresent,
+    // Key/secret passed as argument for NONE algorithm.
+    // Not a hard error.
+    KeyNotRequiredForNoneAlg,
+  };
+  ```
+
+- Verification errors
+
+  Used for reporting verification errors when the verification falg is set to true in decode API.
+  Different categories of decode errors are:
+  ```cpp
+  enum class VerificationErrc
+  {
+    //Algorithms provided does not match with header
+    InvalidAlgorithm = 1,
+    //Token is expired at the time of decoding
+    TokenExpired,
+    //The issuer specified does not match with payload
+    InvalidIssuer,
+    //The subject specified does not match with payload
+    InvalidSubject,
+    //The field IAT is not present or is of invalid type
+    InvalidIAT,
+    //Checks for the existence of JTI
+    //if validate_jti is passed in decode
+    InvalidJTI,
+    //The audience specified dowes not match with payload
+    InvalidAudience,
+    //Decoded before nbf time
+    ImmatureSignature,
+    //Signature match error
+    InvalidSignature,
+    // Invalid value type used for known claims
+    TypeConversionError,
+  };
+  ```
+  
+<strong>Exceptions:</strong>
+There are exception types created for almost all the error codes above.
+
+- MemoryAllocationException
+
+  Derived from <code>std::bad_alloc</code>. Thrown for memory allocation errors in OpenSSL C API.
+
+- SigningError
+
+  Derived from <code>std::runtime_error</code>. Thrown for failures in OpenSSL APIs while signing.
+
+- DecodeError
+
+  Derived from <code>std::runtime_error</code>. Base class for all decoding related exceptions.
+
+  - SignatureFormatError
+
+    Thrown if the format of the signature is not as expected.
+
+  - KeyNotPresentError
+
+    Thrown if key/secret is not passed in with the decode API if the algorithm used is something other than "NONE".
+
+- VerificationError
+
+  Derived from <code>std::runtime_error</code>. Base class exception for all kinds of verification errors. Verification errors are thrown only when the verify decode parameter is set to true.
+
+  - InvalidAlgorithmError
+  - TokenExpiredError
+  - InvalidIssuerError
+  - InvalidAudienceError
+  - InvalidSubjectError
+  - InvalidIATError
+  - InvalidJTIError
+  - ImmatureSignatureError
+  - InvalidSignatureError
+  - TypeConversionError
+
+  NOTE: See the error code section for explanation on above verification errors or checkout <code>exceptions.hpp</code> header for more details.
+
+
+## Additional Header Data
+Generally the header consists only of `type` and `algorithm` fields. But there could be a need to add additional header fields. For example, to provide some kind of hint about what algorithm was used to sign the JWT. Checkout JOSE header section in <a href="https://tools.ietf.org/html/rfc7515">RFC-7515</a>.
+
+The library provides APIs to do that as well.
+
+```cpp
+#include <cassert>
+#include <iostream>
+#include "jwt/jwt.hpp"
+
+int main() {
+  using namespace jwt::params;
+
+  jwt::jwt_object obj{
+      headers({
+        {"alg", "none"},
+        {"typ", "jwt"},
+        }),
+      payload({
+        {"iss", "arun.muralidharan"},
+        {"sub", "nsfw"},
+        {"x-pld", "not my ex"}
+      })
+  };
+
+  bool ret = obj.header().add_header("kid", 1234567);
+  assert (ret);
+
+  ret = obj.header().add_header("crit", std::array<std::string, 1>{"exp"});
+  assert (ret);
+
+  std::error_code ec;
+  auto enc_str = obj.signature();
+
+  auto dec_obj = jwt::decode(enc_str, algorithms({"none"}), ec, verify(false));
+
+  // Should not be a hard error in general 
+  assert (ec.value() == static_cast<int>(jwt::AlgorithmErrc::NoneAlgorithmUsed));
+}
+```
+
+
+## Things for improvement
+Many things!
+Encoding and decoding JWT is fairly a simple task and could be done in a single source file. I have tried my best to get the APIs and design correct in how much ever time I could give for this project. Still, there are quite a few places (or all the places :( ? ) where things are not correct or may not be the best approach.
+
+With C++, it is pretty easy to go overboard and create something very difficult or something very straightforward (not worth to be a library). My intention was to make a sane library easier for end users to use while also making the life of someone reading the source have fairly good time debugging some issue.
+
+Things one may have questions about
+- There is a string_view implementation. Why not use <code>boost::string_ref</code> ?
+
+  Sorry, I love boost! But, do not want it to be part of dependency.
+  Having said that, I can use some MACRO to use <code>boost::string_ref</code> or C++17 string_view if available. Perhaps in future.
+
+- You are not using the stack allocator or the shart string anywhere. Why to include it then ?
+
+  I will be using it in few places where I am sure I need not use `std::string` especially in the signing code.
+
+- Why the complete `nlohmann JSON` is part of your library ?
+
+  Honestly did not know any better way. I know there are ways to use third party github repositories, but I do not know how to do that. Once I figure that out, I may move it out.
+
+- Am I bound to use `nlohmann JSON` ? Can I use some other JSON library ?
+
+  As of now, ys. You cannot use any other JSON library unless you change the code. I would have liked to provide some adaptors for JSON interface. Perhaps in future, if required.
+
+- Error codes and exceptions....heh?
+
+  Yeah, I often wonder if that was the right approach. I could have just stuck with error codes and be happy. But that was a good learning time for me.
+
+- Where to find more about the usage ?
+
+  Checkout the tests. It has examples for all the algorithms which are supported.
+
+
+## License
+
+MIT License
+
+Copyright (c) 2017 Arun Muralidharan
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

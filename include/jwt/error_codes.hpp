@@ -76,16 +76,24 @@ enum class DecodeErrc
  */
 enum class VerificationErrc
 {
+  //Algorithms provided does not match with header
   InvalidAlgorithm = 1,
+  //Token is expired at the time of decoding
   TokenExpired,
+  //The issuer specified does not match with payload
   InvalidIssuer,
+  //The subject specified does not match with payload
   InvalidSubject,
+  //The field IAT is not present or is of invalid type
   InvalidIAT,
   //Checks for the existence of JTI
   //if validate_jti is passed in decode
   InvalidJTI,
+  //The audience specified does not match with payload
   InvalidAudience,
+  //Decoded before nbf time
   ImmatureSignature,
+  //Signature match error
   InvalidSignature,
   // Invalid value type used for known claims
   TypeConversionError,
