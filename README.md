@@ -681,6 +681,14 @@ Things one may have questions about
 
   Checkout the tests. It has examples for all the algorithms which are supported.
 
+- Support for C++11 seems trivial based on the changes required. Why not support C+11 then ?
+
+  Its 2018 now! If I ever start getting requests to have support for C++11, then I will surely consider it.
+
+- The Metaprogramming concept checks for Sequence and Mapping looks sad.
+
+  Yeah I know. Just hacked something very basic.
+
 
 ## License
 
