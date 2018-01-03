@@ -31,6 +31,7 @@ SOFTWARE.
  */
 
 #include <cassert>
+#include <memory>
 #include <system_error>
 
 #include <openssl/bn.h>

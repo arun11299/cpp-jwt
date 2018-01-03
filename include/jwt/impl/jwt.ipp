@@ -52,9 +52,7 @@ std::ostream& write(std::ostream& os, const T& obj, bool pretty)
 }
 
 
-template <typename T,
-          typename = typename std::enable_if<
-            detail::meta::has_create_json_obj_member<T>{}>::type>
+template <typename T, typename Cond>
 std::ostream& operator<< (std::ostream& os, const T& obj)
 {
   os << obj.create_json_obj();
@@ -344,16 +342,6 @@ void jwt_object::set_parameters()
   return;
 }
 
-template <typename T,
-          typename=typename std::enable_if_t<
-            !std::is_same<system_time_t, std::decay_t<T>>::value>
-         >
-jwt_object& jwt_object::add_claim(const jwt::string_view name, T&& value)
-{
-  payload_.add_claim(name, std::forward<T>(value));
-  return *this;
-}
-
 jwt_object& jwt_object::add_claim(const jwt::string_view name, system_time_t tp)
 {
   return add_claim(
@@ -406,9 +394,9 @@ std::error_code jwt_object::verify(
   //is any of the one expected by the client.
   auto fitr = std::find_if(algos.get().begin(), 
                            algos.get().end(),
-                           [&](const auto& elem) 
+                           [this](const auto& elem) 
                            {
-                             return jwt::str_to_alg(elem) == header().algo();
+                             return jwt::str_to_alg(elem) == this->header().algo();
                            });
 
   if (fitr == algos.get().end()) {

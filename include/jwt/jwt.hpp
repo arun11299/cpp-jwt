@@ -177,6 +177,12 @@ std::string to_json_str(const T& obj, bool pretty=false);
 template <typename T>
 std::ostream& write(std::ostream& os, const T& obj, bool pretty=false);
 
+template <typename T,
+          typename = typename std::enable_if<
+                      detail::meta::has_create_json_obj_member<T>{}>::type
+         >
+std::ostream& operator<< (std::ostream& os, const T& obj);
+
 
 /**
  * A helper class providing the necessary functionalities
@@ -945,8 +951,14 @@ public: // Exposed APIs
    * Provides the glue interface for adding claim.
    * @note: See `jwt_payload::add_claim` for more details.
    */
-  template <typename T, typename Cond>
-  jwt_object& add_claim(const jwt::string_view name, T&& value);
+  template <typename T,
+            typename=typename std::enable_if_t<
+              !std::is_same<system_time_t, std::decay_t<T>>::value>>
+  jwt_object& add_claim(const jwt::string_view name, T&& value)
+  {
+    payload_.add_claim(name, std::forward<T>(value));
+    return *this;
+  }
 
   /**
    * Provides the glue interface for adding claim.
