@@ -26,6 +26,7 @@
 - [Support](#support)
 - [External Dependencies](#external-dependencies)
 - [Thanks to...](#thanks-to...)
+- [Compiler Support](#compiler-support)
 - [Installation](#installation)
 - [Parameters](#parameters)
 - [Claim Data Types](#claim-data-types)
@@ -201,6 +202,10 @@ The library has 2 sets of APIs for encoding and decoding:
     - <a href="https://github.com/benmcollins/libjwt">ben-collins JWT library</a>
     - Howard Hinnant for the stack allocator
     - libstd++ code (I took the hashing code for string_view)
+
+## Compiler Support
+
+Tested with <strong>clang-5.0</strong> and <strong>g++-6.4</strong>.
 
 ## Installation
 Use the C++ package manager..... just kidding :)
