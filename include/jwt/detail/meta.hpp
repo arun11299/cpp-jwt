@@ -58,7 +58,7 @@ template <typename... T> struct list{};
 /**
  */
 template <typename T, typename=void>
-struct has_create_json_obj_member
+struct has_create_json_obj_member: std::false_type
 {
 };
 
