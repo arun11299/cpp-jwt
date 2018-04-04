@@ -41,6 +41,7 @@ SOFTWARE.
 #include <openssl/hmac.h>
 #include <openssl/ecdsa.h>
 #include <openssl/buffer.h>
+#include <openssl/opensslv.h>
 
 #include "jwt/exceptions.hpp"
 #include "jwt/string_view.hpp"
@@ -510,6 +511,8 @@ private:
    */
   static std::string public_key_ser(EVP_PKEY* pkey, jwt::string_view sign, std::error_code& ec);
 
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+
   //ATTN: Below 2 functions
   //are Taken from https://github.com/nginnever/zogminer/issues/39
 
@@ -534,6 +537,8 @@ private:
     sig->s = s;
     return 1;
   }
+
+#endif
 };
 
 } // END namespace jwt
