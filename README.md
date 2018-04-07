@@ -7,7 +7,7 @@
 <br/>
 
 <div align="center">
-<img src="https://jwt.io/assets/logo.svg" />
+<img src="http://jwt.io/img/logo-asset.svg" />
 </div>
 
 <br/>
