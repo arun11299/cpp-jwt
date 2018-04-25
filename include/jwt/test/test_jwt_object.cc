@@ -45,7 +45,7 @@ void basic_jwt_object_test()
   obj3.secret("secret");
   obj3.header().algo("hs256");
 
-  auto dec_obj = jwt::decode(obj3.signature(), "secret", algorithms({"hs256"}));
+  auto dec_obj = jwt::decode(obj3.signature(), algorithms({"hs256"}), secret("secret"));
 }
 
 void jwt_object_pem_test()
@@ -82,8 +82,7 @@ MIGkAgEBBDBeLCgapjZmvTatMHaYX3A02+0Ys3Tr8kda+E9DFnmCSiCOEig519fT
   std::cout << "Get claim value for exp: " << 
     obj.payload().get_claim_value<uint64_t>("exp") << std::endl;
 
-  sleep(4);
-  auto dec_obj = jwt::decode(obj.signature(), pub_key, algorithms({"es256"}));
+  auto dec_obj = jwt::decode(obj.signature(), algorithms({"es256"}), secret(pub_key));
   std::cout << dec_obj.payload() << std::endl;
 }
 

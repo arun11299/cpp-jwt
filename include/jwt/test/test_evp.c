@@ -1,7 +1,7 @@
 #include <stdio.h>
- #include <openssl/evp.h>
+#include <openssl/evp.h>
 
- main(int argc, char *argv[])
+int  main(int argc, char *argv[])
  {
  EVP_MD_CTX *mdctx;
  const EVP_MD *md;

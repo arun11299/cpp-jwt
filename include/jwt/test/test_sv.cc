@@ -2,7 +2,7 @@
 #include <cassert>
 #include <cstring>
 #include <memory>
-#include "./string_view.hpp"
+#include "jwt/string_view.hpp"
 
 using string_view = jwt::basic_string_view<char>;
 

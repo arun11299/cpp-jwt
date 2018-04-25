@@ -14,7 +14,8 @@ void basic_sign_test()
   jp.add_claim("admin", true);
 
   jwt::jwt_signature sgn{"secret"};
-  auto res = sgn.sign(hdr, jp);
+  std::error_code ec{};
+  auto res = sgn.encode(hdr, jp, ec);
   std::cout << res << std::endl;
 }
 

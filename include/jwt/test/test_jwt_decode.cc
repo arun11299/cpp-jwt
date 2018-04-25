@@ -14,11 +14,14 @@ void basic_decode_test()
   jp.add_claim("admin", true);
 
   jwt::jwt_signature sgn{"secret"};
-  auto res = sgn.encode(hdr, jp);
+  std::error_code ec{};
+  auto res = sgn.encode(hdr, jp, ec);
   std::cout << res << std::endl;
 
+  using namespace jwt::params;
+
   std::cout << "DECODE: \n";
-  jwt::jwt_decode(res, "secret");
+  jwt::decode(res, algorithms({"none", "hs256"}), ec, verify(false), secret("secret"));
 }
 
 int main() {

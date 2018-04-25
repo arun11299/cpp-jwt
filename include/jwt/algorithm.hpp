@@ -46,6 +46,7 @@ SOFTWARE.
 #include "jwt/exceptions.hpp"
 #include "jwt/string_view.hpp"
 #include "jwt/error_codes.hpp"
+#include "jwt/base64.hpp"
 
 namespace jwt {
 

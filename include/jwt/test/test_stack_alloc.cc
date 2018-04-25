@@ -1,6 +1,6 @@
 #include <iostream>
 #include <vector>
-#include "./stack_alloc.hpp"
+#include "jwt/stack_alloc.hpp"
 
 template <typename T, size_t SZ = 2>
 using SmallVector = std::vector<T, jwt::stack_alloc<T, SZ, alignof(T)>>;
