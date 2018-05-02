@@ -206,6 +206,7 @@ The library has 2 sets of APIs for encoding and decoding:
 ## Compiler Support
 
 Tested with <strong>clang-5.0</strong> and <strong>g++-6.4</strong>.
+With issue#12, <strong>VS2017</strong> is also supported.
 
 ## Installation
 Use the C++ package manager..... just kidding :)
