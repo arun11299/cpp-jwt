@@ -290,13 +290,14 @@ jwt_signature::get_verify_algorithm_impl(const jwt_header& hdr) const noexcept
 
 
 //
-template <typename... Args>
-jwt_object::jwt_object(Args&&... args)
+template <typename First, typename... Rest>
+jwt_object::jwt_object(First&& first, Rest&&... rest)
 {
-  static_assert (detail::meta::are_all_params<Args...>::value,
+  static_assert (detail::meta::is_parameter_concept<First>::value && 
+                 detail::meta::are_all_params<Rest...>::value,
       "All constructor argument types must model ParameterConcept");
 
-  set_parameters(std::forward<Args>(args)...);
+  set_parameters(std::forward<First>(first), std::forward<Rest>(rest)...);
 }
 
 template <typename Map, typename... Rest>
