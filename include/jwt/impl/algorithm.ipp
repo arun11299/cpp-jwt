@@ -248,7 +248,7 @@ std::string PEMSign<Hasher>::evp_digest(
     return {};
   }
 
-  unsigned long len = 0;
+  size_t len = 0;
 
   if (EVP_DigestSignFinal(mdctx_ptr.get(), nullptr, &len) != 1) {
     ec = AlgorithmErrc::SigningErr;

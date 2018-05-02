@@ -154,7 +154,7 @@ auto basic_string_view<CharT, Traits>::find_first_not_of(
   for (size_type i = pos; i < len_; ++i)
   {
     auto p = traits_type::find(str, n, data_[i]);
-    if (not p) return i;
+    if (!p) return i;
   }
 
   return npos;
@@ -171,7 +171,7 @@ auto basic_string_view<CharT, Traits>::find_last_not_of(
 
   do {
     for (size_type i = 0; i < n; ++i) {
-      if (not traits_type::eq(data_[pos], str[i])) return pos;
+      if (!traits_type::eq(data_[pos], str[i])) return pos;
     }
   } while (pos-- != 0);
 
@@ -186,7 +186,7 @@ auto basic_string_view<CharT, Traits>::find_first_not_of(
   assert (pos < len_&& "Position must be within the bounds of the view");
 
   for (size_type i = pos; i < len_; ++i) {
-    if (not traits_type::eq(data_[i], ch)) return i;
+    if (!traits_type::eq(data_[i], ch)) return i;
   }
 
   return npos;
@@ -200,7 +200,7 @@ auto basic_string_view<CharT, Traits>::find_last_not_of(
   assert (pos < len_ && "Position must be within the bounds of the view");
 
   do {
-    if (not traits_type::eq(data_[pos], ch)) return pos;
+    if (!traits_type::eq(data_[pos], ch)) return pos;
   } while (pos-- != 0);
 
   return npos;
@@ -217,7 +217,7 @@ bool operator== (basic_string_view<CharT, Traits> a,
   using size_type = typename basic_string_view<CharT, Traits>::size_type;
 
   for (size_type i = 0; i < a.length(); ++i) {
-    if (not traits_type::eq(a[i], b[i])) return false;
+    if (!traits_type::eq(a[i], b[i])) return false;
   }
 
   return true;
@@ -227,7 +227,7 @@ template <typename CharT, typename Traits>
 bool operator!= (basic_string_view<CharT, Traits> a,
                  basic_string_view<CharT, Traits> b) noexcept
 {
-  return not ( a == b );
+  return !( a == b );
 }
 
 template <typename CharT, typename Traits>
