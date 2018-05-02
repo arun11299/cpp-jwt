@@ -226,7 +226,7 @@ using all_true = std::is_same<bool_pack<true, B...>, bool_pack<B..., true>>;
 /**
  */
 template <typename... T>
-using are_all_params = all_true<is_parameter_concept<T>{}...>;
+using are_all_params = all_true<is_parameter_concept<T>::value...>;
 
 
 } // END namespace meta
