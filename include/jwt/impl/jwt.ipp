@@ -425,10 +425,10 @@ std::error_code jwt_object::verify(
   {
     if (has_claim(registered_claims::issuer))
     {
-      jwt::string_view p_issuer = payload()
-                                  .get_claim_value<std::string>(registered_claims::issuer);
+      const std::string& p_issuer = payload()
+                                    .get_claim_value<std::string>(registered_claims::issuer);
 
-      if (p_issuer.data() != dparams.issuer) {
+      if (p_issuer != dparams.issuer) {
         ec = VerificationErrc::InvalidIssuer;
         return ec;
       }
@@ -443,10 +443,10 @@ std::error_code jwt_object::verify(
   {
     if (has_claim(registered_claims::audience))
     {
-      jwt::string_view p_aud = payload()
-                               .get_claim_value<std::string>(registered_claims::audience);
+      const std::string& p_aud = payload()
+                                 .get_claim_value<std::string>(registered_claims::audience);
 
-      if (p_aud.data() != dparams.aud) {
+      if (p_aud != dparams.aud) {
         ec = VerificationErrc::InvalidAudience;
         return ec;
       }
@@ -461,9 +461,9 @@ std::error_code jwt_object::verify(
   {
     if (has_claim(registered_claims::subject))
     {
-      jwt::string_view p_sub = payload()
-                               .get_claim_value<std::string>(registered_claims::subject);
-      if (p_sub.data() != dparams.sub) {
+      const std::string& p_sub = payload()
+                                 .get_claim_value<std::string>(registered_claims::subject);
+      if (p_sub != dparams.sub) {
         ec = VerificationErrc::InvalidSubject;
         return ec;
       }
