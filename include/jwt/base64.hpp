@@ -25,6 +25,8 @@ SOFTWARE.
 
 #include <array>
 #include <cassert>
+#include <cstring>
+#include <ostream>
 #include "jwt/string_view.hpp"
 
 namespace jwt {
