@@ -86,7 +86,7 @@ private:
  *  @in : Input byte string to be encoded.
  *  @len : Length of the input byte string.
  */
-std::string base64_encode(const char* in, size_t len)
+inline std::string base64_encode(const char* in, size_t len)
 {
   std::string result;
   const auto encoded_siz = encoding_size(len);
@@ -189,7 +189,7 @@ private:
  *  @in : Encoded base64 byte string.
  *  @len : Length of the encoded input byte string.
  */
-std::string base64_decode(const char* in, size_t len)
+inline std::string base64_decode(const char* in, size_t len)
 {
   std::string result;
   const auto decoded_siz = decoding_size(len);
@@ -266,7 +266,7 @@ std::string base64_decode(const char* in, size_t len)
  * Returns:
  *  Length of the URL safe base64 encoded byte string.
  */
-size_t base64_uri_encode(char* data, size_t len) noexcept
+inline size_t base64_uri_encode(char* data, size_t len) noexcept
 {
   size_t i = 0;
   size_t j = 0;
@@ -299,7 +299,7 @@ size_t base64_uri_encode(char* data, size_t len) noexcept
  *  @data : URL safe base64 encoded byte string.
  *  @len : Length of the input byte string.
  */
-std::string base64_uri_decode(const char* data, size_t len)
+inline std::string base64_uri_decode(const char* data, size_t len)
 {
   std::string uri_dec;
   uri_dec.resize(len + 4);
