@@ -306,9 +306,9 @@ std::string PEMSign<Hasher>::public_key_ser(
 
   ECDSA_SIG_get0(ec_sig.get(), &ec_sig_r, &ec_sig_s);
 
-  auto r_len = BN_num_bytes(ec_sig_r);
-  auto s_len = BN_num_bytes(ec_sig_s);
-  auto bn_len = (degree + 7) / 8;
+  int r_len = BN_num_bytes(ec_sig_r);
+  int s_len = BN_num_bytes(ec_sig_s);
+  int bn_len = static_cast<int>((degree + 7) / 8);
 
   if ((r_len > bn_len) || (s_len > bn_len)) {
     ec = AlgorithmErrc::SigningErr;

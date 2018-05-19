@@ -94,7 +94,7 @@ std::string base64_encode(const char* in, size_t len)
 
   int i = 0;
   int j = 0;
-  for (; i < len - 2; i += 3) {
+  for (; i < static_cast<int>(len) - 2; i += 3) {
     const auto first  = in[i];
     const auto second = in[i+1];
     const auto third  = in[i+2];
