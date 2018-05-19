@@ -34,7 +34,7 @@ TEST (DecodeTest, DecodeNoneAlgSign)
   EXPECT_TRUE (obj.has_claim("aud"));
   EXPECT_TRUE (obj.has_claim("exp"));
 
-  EXPECT_EQ (obj.payload().get_claim_value<uint64_t>("exp"), 1513863371);
+  EXPECT_EQ (obj.payload().get_claim_value<uint64_t>("exp"), static_cast<uint64_t>(1513863371));
 }
 
 TEST (DecodeTest, DecodeWrongAlgo)
