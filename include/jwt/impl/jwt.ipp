@@ -414,7 +414,7 @@ std::error_code jwt_object::verify(
     auto p_exp = payload()
                  .get_claim_value<uint64_t>(registered_claims::expiration);
 
-    if (curr_time > (p_exp + dparams.leeway)) {
+    if (static_cast<uint64_t>(curr_time) > static_cast<uint64_t>(p_exp + dparams.leeway)) {
       ec = VerificationErrc::TokenExpired;
       return ec;
     }
@@ -483,7 +483,7 @@ std::error_code jwt_object::verify(
     auto p_exp = payload()
                  .get_claim_value<uint64_t>(registered_claims::not_before);
 
-    if ((p_exp - dparams.leeway) > curr_time) {
+    if (static_cast<uint64_t>(p_exp - dparams.leeway) > static_cast<uint64_t>(curr_time)) {
       ec = VerificationErrc::ImmatureSignature;
       return ec;
     }
