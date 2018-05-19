@@ -6,7 +6,7 @@ cmake_minimum_required (VERSION 2.8.11)
 project (cpp-jwt)
 
 #SET (CMAKE_CXX_COMPILER /usr/local/bin/g++)
-SET( CMAKE_CXX_FLAGS  "-std=c++14" )
+SET( CMAKE_CXX_FLAGS  "-std=c++14 -Wall" )
 
 include_directories (include)
 

@@ -278,7 +278,7 @@ TEST (EncodeTest, HeaderParamTest)
   bool ret = obj.header().add_header("kid", 1234567);
   EXPECT_TRUE (ret);
 
-  ret = obj.header().add_header("crit", std::array<std::string, 1>{"exp"});
+  ret = obj.header().add_header("crit", std::array<std::string, 1>{ {"exp"} });
   EXPECT_TRUE (ret);
 
   std::cout << obj.header() << std::endl;
