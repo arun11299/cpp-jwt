@@ -61,7 +61,7 @@ std::ostream& operator<< (std::ostream& os, const T& obj)
 
 //========================================================================
 
-void jwt_header::decode(const jwt::string_view enc_str, std::error_code& ec)
+inline void jwt_header::decode(const jwt::string_view enc_str, std::error_code& ec)
 {
   ec.clear();
   std::string json_str = base64_decode(enc_str);
@@ -114,7 +114,7 @@ void jwt_header::decode(const jwt::string_view enc_str, std::error_code& ec)
   return;
 }
 
-void jwt_header::decode(const jwt::string_view enc_str)
+inline void jwt_header::decode(const jwt::string_view enc_str)
 {
   std::error_code ec;
   decode(enc_str, ec);
@@ -124,7 +124,7 @@ void jwt_header::decode(const jwt::string_view enc_str)
   return;
 }
 
-void jwt_payload::decode(const jwt::string_view enc_str, std::error_code& ec)
+inline void jwt_payload::decode(const jwt::string_view enc_str, std::error_code& ec)
 {
   ec.clear();
   std::string json_str = base64_decode(enc_str);
@@ -146,7 +146,7 @@ void jwt_payload::decode(const jwt::string_view enc_str, std::error_code& ec)
   return;
 }
 
-void jwt_payload::decode(const jwt::string_view enc_str)
+inline void jwt_payload::decode(const jwt::string_view enc_str)
 {
   std::error_code ec;
   decode(enc_str, ec);
@@ -156,7 +156,7 @@ void jwt_payload::decode(const jwt::string_view enc_str)
   return;
 }
 
-std::string jwt_signature::encode(const jwt_header& header,
+inline std::string jwt_signature::encode(const jwt_header& header,
                                   const jwt_payload& payload,
                                   std::error_code& ec)
 {
@@ -191,7 +191,7 @@ std::string jwt_signature::encode(const jwt_header& header,
   return jwt_msg;
 }
 
-verify_result_t jwt_signature::verify(const jwt_header& header,
+inline verify_result_t jwt_signature::verify(const jwt_header& header,
                            const jwt::string_view hdr_pld_sign,
                            const jwt::string_view jwt_sign)
 {
@@ -200,7 +200,7 @@ verify_result_t jwt_signature::verify(const jwt_header& header,
 }
 
 
-sign_func_t 
+inline sign_func_t
 jwt_signature::get_sign_algorithm_impl(const jwt_header& hdr) const noexcept
 {
   sign_func_t ret = nullptr;
@@ -245,7 +245,7 @@ jwt_signature::get_sign_algorithm_impl(const jwt_header& hdr) const noexcept
 
 
 
-verify_func_t 
+inline verify_func_t
 jwt_signature::get_verify_algorithm_impl(const jwt_header& hdr) const noexcept
 {
   verify_func_t ret = nullptr;
@@ -337,13 +337,13 @@ void jwt_object::set_parameters(
   set_parameters(std::forward<Rest>(rargs)...);
 }
 
-void jwt_object::set_parameters()
+inline void jwt_object::set_parameters()
 {
   //sentinel call
   return;
 }
 
-jwt_object& jwt_object::add_claim(const jwt::string_view name, system_time_t tp)
+inline jwt_object& jwt_object::add_claim(const jwt::string_view name, system_time_t tp)
 {
   return add_claim(
       name,
@@ -352,13 +352,13 @@ jwt_object& jwt_object::add_claim(const jwt::string_view name, system_time_t tp)
       );
 }
 
-jwt_object& jwt_object::remove_claim(const jwt::string_view name)
+inline jwt_object& jwt_object::remove_claim(const jwt::string_view name)
 {
   payload_.remove_claim(name);
   return *this;
 }
 
-std::string jwt_object::signature(std::error_code& ec) const
+inline std::string jwt_object::signature(std::error_code& ec) const
 {
   ec.clear();
 
@@ -374,7 +374,7 @@ std::string jwt_object::signature(std::error_code& ec) const
   return jws.encode(header_, payload_, ec);
 }
 
-std::string jwt_object::signature() const
+inline std::string jwt_object::signature() const
 {
   std::error_code ec;
   std::string res = signature(ec);
@@ -514,7 +514,7 @@ std::error_code jwt_object::verify(
 }
 
 
-std::array<jwt::string_view, 3>
+inline std::array<jwt::string_view, 3>
 jwt_object::three_parts(const jwt::string_view enc_str)
 {
   std::array<jwt::string_view, 3> result;

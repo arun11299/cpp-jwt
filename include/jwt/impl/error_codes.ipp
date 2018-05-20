@@ -141,17 +141,17 @@ const VerificationErrorCategory theVerificationErrorCategory {};
 
 
 // Create the AlgorithmErrc error code
-std::error_code make_error_code(AlgorithmErrc err)
+inline std::error_code make_error_code(AlgorithmErrc err)
 {
   return { static_cast<int>(err), theAlgorithmErrCategory };
 }
 
-std::error_code make_error_code(DecodeErrc err)
+inline std::error_code make_error_code(DecodeErrc err)
 {
   return { static_cast<int>(err), theDecodeErrorCategory };
 }
 
-std::error_code make_error_code(VerificationErrc err)
+inline std::error_code make_error_code(VerificationErrc err)
 {
   return { static_cast<int>(err), theVerificationErrorCategory };
 }

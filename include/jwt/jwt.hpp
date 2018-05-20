@@ -58,7 +58,7 @@ enum class type
  * Converts a string representing a value of type
  * `enum class type` into its actual type.
  */
-enum type str_to_type(const jwt::string_view typ) noexcept
+inline enum type str_to_type(const jwt::string_view typ) noexcept
 {
   assert (typ.length() && "Empty type string");
 
@@ -72,7 +72,7 @@ enum type str_to_type(const jwt::string_view typ) noexcept
  * Converts an instance of type `enum class type`
  * to its string equivalent.
  */
-jwt::string_view type_to_str(enum type typ)
+inline jwt::string_view type_to_str(enum type typ)
 {
   switch (typ) {
     case type::JWT: return "JWT";
@@ -109,7 +109,7 @@ enum class registered_claims
  * Converts an instance of type `enum class registered_claims`
  * to its string equivalent representation.
  */
-jwt::string_view reg_claims_to_str(enum registered_claims claim) noexcept
+inline jwt::string_view reg_claims_to_str(enum registered_claims claim) noexcept
 {
   switch (claim) {
     case registered_claims::expiration: return "exp";
