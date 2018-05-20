@@ -219,7 +219,7 @@ enum class algorithm
  * Convert the algorithm enum class type to
  * its stringified form.
  */
-jwt::string_view alg_to_str(enum algorithm alg) noexcept
+inline jwt::string_view alg_to_str(enum algorithm alg) noexcept
 {
   switch (alg) {
     case algorithm::HS256: return "HS256";
@@ -243,7 +243,7 @@ jwt::string_view alg_to_str(enum algorithm alg) noexcept
  * Convert stringified algorithm to enum class.
  * The string comparison is case insesitive.
  */
-enum algorithm str_to_alg(const jwt::string_view alg) noexcept
+inline enum algorithm str_to_alg(const jwt::string_view alg) noexcept
 {
   if (!alg.length()) return algorithm::NONE;
 

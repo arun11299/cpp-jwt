@@ -265,7 +265,7 @@ using param_seq_list_t  = std::initializer_list<jwt::string_view>;
 
 /**
  */
-detail::payload_param<std::unordered_map<std::string, std::string>>
+inline detail::payload_param<std::unordered_map<std::string, std::string>>
 payload(const param_init_list_t& kvs)
 {
   std::unordered_map<std::string, std::string> m;
@@ -292,28 +292,28 @@ payload(MappingConcept&& mc)
 
 /**
  */
-detail::secret_param secret(const string_view sv)
+inline detail::secret_param secret(const string_view sv)
 {
   return { sv };
 }
 
 /**
  */
-detail::algorithm_param algorithm(const string_view sv)
+inline detail::algorithm_param algorithm(const string_view sv)
 {
   return { sv };
 }
 
 /**
  */
-detail::algorithm_param algorithm(jwt::algorithm alg)
+inline detail::algorithm_param algorithm(jwt::algorithm alg)
 {
   return { alg };
 }
 
 /**
  */
-detail::headers_param<std::map<std::string, std::string>>
+inline detail::headers_param<std::map<std::string, std::string>>
 headers(const param_init_list_t& kvs)
 {
   std::map<std::string, std::string> m;
@@ -339,7 +339,7 @@ headers(MappingConcept&& mc)
 
 /**
  */
-detail::verify_param
+inline detail::verify_param
 verify(bool v)
 {
   return { v };
@@ -347,7 +347,7 @@ verify(bool v)
 
 /**
  */
-detail::leeway_param
+inline detail::leeway_param
 leeway(uint32_t l)
 {
   return { l };
@@ -355,7 +355,7 @@ leeway(uint32_t l)
 
 /**
  */
-detail::algorithms_param<std::vector<std::string>>
+inline detail::algorithms_param<std::vector<std::string>>
 algorithms(const param_seq_list_t& seq)
 {
   std::vector<std::string> vec;
@@ -375,7 +375,7 @@ algorithms(SequenceConcept&& sc)
 
 /**
  */
-detail::audience_param
+inline detail::audience_param
 aud(const jwt::string_view aud)
 {
   return { aud.data() };
@@ -383,7 +383,7 @@ aud(const jwt::string_view aud)
 
 /**
  */
-detail::issuer_param
+inline detail::issuer_param
 issuer(const jwt::string_view iss)
 {
   return { iss.data() };
@@ -391,7 +391,7 @@ issuer(const jwt::string_view iss)
 
 /**
  */
-detail::subject_param
+inline detail::subject_param
 sub(const jwt::string_view subj)
 {
   return { subj.data() };
@@ -399,7 +399,7 @@ sub(const jwt::string_view subj)
 
 /**
  */
-detail::validate_iat_param
+inline detail::validate_iat_param
 validate_iat(bool v)
 {
   return { v };
@@ -407,7 +407,7 @@ validate_iat(bool v)
 
 /**
  */
-detail::validate_jti_param
+inline detail::validate_jti_param
 validate_jti(bool v)
 {
   return { v };
@@ -415,7 +415,7 @@ validate_jti(bool v)
 
 /**
  */
-detail::nbf_param
+inline detail::nbf_param
 nbf(const system_time_t tp)
 {
   return { tp };
@@ -423,7 +423,7 @@ nbf(const system_time_t tp)
 
 /**
  */
-detail::nbf_param
+inline detail::nbf_param
 nbf(const uint64_t epoch)
 {
   return { epoch };
