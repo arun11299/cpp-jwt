@@ -294,7 +294,7 @@ inline void ec_sig_deletor(ECDSA_SIG* ptr)
 inline void ev_pkey_deletor(EVP_PKEY* ptr)
 {
   if (ptr) EVP_PKEY_free(ptr);
-};
+}
 
 /// Useful typedefs
 using bio_deletor_t = decltype(&bio_deletor);
