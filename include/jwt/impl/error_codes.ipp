@@ -49,7 +49,7 @@ struct AlgorithmErrCategory: std::error_category
     case AlgorithmErrc::NoneAlgorithmUsed:
       return "none algorithm used";
     };
-
+    return "unknown algorithm error";
     assert (0 && "Code not reached");
   }
 };
@@ -86,7 +86,7 @@ struct DecodeErrorCategory: std::error_category
     case DecodeErrc::KeyNotRequiredForNoneAlg:
       return "key not required for NONE algorithm";
     };
-
+    return "unknown decode error";
     assert (0 && "Code not reached");
   }
 };
@@ -125,7 +125,7 @@ struct VerificationErrorCategory: std::error_category
     case VerificationErrc::TypeConversionError:
       return "type conversion error";
     };
-
+    return "unknown verification error";
     assert (0 && "Code not reached");
   }
 };

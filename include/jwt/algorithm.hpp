@@ -211,6 +211,7 @@ enum class algorithm
   ES256,
   ES384,
   ES512,
+  UNKN,
   TERM,
 };
 
@@ -233,9 +234,10 @@ inline jwt::string_view alg_to_str(enum algorithm alg) noexcept
     case algorithm::ES512: return "ES512";
     case algorithm::TERM:  return "TERM";
     case algorithm::NONE:  return "NONE";
+    case algorithm::UNKN:  return "UNKN";
     default:               assert (0 && "Unknown Algorithm");
   };
-
+  return "UNKN";
   assert (0 && "Code not reached");
 }
 
@@ -257,6 +259,8 @@ inline enum algorithm str_to_alg(const jwt::string_view alg) noexcept
   if (!strcasecmp(alg.data(), "es256")) return algorithm::ES256;
   if (!strcasecmp(alg.data(), "es384")) return algorithm::ES384;
   if (!strcasecmp(alg.data(), "es512")) return algorithm::ES512;
+
+  return algorithm::UNKN;
 
   assert (0 && "Code not reached");
 }
