@@ -761,7 +761,8 @@ void jwt_throw_exception(const std::error_code& ec)
 {
   const auto& cat = ec.category();
 
-  if (&cat == &theVerificationErrorCategory)
+  if (&cat == &theVerificationErrorCategory ||
+      std::string(cat.name()) == std::string(theVerificationErrorCategory.name()))
   {
     switch (static_cast<VerificationErrc>(ec.value()))
     {
@@ -810,7 +811,8 @@ void jwt_throw_exception(const std::error_code& ec)
     };
   }
 
-  if (&cat == &theDecodeErrorCategory)
+  if (&cat == &theDecodeErrorCategory ||
+      std::string(cat.name()) == std::string(theDecodeErrorCategory.name()))
   {
     switch (static_cast<DecodeErrc>(ec.value()))
     {
@@ -836,7 +838,8 @@ void jwt_throw_exception(const std::error_code& ec)
     assert (0 && "Unknown error code");
   }
 
-  if (&cat == &theAlgorithmErrCategory)
+  if (&cat == &theAlgorithmErrCategory ||
+      std::string(cat.name()) == std::string(theAlgorithmErrCategory.name()))
   {
     switch (static_cast<AlgorithmErrc>(ec.value()))
     {
