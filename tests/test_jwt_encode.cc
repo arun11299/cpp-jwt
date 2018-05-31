@@ -286,7 +286,7 @@ TEST (EncodeTest, HeaderParamTest)
   std::error_code ec;
   auto enc_str = obj.signature();
 
-  auto dec_obj = jwt::decode(enc_str, algorithms({"none"}), ec, verify(false));
+  auto dec_obj = jwt::decode(enc_str, algorithms({"none"}), ec, verify(true));
   EXPECT_EQ (ec.value(), static_cast<int>(jwt::AlgorithmErrc::NoneAlgorithmUsed));
 
   std::cout << dec_obj.header() << std::endl;

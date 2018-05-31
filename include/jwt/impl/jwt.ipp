@@ -703,34 +703,34 @@ jwt_object decode(const jwt::string_view enc_str,
     }
 
     if (ec) return obj;
-  }
 
-  //Verify the signature only if some algorithm was used
-  if (obj.header().algo() != algorithm::NONE)
-  {
-    if (!dparams.has_secret) {
-      ec = DecodeErrc::KeyNotPresent;
-      return obj;
-    }
-    jwt_signature jsign{dparams.secret};
+    //Verify the signature only if some algorithm was used
+    if (obj.header().algo() != algorithm::NONE)
+    {
+      if (!dparams.has_secret) {
+        ec = DecodeErrc::KeyNotPresent;
+        return obj;
+      }
+      jwt_signature jsign{dparams.secret};
  
-    // Length of the encoded header and payload only.
-    // Addition of '1' to account for the '.' character.
-    auto l = parts[0].length() + 1 + parts[1].length();
+      // Length of the encoded header and payload only.
+      // Addition of '1' to account for the '.' character.
+      auto l = parts[0].length() + 1 + parts[1].length();
 
-    //MemoryAllocationError is not caught
-    verify_result_t res = jsign.verify(obj.header(), enc_str.substr(0, l), parts[2]);
-    if (res.second) {
-      ec = res.second;
-      return obj;
-    }
+      //MemoryAllocationError is not caught
+      verify_result_t res = jsign.verify(obj.header(), enc_str.substr(0, l), parts[2]);
+      if (res.second) {
+        ec = res.second;
+        return obj;
+      }
 
-    if (!res.first) {
-      ec = VerificationErrc::InvalidSignature;
-      return obj;
+      if (!res.first) {
+        ec = VerificationErrc::InvalidSignature;
+        return obj;
+      }
+    } else {
+      ec = AlgorithmErrc::NoneAlgorithmUsed;
     }
-  } else {
-    ec = AlgorithmErrc::NoneAlgorithmUsed;
   }
 
   return obj; 

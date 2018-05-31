@@ -160,7 +160,7 @@ TEST (DecodeVerifyExp, KeyNotPresentTest)
     "eyJpYXQiOjE1MTM4NjIzNzEsImlkIjoiYS1iLWMtZC1lLWYtMS0yLTMiLCJpc3MiOiJhcnVuLm11cmFsaWRoYXJhbiIsInN1YiI6ImFkbWluIn0."
     "jk7bRQKTLvs1RcuvMc2B_rt6WBYPoVPirYi_QRBPiuk";
 
-  EXPECT_THROW (jwt::decode(enc_str, algorithms({"none", "hs256"}), verify(false)),
+  EXPECT_THROW (jwt::decode(enc_str, algorithms({"none", "hs256"}), verify(true)),
                 jwt::KeyNotPresentError);
 }
 

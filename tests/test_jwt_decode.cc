@@ -19,10 +19,10 @@ TEST (DecodeTest, DecodeNoneAlgSign)
 {
   using namespace jwt::params;
   const char* enc_str = 
-    "eyJhbGciOiJOT05FIiwidHlwIjoiSldUIn0.eyJhdWQiOiJyaWZ0LmlvIiwiZXhwIjoxNTEzODYzMzcxLCJzdWIiOiJub3RoaW5nIG11Y2gifQ.";
+    "eyJhbGciOiJOT05FIiwidHlwIjoiSldUIn0.eyJhdWQiOiJyaWZ0LmlvIiwiZXhwIjo0NTEzODYzMzcxLCJzdWIiOiJub3RoaW5nIG11Y2gifQ.";
 
   std::error_code ec;
-  auto obj = jwt::decode(enc_str, algorithms({"none"}), ec, verify(false));
+  auto obj = jwt::decode(enc_str, algorithms({"none"}), ec, verify(true));
   EXPECT_TRUE (ec);
   EXPECT_EQ (ec.value(), static_cast<int>(jwt::AlgorithmErrc::NoneAlgorithmUsed));
 
@@ -34,7 +34,7 @@ TEST (DecodeTest, DecodeNoneAlgSign)
   EXPECT_TRUE (obj.has_claim("aud"));
   EXPECT_TRUE (obj.has_claim("exp"));
 
-  EXPECT_EQ (obj.payload().get_claim_value<uint64_t>("exp"), static_cast<uint64_t>(1513863371));
+  EXPECT_EQ (obj.payload().get_claim_value<uint64_t>("exp"), static_cast<uint64_t>(4513863371));
 }
 
 TEST (DecodeTest, DecodeWrongAlgo)
@@ -111,7 +111,7 @@ TEST (DecodeTest, SecretKeyNotPassed)
     "jk7bRQKTLvs1RcuvMc2B_rt6WBYPoVPirYi_QRBPiuk";
 
   std::error_code ec;
-  auto obj = jwt::decode(enc_str, algorithms({"none", "hs256"}), ec, verify(false));
+  auto obj = jwt::decode(enc_str, algorithms({"none", "hs256"}), ec, verify(true));
 
   ASSERT_TRUE (ec);
   EXPECT_EQ (ec.value(), static_cast<int>(jwt::DecodeErrc::KeyNotPresent));
