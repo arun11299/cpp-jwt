@@ -64,6 +64,8 @@ inline enum type str_to_type(const jwt::string_view typ) noexcept
 
   if (!strcasecmp(typ.data(), "jwt")) return type::JWT;
 
+  throw std::runtime_error("Unknown token type");
+
   assert (0 && "Code not reached");
 }
 
@@ -121,7 +123,7 @@ inline jwt::string_view reg_claims_to_str(enum registered_claims claim) noexcept
     case registered_claims::jti:        return "jti";
     default:                            assert (0 && "Not a registered claim");
   };
-
+  return "";
   assert (0 && "Code not reached");
 }
 

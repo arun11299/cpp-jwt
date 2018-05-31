@@ -37,12 +37,10 @@ int main() {
 
   //Using `add_claim` with extra features.
   //Check return status and overwrite
-  bool ret = obj.payload().add_claim("sub", "new test", false/*overwrite*/);
-  assert (not ret);
+  assert (not obj.payload().add_claim("sub", "new test", false/*overwrite*/));
 
   // Overwrite an existing claim
-  ret = obj.payload().add_claim("sub", "new test", true/*overwrite*/);
-  assert ( ret );
+  assert (obj.payload().add_claim("sub", "new test", true/*overwrite*/));
 
   assert (obj.payload().has_claim_with_value("sub", "new test"));
 
