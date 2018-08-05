@@ -156,6 +156,22 @@ TEST (DecodeTest, DecodeHS512)
   EXPECT_TRUE (obj.payload().has_claim_with_value("sub", "nothing much"));
 }
 
+TEST (DecodeTest, TypHeaderMiss)
+{
+  using namespace jwt::params;
+
+  const char* enc_str = 
+    "eyJhbGciOiJIUzI1NiJ9."
+    "eyJleHAiOjE1MzM0NjE1NTMsImlhdCI6MTUxMzg2MjM3MSwiaWQiOiJhLWItYy1kLWUtZi0xLTItMyIsImlzcyI6ImFydW4ubXVyYWxpZGhhcmFuIiwic3ViIjoiYWRtaW4ifQ."
+    "pMWBLSWl1p4V958lfe_6ZhvgFMOQv9Eq5mlndVKFKkA";
+
+  std::error_code ec;
+  auto obj = jwt::decode(enc_str, algorithms({"none", "hs256"}), ec, verify(false));
+  std::cout << "Decode header: " << obj.header() << std::endl;
+
+  EXPECT_FALSE (ec);
+}
+
 int main(int argc, char* argv[]) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

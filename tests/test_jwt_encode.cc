@@ -25,6 +25,26 @@ TEST (EncodeTest, TestRemoveClaim)
   EXPECT_FALSE (obj.has_claim("sub"));
 }
 
+TEST (EncodeTest, TestRemoveTypHeader)
+{
+  using namespace jwt::params;
+
+  jwt::jwt_object obj{algorithm("hs256"), secret("secret")};
+
+  obj.add_claim("iss", "arun.muralidharan")
+     .add_claim("sub", "admin")
+     .add_claim("id", "a-b-c-d-e-f-1-2-3")
+     .add_claim("iat", 1513862371)
+     .add_claim("exp", std::chrono::system_clock::now());
+
+  EXPECT_TRUE (obj.header().has_header("typ"));
+  obj.header().remove_header("typ");
+  EXPECT_FALSE (obj.header().has_header("typ"));
+
+  std::cout << "Header: " << obj.header() << '\n';
+  std::cout << "Signature: " << obj.signature() << '\n';
+}
+
 TEST (EncodeTest, StrEncodeHS256_1)
 {
   using namespace jwt::params;

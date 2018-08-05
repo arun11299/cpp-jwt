@@ -51,7 +51,8 @@ namespace jwt {
  */
 enum class type
 {
-  JWT = 0,
+  NONE = 0,
+  JWT  = 1,
 };
 
 /**
@@ -63,6 +64,7 @@ inline enum type str_to_type(const jwt::string_view typ) noexcept
   assert (typ.length() && "Empty type string");
 
   if (!strcasecmp(typ.data(), "jwt")) return type::JWT;
+  else if(!strcasecmp(typ.data(), "none")) return type::NONE;
 
   throw std::runtime_error("Unknown token type");
 
@@ -409,6 +411,40 @@ public: // Exposed APIs
                       std::string{cvalue.data(), cvalue.length()},
                       overwrite);
   }
+
+  /**
+   * Remove the header from JWT.
+   * NOTE: Special handling for removing type field
+   * from header. The typ_ is set to NONE when removed.
+   */
+  bool remove_header(const jwt::string_view hname)
+  {
+    if (!strcasecmp(hname.data(), "typ")) {
+      typ_ = type::NONE;
+      payload_.erase(hname.data());
+      return true;
+    }
+
+    auto itr = headers_.find(hname);
+    if (itr == std::end(headers_)) {
+      return false;
+    }
+    payload_.erase(hname.data());
+    headers_.erase(hname.data());
+
+    return true;
+  }
+
+  /**
+   * Checks if header with the given name
+   * is present or not.
+   */
+  bool has_header(const jwt::string_view hname)
+  {
+    if (!strcasecmp(hname.data(), "typ")) return typ_ != type::NONE;
+    return headers_.find(hname) != std::end(headers_);
+  }
+
 
   /**
    * Get the URL safe base64 encoded string

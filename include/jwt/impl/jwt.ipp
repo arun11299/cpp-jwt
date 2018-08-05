@@ -85,19 +85,16 @@ inline void jwt_header::decode(const jwt::string_view enc_str, std::error_code& 
   if (alg_ != algorithm::NONE)
   {
     auto itr = payload_.find("typ");
-    if (itr == payload_.end()) {
-      ec = DecodeErrc::TypHeaderMiss;
-      return;
+
+    if (itr != payload_.end()) {
+      const auto& typ = itr.value().get<std::string>();
+      if (strcasecmp(typ.c_str(), "JWT")) {
+        ec = DecodeErrc::TypMismatch;
+        return;
+      }
+
+      typ_ = str_to_type(typ);
     }
-
-    const auto& typ = itr.value().get<std::string>();
-
-    if (strcasecmp(typ.c_str(), "JWT")) {
-      ec = DecodeErrc::TypMismatch;
-      return;
-    }
-
-    typ_ = str_to_type(typ);
   } else {
     //TODO:
   }
@@ -107,7 +104,8 @@ inline void jwt_header::decode(const jwt::string_view enc_str, std::error_code& 
     auto ret = headers_.insert(it.key());
     if (!ret.second) {
       ec = DecodeErrc::DuplClaims;
-      break;
+      //ATTN: Dont stop the decode here
+      //Not a hard error.
     }
   }
 
