@@ -66,9 +66,8 @@ inline enum type str_to_type(const jwt::string_view typ) noexcept
   if (!strcasecmp(typ.data(), "jwt")) return type::JWT;
   else if(!strcasecmp(typ.data(), "none")) return type::NONE;
 
-  throw std::runtime_error("Unknown token type");
-
   assert (0 && "Code not reached");
+  return type::NONE;
 }
 
 
