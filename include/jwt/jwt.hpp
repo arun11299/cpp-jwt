@@ -32,6 +32,7 @@ SOFTWARE.
 #include <cstring>
 
 #include "jwt/base64.hpp"
+#include "jwt/config.hpp"
 #include "jwt/algorithm.hpp"
 #include "jwt/string_view.hpp"
 #include "jwt/parameters.hpp"
@@ -75,7 +76,7 @@ inline enum type str_to_type(const jwt::string_view typ) noexcept
  * Converts an instance of type `enum class type`
  * to its string equivalent.
  */
-inline jwt::string_view type_to_str(enum type typ)
+inline jwt::string_view type_to_str(SCOPED_ENUM type typ)
 {
   switch (typ) {
     case type::JWT: return "JWT";
@@ -112,7 +113,7 @@ enum class registered_claims
  * Converts an instance of type `enum class registered_claims`
  * to its string equivalent representation.
  */
-inline jwt::string_view reg_claims_to_str(enum registered_claims claim) noexcept
+inline jwt::string_view reg_claims_to_str(SCOPED_ENUM registered_claims claim) noexcept
 {
   switch (claim) {
     case registered_claims::expiration: return "exp";
@@ -296,7 +297,7 @@ public: // 'tors
    * Constructor taking specified algorithm type
    * and JWT type.
    */
-  jwt_header(enum algorithm alg, enum type typ = type::JWT)
+  jwt_header(SCOPED_ENUM algorithm alg, SCOPED_ENUM type typ = type::JWT)
     : alg_(alg)
     , typ_(typ)
   {
@@ -326,7 +327,7 @@ public: // Exposed APIs
   /**
    * Set the algorithm.
    */
-  void algo(enum algorithm alg)
+  void algo(SCOPED_ENUM algorithm alg)
   {
     alg_ = alg;
     payload_["alg"] = alg_to_str(alg_).to_string();
@@ -344,7 +345,7 @@ public: // Exposed APIs
   /**
    * Get the algorithm.
    */
-  enum algorithm algo() const noexcept
+  SCOPED_ENUM algorithm algo() const noexcept
   {
     return alg_;
   }
@@ -356,7 +357,7 @@ public: // Exposed APIs
   /**
    * Set the JWT type.
    */
-  void typ(enum type typ) noexcept
+  void typ(SCOPED_ENUM type typ) noexcept
   {
     typ_ = typ;
     payload_["typ"] = type_to_str(typ_).to_string();
@@ -374,7 +375,7 @@ public: // Exposed APIs
   /**
    * Get the JWT type.
    */
-  enum type typ() const noexcept
+  SCOPED_ENUM type typ() const noexcept
   {
     return typ_;
   }
@@ -489,10 +490,10 @@ public: // Exposed APIs
 
 private: // Data members
   /// The Algorithm to use for signature creation
-  enum algorithm alg_ = algorithm::NONE;
+  SCOPED_ENUM algorithm alg_ = algorithm::NONE;
 
   /// The type of header
-  enum type      typ_ = type::JWT;
+  SCOPED_ENUM type      typ_ = type::JWT;
 
   // The JSON payload object
   json_t payload_;
@@ -602,7 +603,7 @@ public: // Exposed APIs
                       !std::is_same<std::decay_t<T>, system_time_t>::value ||
                       !std::is_same<std::decay_t<T>, jwt::string_view>::value
                      >>
-  bool add_claim(enum registered_claims cname, T&& cvalue, bool overwrite=false)
+  bool add_claim(SCOPED_ENUM registered_claims cname, T&& cvalue, bool overwrite=false)
   {
     return add_claim(
         reg_claims_to_str(cname),
@@ -616,7 +617,7 @@ public: // Exposed APIs
    * This overload takes `registered_claims` as the claim name and
    * `system_time_t` as the claim value type.
    */
-  bool add_claim(enum registered_claims cname, system_time_t tp, bool overwrite=false)
+  bool add_claim(SCOPED_ENUM registered_claims cname, system_time_t tp, bool overwrite=false)
   {
     return add_claim(
         reg_claims_to_str(cname),
@@ -631,7 +632,7 @@ public: // Exposed APIs
    * This overload takes `registered_claims` as the claim name and
    * `jwt::string_view` as the claim value type.
    */
-  bool add_claim(enum registered_claims cname, jwt::string_view cvalue, bool overwrite=false)
+  bool add_claim(SCOPED_ENUM registered_claims cname, jwt::string_view cvalue, bool overwrite=false)
   {
     return add_claim(
           reg_claims_to_str(cname),
@@ -664,7 +665,7 @@ public: // Exposed APIs
    * JSON library will throw an exception.
    */
   template <typename T>
-  decltype(auto) get_claim_value(enum registered_claims cname) const
+  decltype(auto) get_claim_value(SCOPED_ENUM registered_claims cname) const
   {
     return get_claim_value<T>(reg_claims_to_str(cname));
   }
@@ -688,7 +689,7 @@ public: // Exposed APIs
    * Overload which takes the claim name as an instance 
    * of `registered_claims` type.
    */
-  bool remove_claim(enum registered_claims cname)
+  bool remove_claim(SCOPED_ENUM registered_claims cname)
   {
     return remove_claim(reg_claims_to_str(cname));
   }
@@ -712,7 +713,7 @@ public: // Exposed APIs
    * Overload which takes the claim name as an instance
    * of `registered_claims` type.
    */
-  bool has_claim(enum registered_claims cname) const noexcept
+  bool has_claim(SCOPED_ENUM registered_claims cname) const noexcept
   {
     return has_claim(reg_claims_to_str(cname));
   }
@@ -737,7 +738,7 @@ public: // Exposed APIs
    * type `registered_claims`.
    */
   template <typename T>
-  bool has_claim_with_value(const enum registered_claims cname, T&& value) const
+  bool has_claim_with_value(const SCOPED_ENUM registered_claims cname, T&& value) const
   {
     return has_claim_with_value(reg_claims_to_str(cname), std::forward<T>(value));
   }
@@ -1014,7 +1015,7 @@ public: // Exposed APIs
    * @note: See `jwt_payload::add_claim` for more details.
    */
   template <typename T>
-  jwt_object& add_claim(enum registered_claims cname, T&& value)
+  jwt_object& add_claim(SCOPED_ENUM registered_claims cname, T&& value)
   {
     return add_claim(reg_claims_to_str(cname), std::forward<T>(value));
   }
@@ -1031,7 +1032,7 @@ public: // Exposed APIs
    *
    * @note: See `jwt_payload::remove_claim` for more details.
    */
-  jwt_object& remove_claim(enum registered_claims cname)
+  jwt_object& remove_claim(SCOPED_ENUM registered_claims cname)
   {
     return remove_claim(reg_claims_to_str(cname));
   }
@@ -1053,7 +1054,7 @@ public: // Exposed APIs
    *
    * @note: See `jwt_payload::has_claim` for more details.
    */
-  bool has_claim(enum registered_claims cname) const noexcept
+  bool has_claim(SCOPED_ENUM registered_claims cname) const noexcept
   {
     return payload().has_claim(cname);
   }

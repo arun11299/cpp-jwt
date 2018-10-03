@@ -23,6 +23,7 @@ SOFTWARE.
 #ifndef JWT_IPP
 #define JWT_IPP
 
+#include "jwt/config.hpp"
 #include "jwt/detail/meta.hpp"
 #include <algorithm>
 

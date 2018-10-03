@@ -47,6 +47,7 @@ SOFTWARE.
 #include "jwt/string_view.hpp"
 #include "jwt/error_codes.hpp"
 #include "jwt/base64.hpp"
+#include "jwt/config.hpp"
 
 namespace jwt {
 
@@ -220,7 +221,7 @@ enum class algorithm
  * Convert the algorithm enum class type to
  * its stringified form.
  */
-inline jwt::string_view alg_to_str(enum algorithm alg) noexcept
+inline jwt::string_view alg_to_str(SCOPED_ENUM algorithm alg) noexcept
 {
   switch (alg) {
     case algorithm::HS256: return "HS256";
@@ -245,7 +246,7 @@ inline jwt::string_view alg_to_str(enum algorithm alg) noexcept
  * Convert stringified algorithm to enum class.
  * The string comparison is case insesitive.
  */
-inline enum algorithm str_to_alg(const jwt::string_view alg) noexcept
+inline SCOPED_ENUM algorithm str_to_alg(const jwt::string_view alg) noexcept
 {
   if (!alg.length()) return algorithm::NONE;
 
