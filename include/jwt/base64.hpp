@@ -200,7 +200,7 @@ inline std::string base64_decode(const char* in, size_t len)
 
   constexpr static const DMap dmap{};
 
-  while (dmap.at(in[bytes_rem - 1]) == -1) { bytes_rem--; }
+  while (bytes_rem > 0 && dmap.at(in[bytes_rem - 1]) == -1) { bytes_rem--; }
 
   while (bytes_rem > 4)
   {
