@@ -889,7 +889,7 @@ public: // 'tors
    * to populate header. Not much useful unless JWE is supported.
    */
   template <typename First, typename... Rest>
-  jwt_object(First&& first, Rest&&... rest);
+  jwt_object(std::enable_if_t<detail::meta::is_parameter_concept<First>::value, First>&& first, Rest&&... rest);
 
 public: // Exposed static APIs
   /**
