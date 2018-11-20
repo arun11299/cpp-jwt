@@ -289,10 +289,10 @@ jwt_signature::get_verify_algorithm_impl(const jwt_header& hdr) const noexcept
 
 
 //
-template <typename First, typename... Rest>
+template <typename First, typename... Rest,
+          typename SFINAE_COND>
 jwt_object::jwt_object(
-    std::enable_if_t<detail::meta::is_parameter_concept<First>::value, First>&& first,
-    Rest&&... rest)
+    First&& first, Rest&&... rest)
 {
   static_assert (detail::meta::is_parameter_concept<First>::value && 
                  detail::meta::are_all_params<Rest...>::value,
