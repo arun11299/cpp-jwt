@@ -10,9 +10,13 @@ SET( CMAKE_CXX_FLAGS  "-std=c++14 -Wall" )
 
 include_directories (include)
 
-#find_package(OpenSSL REQUIRED)
+find_package(OpenSSL REQUIRED)
 include_directories(${OPENSSL_INCLUDE_DIR})
-link_directories(${OPENSSL_LIBRARIES})
+
+find_package(GTest REQUIRED)
+include_directories(${GTEST_INCLUDE_DIRS})
+
+enable_testing()
 
 # Recurse into the "Hello" and "Demo" subdirectories. This does not actually
 # cause another cmake executable to run. The same process will walk through

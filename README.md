@@ -214,7 +214,7 @@ This is a header only library, so you can just add it to your include path and s
 
 For example one can run cmake like:
 ```
-cmake -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2j/ -DOPENSSL_LIBRARIES=/usr/local/Cellar/openssl/1.0.2j/lib/ -DOPENSSL_INCLUDE_DIR=/usr/local/Cellar/openssl/1.0.2j/include/
+cmake -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2j -DGTEST_ROOT=$HOME/googletest
 ```
 
 ## Parameters
