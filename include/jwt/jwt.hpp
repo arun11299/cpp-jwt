@@ -82,7 +82,7 @@ inline jwt::string_view type_to_str(SCOPED_ENUM type typ)
     case type::JWT: return "JWT";
     default:        assert (0 && "Unknown type");
   };
-
+  __builtin_unreachable();
   assert (0 && "Code not reached");
 }
 
@@ -1120,6 +1120,9 @@ public: //TODO: Not good
   /// Decode parameters
   template <typename DecodeParams, typename... Rest>
   static void set_decode_params(DecodeParams& dparams, params::detail::secret_param s, Rest&&... args);
+
+  template <typename DecodeParams, typename T, typename... Rest>
+  static void set_decode_params(DecodeParams& dparams, params::detail::secret_function_param<T>&& s, Rest&&... args);
 
   template <typename DecodeParams, typename... Rest>
   static void set_decode_params(DecodeParams& dparams, params::detail::leeway_param l, Rest&&... args);

@@ -136,6 +136,15 @@ TEST (ESAlgo, ES384EncodingDecodingValidTest)
   EXPECT_EQ (dec_obj.header().algo(), jwt::algorithm::ES384);
   EXPECT_TRUE (dec_obj.has_claim("exp"));
   EXPECT_TRUE (obj.payload().has_claim_with_value("exp", 4682665886));
+
+  std::map<std::string, std::string> keystore{{"arun.muralidharan", key}};
+
+  auto l = [&keystore](const jwt::jwt_payload& payload){ 
+    auto iss = payload.get_claim_value<std::string>("iss");
+    return keystore[iss];
+  };
+  auto dec_obj2 = jwt::decode(enc_str, algorithms({"es384"}), verify(true), secret(l));
+  EXPECT_EQ (dec_obj2.header().algo(), jwt::algorithm::ES384);
 }
 
 int main(int argc, char* argv[]) {

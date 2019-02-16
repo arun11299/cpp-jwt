@@ -84,6 +84,15 @@ struct secret_param
   string_view secret_;
 };
 
+template <typename T>
+struct secret_function_param
+{
+  T get() const { return fun_; }
+  template <typename U>
+  std::string get(U&& u) const { return fun_(u);}
+  T fun_;
+};
+
 /**
  * Parameter for providing the algorithm to use.
  * The parameter can accept either the string representation
@@ -295,6 +304,13 @@ payload(MappingConcept&& mc)
 inline detail::secret_param secret(const string_view sv)
 {
   return { sv };
+}
+
+template <typename T>
+inline std::enable_if_t<!std::is_convertible<T, string_view>::value, detail::secret_function_param<T>>  
+secret(T&& fun)
+{
+  return detail::secret_function_param<T>{ fun };
 }
 
 /**
