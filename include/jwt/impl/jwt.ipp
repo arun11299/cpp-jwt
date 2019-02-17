@@ -544,6 +544,14 @@ void jwt_object::set_decode_params(DecodeParams& dparams, params::detail::secret
   jwt_object::set_decode_params(dparams, std::forward<Rest>(args)...);
 }
 
+template <typename DecodeParams, typename T, typename... Rest>
+void jwt_object::set_decode_params(DecodeParams& dparams, params::detail::secret_function_param<T>&& s, Rest&&... args)
+{
+  dparams.secret = s.get(*dparams.payload_ptr);
+  dparams.has_secret = true;
+  jwt_object::set_decode_params(dparams, std::forward<Rest>(args)...);
+}
+
 template <typename DecodeParams, typename... Rest>
 void jwt_object::set_decode_params(DecodeParams& dparams, params::detail::leeway_param l, Rest&&... args)
 {
@@ -650,10 +658,11 @@ jwt_object decode(const jwt::string_view enc_str,
 
     //Validate JTI
     bool validate_jti = false;
+    const jwt_payload* payload_ptr = 0;
   };
 
   decode_params dparams{};
-  jwt_object::set_decode_params(dparams, std::forward<Args>(args)...);
+  
 
   //Signature must have atleast 2 dots
   auto dot_cnt = std::count_if(std::begin(enc_str), std::end(enc_str),
@@ -695,7 +704,8 @@ jwt_object decode(const jwt::string_view enc_str,
     return obj;
   }
   obj.payload(std::move(payload));
-
+  dparams.payload_ptr = & obj.payload();
+  jwt_object::set_decode_params(dparams, std::forward<Args>(args)...);
   if (dparams.verify) {
     try {
       ec = obj.verify(dparams, algos);
