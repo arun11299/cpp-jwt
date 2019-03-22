@@ -31,6 +31,7 @@ SOFTWARE.
 #include <cassert>
 #include <cstring>
 
+#include "jwt/assertions.hpp"
 #include "jwt/base64.hpp"
 #include "jwt/config.hpp"
 #include "jwt/algorithm.hpp"
@@ -67,7 +68,7 @@ inline enum type str_to_type(const jwt::string_view typ) noexcept
   if (!strcasecmp(typ.data(), "jwt")) return type::JWT;
   else if(!strcasecmp(typ.data(), "none")) return type::NONE;
 
-  assert (0 && "Code not reached");
+  JWT_NOT_REACHED("Code not reached");
   return type::NONE;
 }
 
@@ -82,8 +83,8 @@ inline jwt::string_view type_to_str(SCOPED_ENUM type typ)
     case type::JWT: return "JWT";
     default:        assert (0 && "Unknown type");
   };
-  __builtin_unreachable();
-  assert (0 && "Code not reached");
+
+  JWT_NOT_REACHED("Code not reached");
 }
 
 
@@ -125,8 +126,8 @@ inline jwt::string_view reg_claims_to_str(SCOPED_ENUM registered_claims claim) n
     case registered_claims::jti:        return "jti";
     default:                            assert (0 && "Not a registered claim");
   };
+  JWT_NOT_REACHED("Code not reached");
   return "";
-  assert (0 && "Code not reached");
 }
 
 /**

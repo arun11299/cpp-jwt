@@ -43,6 +43,7 @@ SOFTWARE.
 #include <openssl/buffer.h>
 #include <openssl/opensslv.h>
 
+#include "jwt/assertions.hpp"
 #include "jwt/exceptions.hpp"
 #include "jwt/string_view.hpp"
 #include "jwt/error_codes.hpp"
@@ -239,7 +240,7 @@ inline jwt::string_view alg_to_str(SCOPED_ENUM algorithm alg) noexcept
     default:               assert (0 && "Unknown Algorithm");
   };
   return "UNKN";
-  assert (0 && "Code not reached");
+  JWT_NOT_REACHED("Code not reached");
 }
 
 /**
@@ -263,7 +264,7 @@ inline SCOPED_ENUM algorithm str_to_alg(const jwt::string_view alg) noexcept
 
   return algorithm::UNKN;
 
-  assert (0 && "Code not reached");
+  JWT_NOT_REACHED("Code not reached");
 }
 
 /**
