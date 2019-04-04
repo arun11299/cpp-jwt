@@ -229,16 +229,16 @@ inline std::string base64_decode(const char* in, size_t len)
     const auto fourth = dmap.at(in[3]);
     result[i + 2] = (third << 6) | fourth;
     bytes_wr++;
-    //FALLTHROUGH
   }
+  //FALLTHROUGH
   case 3:
   {
     const auto second = dmap.at(in[1]);
     const auto third  = dmap.at(in[2]);
     result[i + 1] = (second << 4) | (third >> 2);
     bytes_wr++;
-    //FALLTHROUGH
   }
+  //FALLTHROUGH
   case 2:
   {
     const auto first  = dmap.at(in[0]);
