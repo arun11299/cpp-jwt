@@ -23,6 +23,16 @@ SOFTWARE.
 #ifndef JWT_STRING_VIEW_HPP
 #define JWT_STRING_VIEW_HPP
 
+#if __cplusplus >= 201703L
+
+#include <string_view>
+
+namespace jwt {
+  using string_view = std::string_view;
+}
+
+#else // __cplusplus >= 201703L
+
 #include <limits>
 #include <string>
 #include <cassert>
@@ -175,13 +185,6 @@ public: // Exposed APIs
   explicit operator std::basic_string<CharT, Traits, Allocator>() const
   {
     return {data_, len_};
-  }
-
-  template <typename Allocator = std::allocator<CharT>>
-  std::basic_string<CharT, Traits, Allocator>
-  to_string(const Allocator& alloc = Allocator()) const
-  {
-    return {data_, len_, alloc};
   }
 
   // NOTE: Does not throw 
@@ -371,5 +374,7 @@ using string_view = basic_string_view<char>;
 } // END namespace jwt
 
 #include "jwt/impl/string_view.ipp"
+
+#endif // __cplusplus >= 201703L
 
 #endif

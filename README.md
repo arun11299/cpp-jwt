@@ -660,7 +660,7 @@ Things one may have questions about
 - There is a string_view implementation. Why not use <code>boost::string_ref</code> ?
 
   Sorry, I love boost! But, do not want it to be part of dependency.
-  Having said that, I can use some MACRO to use <code>boost::string_ref</code> or C++17 string_view if available. Perhaps in future.
+  If you use C++17 or greater `std::string_view` gets used instead and `jwt::string_view` implementation does not get included.
 
 - You are not using the stack allocator or the shart string anywhere. Why to include it then ?
 
