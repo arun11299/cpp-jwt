@@ -153,7 +153,7 @@ public:
   constexpr DMap() = default;
 
 public:
-  constexpr char at(size_t pos) const noexcept
+  constexpr signed char at(size_t pos) const noexcept
   {
     return X_ASSERT(pos < map_.size()), map_[pos];
   }
