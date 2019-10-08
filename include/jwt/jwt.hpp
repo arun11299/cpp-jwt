@@ -302,8 +302,8 @@ public: // 'tors
     : alg_(alg)
     , typ_(typ)
   {
-    payload_["typ"] = type_to_str(typ_).to_string();
-    payload_["alg"] = alg_to_str(alg_).to_string();
+    payload_["typ"] = std::string(type_to_str(typ_));
+    payload_["alg"] = std::string(alg_to_str(alg_));
   }
 
   /**
@@ -331,7 +331,7 @@ public: // Exposed APIs
   void algo(SCOPED_ENUM algorithm alg)
   {
     alg_ = alg;
-    payload_["alg"] = alg_to_str(alg_).to_string();
+    payload_["alg"] = std::string(alg_to_str(alg_));
   }
 
   /**
@@ -340,7 +340,7 @@ public: // Exposed APIs
   void algo(const jwt::string_view sv)
   {
     alg_ = str_to_alg(sv.data());
-    payload_["alg"] = alg_to_str(alg_).to_string();
+    payload_["alg"] = std::string(alg_to_str(alg_));
   }
 
   /**
@@ -361,7 +361,7 @@ public: // Exposed APIs
   void typ(SCOPED_ENUM type typ) noexcept
   {
     typ_ = typ;
-    payload_["typ"] = type_to_str(typ_).to_string();
+    payload_["typ"] = std::string(type_to_str(typ_));
   }
 
   /**
@@ -370,7 +370,7 @@ public: // Exposed APIs
   void typ(const jwt::string_view sv)
   {
     typ_ = str_to_type(sv.data());
-    payload_["typ"] = type_to_str(typ_).to_string();
+    payload_["typ"] = std::string(type_to_str(typ_));
   }
 
   /**
