@@ -2,25 +2,34 @@
 # refer to the root source directory of the project as ${HELLO_SOURCE_DIR} and
 # to the root binary directory of the project as ${HELLO_BINARY_DIR}.
 
-cmake_minimum_required (VERSION 2.8.11)
-project (cpp-jwt)
+cmake_minimum_required(VERSION 3.1)
+project(cpp-jwt)
 
 #SET (CMAKE_CXX_COMPILER /usr/local/bin/g++)
-SET( CMAKE_CXX_FLAGS  "-std=c++14 -Wall -Wextra" )
+# SET( CMAKE_CXX_FLAGS  "-std=c++14 -Wall -Wextra" )
 
-include_directories (include)
+add_library(${PROJECT_NAME} INTERFACE)
+target_compile_options(${PROJECT_NAME} INTERFACE -Wall -Wextra)
+# variable_templates ensures c++14 standard or greater
+target_compile_features(${PROJECT_NAME} INTERFACE cxx_variable_templates)
+
+target_include_directories(${PROJECT_NAME} INTERFACE include)
 
 find_package(OpenSSL REQUIRED)
-include_directories(${OPENSSL_INCLUDE_DIR})
+target_include_directories(${PROJECT_NAME} INTERFACE ${OPENSSL_INCLUDE_DIR})
+target_link_libraries(${PROJECT_NAME} INTERFACE ${OPENSSL_LIBRARIES})
 
 find_package(GTest REQUIRED)
-include_directories(${GTEST_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} INTERFACE ${GTEST_INCLUDE_DIRS})
+target_link_libraries(${PROJECT_NAME} INTERFACE ${GTEST_LIBRARIES})
 
-enable_testing()
+# Only if not a subproject
+if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+  enable_testing()
 
-# Recurse into the "Hello" and "Demo" subdirectories. This does not actually
-# cause another cmake executable to run. The same process will walk through
-# the project's entire directory structure.
-add_subdirectory (tests)
-
-add_subdirectory (examples)
+  # Recurse into the "Hello" and "Demo" subdirectories. This does not actually
+  # cause another cmake executable to run. The same process will walk through
+  # the project's entire directory structure.
+  add_subdirectory(tests)
+  add_subdirectory(examples)
+endif()
