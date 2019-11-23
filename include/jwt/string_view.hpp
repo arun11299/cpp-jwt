@@ -23,7 +23,7 @@ SOFTWARE.
 #ifndef JWT_STRING_VIEW_HPP
 #define JWT_STRING_VIEW_HPP
 
-#if __cplusplus >= 201703L
+#if defined(__cpp_lib_string_view)
 
 #include <string_view>
 
@@ -31,7 +31,7 @@ namespace jwt {
   using string_view = std::string_view;
 }
 
-#else // __cplusplus >= 201703L
+#else // defined(__cpp_lib_string_view)
 
 #include <limits>
 #include <string>
@@ -375,6 +375,6 @@ using string_view = basic_string_view<char>;
 
 #include "jwt/impl/string_view.ipp"
 
-#endif // __cplusplus >= 201703L
+#endif // defined(__cpp_lib_string_view)
 
 #endif
