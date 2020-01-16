@@ -21,7 +21,7 @@ void basic_decode_test()
   using namespace jwt::params;
 
   std::cout << "DECODE: \n";
-  jwt::decode(res, algorithms({"none", "hs256"}), ec, verify(false), secret("secret"));
+  jwt::decode(res, algorithms({"none", "HS256"}), ec, verify(false), secret("secret"));
 }
 
 int main() {

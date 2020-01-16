@@ -11,7 +11,7 @@ void basic_jwt_object_test()
   using namespace jwt::params;
   jwt::jwt_object obj(payload({
                                 {"a", "b"},
-                                {"c", "d"} 
+                                {"c", "d"}
                               }));
 
   //check with std::map
@@ -20,7 +20,7 @@ void basic_jwt_object_test()
   m["c"] = "d";
 
   jwt::jwt_object obj1{payload(m)};
-  
+
   auto obj2 = std::move(obj1);
 
   std::cout << obj2.payload() << std::endl;
@@ -43,23 +43,23 @@ void basic_jwt_object_test()
   std::cout << obj3.payload() << std::endl;
 
   obj3.secret("secret");
-  obj3.header().algo("hs256");
+  obj3.header().algo("HS256");
 
-  auto dec_obj = jwt::decode(obj3.signature(), algorithms({"hs256"}), secret("secret"));
+  auto dec_obj = jwt::decode(obj3.signature(), algorithms({"HS256"}), secret("secret"));
 }
 
 void jwt_object_pem_test()
 {
   using namespace jwt::params;
 
-  std::string pub_key = 
+  std::string pub_key =
     R"(-----BEGIN PUBLIC KEY-----
 MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAEomxC9ycc8AkXSwWQpu1kN5Fmgy/sD/KJ
 qN3tlSZmUEZ3w3c6KYJfK97PMOSZQaUdeydBoq/IOglQQOj8zLqubq5IpaaUiDQ5
 0eJg79PvXuLiVUH98cBL/o8sDVB/sGzz
 -----END PUBLIC KEY-----)";
 
-  std::string priv_key = 
+  std::string priv_key =
 R"(-----BEGIN EC PRIVATE KEY-----
 MIGkAgEBBDBeLCgapjZmvTatMHaYX3A02+0Ys3Tr8kda+E9DFnmCSiCOEig519fT
 13edeU8YdDugBwYFK4EEACKhZANiAASibEL3JxzwCRdLBZCm7WQ3kWaDL+wP8omo
@@ -79,10 +79,10 @@ MIGkAgEBBDBeLCgapjZmvTatMHaYX3A02+0Ys3Tr8kda+E9DFnmCSiCOEig519fT
      ;
 
   std::cout << "pem sign " << obj.signature() << std::endl;
-  std::cout << "Get claim value for exp: " << 
+  std::cout << "Get claim value for exp: " <<
     obj.payload().get_claim_value<uint64_t>("exp") << std::endl;
 
-  auto dec_obj = jwt::decode(obj.signature(), algorithms({"es256"}), secret(pub_key));
+  auto dec_obj = jwt::decode(obj.signature(), algorithms({"ES256"}), secret(pub_key));
   std::cout << dec_obj.payload() << std::endl;
 }
 

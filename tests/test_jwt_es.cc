@@ -53,7 +53,7 @@ TEST (ESAlgo, ES256EncodingDecodingTest)
   key = read_from_file(EC384_PUB_KEY);
   ASSERT_TRUE (key.length());
 
-  auto dec_obj = jwt::decode(enc_str, algorithms({"es256"}), ec, verify(false), secret(key));
+  auto dec_obj = jwt::decode(enc_str, algorithms({"ES256"}), ec, verify(false), secret(key));
   EXPECT_FALSE (ec);
 
   EXPECT_EQ (dec_obj.header().algo(), jwt::algorithm::ES256);
@@ -83,7 +83,7 @@ TEST (ESAlgo, ES384EncodingDecodingTest)
   key = read_from_file(EC384_PUB_KEY);
   ASSERT_TRUE (key.length());
 
-  auto dec_obj = jwt::decode(enc_str, algorithms({"es384"}), verify(false), secret(key));
+  auto dec_obj = jwt::decode(enc_str, algorithms({"ES384"}), verify(false), secret(key));
 
   EXPECT_EQ (dec_obj.header().algo(), jwt::algorithm::ES384);
 }
@@ -107,7 +107,7 @@ TEST (ESAlgo, ES512EncodingDecodingTest)
   key = read_from_file(EC384_PUB_KEY);
   ASSERT_TRUE (key.length());
 
-  auto dec_obj = jwt::decode(enc_str, algorithms({"es512"}), verify(false), secret(key));
+  auto dec_obj = jwt::decode(enc_str, algorithms({"ES512"}), verify(false), secret(key));
 
   EXPECT_EQ (dec_obj.header().algo(), jwt::algorithm::ES512);
 }
@@ -131,7 +131,7 @@ TEST (ESAlgo, ES384EncodingDecodingValidTest)
   key = read_from_file(EC384_PUB_KEY);
   ASSERT_TRUE (key.length());
 
-  auto dec_obj = jwt::decode(enc_str, algorithms({"es384"}), verify(true), secret(key));
+  auto dec_obj = jwt::decode(enc_str, algorithms({"ES384"}), verify(true), secret(key));
 
   EXPECT_EQ (dec_obj.header().algo(), jwt::algorithm::ES384);
   EXPECT_TRUE (dec_obj.has_claim("exp"));
@@ -139,11 +139,11 @@ TEST (ESAlgo, ES384EncodingDecodingValidTest)
 
   std::map<std::string, std::string> keystore{{"arun.muralidharan", key}};
 
-  auto l = [&keystore](const jwt::jwt_payload& payload){ 
+  auto l = [&keystore](const jwt::jwt_payload& payload){
     auto iss = payload.get_claim_value<std::string>("iss");
     return keystore[iss];
   };
-  auto dec_obj2 = jwt::decode(enc_str, algorithms({"es384"}), verify(true), secret(l));
+  auto dec_obj2 = jwt::decode(enc_str, algorithms({"ES384"}), verify(true), secret(l));
   EXPECT_EQ (dec_obj2.header().algo(), jwt::algorithm::ES384);
 }
 
