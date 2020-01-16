@@ -57,7 +57,7 @@ using sign_result_t = std::pair<std::string, std::error_code>;
 /// The result type of verification function
 using verify_result_t = std::pair<bool, std::error_code>;
 /// The function pointer type for the signing function
-using sign_func_t   = sign_result_t (*) (const jwt::string_view key, 
+using sign_func_t   = sign_result_t (*) (const jwt::string_view key,
                                          const jwt::string_view data);
 /// The function pointer type for the verifying function
 using verify_func_t = verify_result_t (*) (const jwt::string_view key,
@@ -235,7 +235,7 @@ inline jwt::string_view alg_to_str(SCOPED_ENUM algorithm alg) noexcept
     case algorithm::ES384: return "ES384";
     case algorithm::ES512: return "ES512";
     case algorithm::TERM:  return "TERM";
-    case algorithm::NONE:  return "NONE";
+    case algorithm::NONE:  return "none";
     case algorithm::UNKN:  return "UNKN";
     default:               assert (0 && "Unknown Algorithm");
   };
@@ -249,18 +249,18 @@ inline jwt::string_view alg_to_str(SCOPED_ENUM algorithm alg) noexcept
  */
 inline SCOPED_ENUM algorithm str_to_alg(const jwt::string_view alg) noexcept
 {
-  if (!alg.length()) return algorithm::NONE;
+  if (!alg.length()) return algorithm::UNKN;
 
   if (!strcasecmp(alg.data(), "none"))  return algorithm::NONE;
-  if (!strcasecmp(alg.data(), "hs256")) return algorithm::HS256;
-  if (!strcasecmp(alg.data(), "hs384")) return algorithm::HS384;
-  if (!strcasecmp(alg.data(), "hs512")) return algorithm::HS512;
-  if (!strcasecmp(alg.data(), "rs256")) return algorithm::RS256;
-  if (!strcasecmp(alg.data(), "rs384")) return algorithm::RS384;
-  if (!strcasecmp(alg.data(), "rs512")) return algorithm::RS512;
-  if (!strcasecmp(alg.data(), "es256")) return algorithm::ES256;
-  if (!strcasecmp(alg.data(), "es384")) return algorithm::ES384;
-  if (!strcasecmp(alg.data(), "es512")) return algorithm::ES512;
+  if (!strcasecmp(alg.data(), "HS256")) return algorithm::HS256;
+  if (!strcasecmp(alg.data(), "HS384")) return algorithm::HS384;
+  if (!strcasecmp(alg.data(), "HS512")) return algorithm::HS512;
+  if (!strcasecmp(alg.data(), "RS256")) return algorithm::RS256;
+  if (!strcasecmp(alg.data(), "RS384")) return algorithm::RS384;
+  if (!strcasecmp(alg.data(), "RS512")) return algorithm::RS512;
+  if (!strcasecmp(alg.data(), "ES256")) return algorithm::ES256;
+  if (!strcasecmp(alg.data(), "ES384")) return algorithm::ES384;
+  if (!strcasecmp(alg.data(), "ES512")) return algorithm::ES512;
 
   return algorithm::UNKN;
 
@@ -385,14 +385,14 @@ struct HMACSign
    *  Returns:
    *    verify_result_t
    *    verify_result_t::first set to true if verification succeeds.
-   *    false otherwise. 
+   *    false otherwise.
    *    verify_result_t::second set to relevant error if verification fails.
    *
    *  Exceptions:
    *    Any allocation failure will result in jwt::MemoryAllocationException
    *    being thrown.
    */
-  static verify_result_t 
+  static verify_result_t
   verify(const jwt::string_view key, const jwt::string_view head, const jwt::string_view sign);
 
 };
@@ -405,10 +405,10 @@ struct HMACSign
  * PEM based algorithms.
  *
  * The signing and verification APIs are
- * basically no-op except that they would 
+ * basically no-op except that they would
  * set the relevant error code.
  *
- * NOTE: error_code would be set in the case 
+ * NOTE: error_code would be set in the case
  * of usage of NONE algorithm.
  * Users of this API are expected to check for
  * the case explicitly.
@@ -534,7 +534,7 @@ private:
   /**
    */
   static int ECDSA_SIG_set0(ECDSA_SIG* sig, BIGNUM* r, BIGNUM* s)
-  { 
+  {
     if (r == nullptr || s == nullptr) return 0;
 
     BN_clear_free(sig->r);
