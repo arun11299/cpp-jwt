@@ -43,7 +43,7 @@ This assertion can be used in some kind of bearer authentication mechanism that 
 
 Few good resources on this material which I found useful are:
   <a href="https://scotch.io/tutorials/the-anatomy-of-a-json-web-token">Anatomy of JWT</a>
-  <a href="https://auth0.com/learn/json-web-tokens/">Learn JWT</a> 
+  <a href="https://auth0.com/learn/json-web-tokens/">Learn JWT</a>
   <a href="https://tools.ietf.org/html/rfc7519">RFC 7519</a>
 
 
@@ -78,7 +78,7 @@ Few good resources on this material which I found useful are:
     std::cout << enc_str << std::endl;
 
     //Decode
-    auto dec_obj = jwt::decode(enc_str, algorithms({"hs256"}), secret(key));
+    auto dec_obj = jwt::decode(enc_str, algorithms({"HS256"}), secret(key));
     std::cout << dec_obj.header() << std::endl;
     std::cout << dec_obj.payload() << std::endl;
 
@@ -96,7 +96,7 @@ Few good resources on this material which I found useful are:
   Almost the same API, except for some ugliness here and there. But close enough!
 
   Lets take another example in which we will see to add payload claim having type other than string.
-  The <code>payload</code> function used in the above example to create <code>jwt_object</code> object can only take strings. For anything else, it will throw a compilation error. 
+  The <code>payload</code> function used in the above example to create <code>jwt_object</code> object can only take strings. For anything else, it will throw a compilation error.
 
   For adding claims having values other than string, <code>jwt_object</code> class provides <code>add_claim</code> API. We will also see few other APIs in the next example. Make sure to read the comments :).
 
@@ -109,7 +109,7 @@ Few good resources on this material which I found useful are:
     int main() {
       using namespace jwt::params;
 
-      jwt::jwt_object obj{algorithm("hs256"), secret("secret"), payload({{"user", "admin"}})};
+      jwt::jwt_object obj{algorithm("HS256"), secret("secret"), payload({{"user", "admin"}})};
 
       //Use add_claim API to add claim values which are
       // _not_ strings.
@@ -313,17 +313,17 @@ All the parameters are basically a function which returns an instance of a type 
     - Takes in any type which satifies the <strong>SequenceConcept</strong> (see <code>idetail::meta::is_sequence_concept</code>)
 
   ```cpp
-  jwt::decode(algorithms({"none", "hs256", "rs256"}), ...);
-  
+  jwt::decode(algorithms({"none", "HS256", "RS256"}), ...);
+
   OR
 
-  std::vector<std::string> algs{"none", "hs256", "rs256"};
+  std::vector<std::string> algs{"none", "HS256", "RS256"};
   jwt::decode(algorithms(algs), ...);
   ```
 
   - <strong>secret</strong>
 
-    Optional parameter. To be supplied only when the algorithm used is not "NONE". Else would throw/set <code>KeyNotPresentError</code> / <code>KeyNotPresent</code> exception/error.
+    Optional parameter. To be supplied only when the algorithm used is not "none". Else would throw/set <code>KeyNotPresentError</code> / <code>KeyNotPresent</code> exception/error.
 
   - <strong>leeway</strong>
 
@@ -365,7 +365,7 @@ All the parameters are basically a function which returns an instance of a type 
 
   - <strong>validate_jti</strong>
 
-    Optional parameter. 
+    Optional parameter.
     Takes a boolean value.
     Validates the JTI claim. Only checks for the presence of the claim. If  not throws or sets <code>InvalidJTIError</code> or <code>InvalidJTI</code>.
 
@@ -394,7 +394,7 @@ For the registered claim types the library assumes specific data types for the c
 
 
 ## Advanced Examples
-We will see few complete examples which makes use of error code checks and exception handling. 
+We will see few complete examples which makes use of error code checks and exception handling.
 The examples are taken from the "tests" section. Users are requested to checkout the tests to find out more ways to use this library.
 
 Expiration verification example (uses error_code):
@@ -406,7 +406,7 @@ Expiration verification example (uses error_code):
 int main() {
   using namespace jwt::params;
 
-  jwt::jwt_object obj{algorithm("hs256"), secret("secret")};
+  jwt::jwt_object obj{algorithm("HS256"), secret("secret")};
   obj.add_claim("iss", "arun.muralidharan")
      .add_claim("exp", std::chrono::system_clock::now() - std::chrono::seconds{1})
      ;
@@ -415,7 +415,7 @@ int main() {
   auto enc_str = obj.signature(ec);
   assert (!ec);
 
-  auto dec_obj = jwt::decode(enc_str, algorithms({"hs256"}), ec, secret("secret"), verify(true));
+  auto dec_obj = jwt::decode(enc_str, algorithms({"HS256"}), ec, secret("secret"), verify(true));
   assert (ec);
   assert (ec.value() == static_cast<int>(jwt::VerificationErrc::TokenExpired));
 
@@ -432,7 +432,7 @@ Expiration verification example (uses exception):
 int main() {
   using namespace jwt::params;
 
-  jwt::jwt_object obj{algorithm("hs256"), secret("secret")};
+  jwt::jwt_object obj{algorithm("HS256"), secret("secret")};
 
   obj.add_claim("iss", "arun.muralidharan")
      .add_claim("exp", std::chrono::system_clock::now() - std::chrono::seconds{1})
@@ -441,7 +441,7 @@ int main() {
   auto enc_str = obj.signature();
 
   try {
-    auto dec_obj = jwt::decode(enc_str, algorithms({"hs256"}), secret("secret"), verify(true));
+    auto dec_obj = jwt::decode(enc_str, algorithms({"HS256"}), secret("secret"), verify(true));
   } catch (const jwt::TokenExpiredError& e) {
     //Handle Token expired exception here
     //...
@@ -450,7 +450,7 @@ int main() {
     //...
   } catch (const jwt::DecodeError& e) {
     //Handle all kinds of other decode errors
-    //... 
+    //...
   } catch (const jwt::VerificationError& e) {
     // Handle the base verification error.
     //NOTE: There are other derived types of verification errors
@@ -472,13 +472,13 @@ Invalid issuer test(uses error_code):
 int main() {
   using namespace jwt::params;
 
-  jwt::jwt_object obj{algorithm("hs256"), secret("secret"), payload({{"sub", "test"}})};
+  jwt::jwt_object obj{algorithm("HS256"), secret("secret"), payload({{"sub", "test"}})};
 
   std::error_code ec;
   auto enc_str = obj.signature(ec);
   assert (!ec);
 
-  auto dec_obj = jwt::decode(enc_str, algorithms({"hs256"}), ec, secret("secret"), issuer("arun.muralidharan"));
+  auto dec_obj = jwt::decode(enc_str, algorithms({"HS256"}), ec, secret("secret"), issuer("arun.muralidharan"));
   assert (ec);
 
   assert (ec.value() == static_cast<int>(jwt::VerificationErrc::InvalidIssuer));
@@ -566,7 +566,7 @@ The error codes are divided into different categories:
     TypeConversionError,
   };
   ```
-  
+
 <strong>Exceptions:</strong>
 There are exception types created for almost all the error codes above.
 
@@ -588,7 +588,7 @@ There are exception types created for almost all the error codes above.
 
   - KeyNotPresentError
 
-    Thrown if key/secret is not passed in with the decode API if the algorithm used is something other than "NONE".
+    Thrown if key/secret is not passed in with the decode API if the algorithm used is something other than "none".
 
 - VerificationError
 
@@ -644,7 +644,7 @@ int main() {
 
   auto dec_obj = jwt::decode(enc_str, algorithms({"none"}), ec, verify(false));
 
-  // Should not be a hard error in general 
+  // Should not be a hard error in general
   assert (ec.value() == static_cast<int>(jwt::AlgorithmErrc::NoneAlgorithmUsed));
 }
 ```

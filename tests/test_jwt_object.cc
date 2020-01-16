@@ -17,7 +17,7 @@ TEST (ObjectTest, MoveConstructor)
 {
   using namespace jwt::params;
 
-  jwt::jwt_object obj{algorithm("hs256"), secret("secret")};
+  jwt::jwt_object obj{algorithm("HS256"), secret("secret")};
 
   obj.add_claim("iss", "arun.muralidharan");
 
@@ -28,7 +28,7 @@ TEST (ObjectTest, MoveConstructor)
   EXPECT_TRUE(wrapper.object.payload().has_claim_with_value("iss", "arun.muralidharan"));
 }
 
-int main(int argc, char **argv) 
+int main(int argc, char **argv)
 {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
