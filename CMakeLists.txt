@@ -35,6 +35,7 @@ target_include_directories(
 target_link_libraries(${PROJECT_NAME} INTERFACE ${OpenSSL_LIBRARIES})
 if(NOT CPP_JWT_USE_VENDORED_NLOHMANN_JSON)
   target_link_libraries(${PROJECT_NAME} INTERFACE nlohmann_json::nlohmann_json)
+else()
   add_definitions(-DCPP_JWT_USE_VENDORED_NLOHMANN_JSON)
 endif()
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_14)
