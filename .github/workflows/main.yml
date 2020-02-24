@@ -12,13 +12,32 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-latest, ubuntu-latest, macOS-latest]
+        os: [windows-latest, ubuntu-latest]
 
     steps:
     - uses: actions/checkout@v1
 
-    - name: install conan
-      run: pip3 install conan
+    - uses: actions/setup-python@v1
+      with:
+        python-version: '3.x'
+
+    - name: Install tools (Linux)
+      if: startsWith(runner.os, 'Linux')
+      run: |
+        sudo apt-get install python3-setuptools python3-wheel python3-pip
+      shell: bash
+
+    - name: Install conan (Linux)
+      if: startsWith(runner.os, 'Linux')
+      run: |
+        sudo pip3 install conan --upgrade
+      shell: bash
+
+    - name: Install conan (Windows)
+      if: startsWith(runner.os, 'Windows')
+      run: |
+        pip3 install conan --upgrade
+      shell: bash
 
     - name: Create Build Environment
       run: cmake -E make_directory ${{runner.workspace}}/build
