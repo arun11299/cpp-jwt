@@ -44,7 +44,7 @@ jobs:
 
     - name: Install conan dependencies
       working-directory: ${{runner.workspace}}/build
-      run: conan profile new default --detect && conan install .. --build missing
+      run: conan profile new default --detect && conan install $GITHUB_WORKSPACE --build missing
 
     - name: Configure CMake
       shell: bash
