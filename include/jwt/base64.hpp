@@ -92,7 +92,7 @@ inline std::string base64_encode(const char* in, size_t len)
   const auto encoded_siz = encoding_size(len);
   result.resize(encoded_siz);
 
-  constexpr static const EMap emap{};
+  constexpr static const EMap emap;
 
   int i = 0;
   int j = 0;
