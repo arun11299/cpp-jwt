@@ -4,7 +4,8 @@ set(CMAKE_CXX_FLAGS
 
 add_executable(test_jwt_object test_jwt_object.cc)
 target_link_libraries(test_jwt_object ${GTest_LIBRARIES} ${PROJECT_NAME})
-target_include_directories(test_jwt_object PRIVATE ${GTEST_INCLUDE_DIRS})
+target_include_directories(test_jwt_object PRIVATE ${GTEST_INCLUDE_DIRS}
+                                                   ${GTest_INCLUDE_DIRS})
 add_test(
   NAME test_jwt_object
   COMMAND ./test_jwt_object
@@ -12,7 +13,8 @@ add_test(
 
 add_executable(test_jwt_encode test_jwt_encode.cc)
 target_link_libraries(test_jwt_encode ${GTest_LIBRARIES} ${PROJECT_NAME})
-target_include_directories(test_jwt_encode PRIVATE ${GTEST_INCLUDE_DIRS})
+target_include_directories(test_jwt_encode PRIVATE ${GTEST_INCLUDE_DIRS}
+                                                   ${GTest_INCLUDE_DIRS})
 add_test(
   NAME test_jwt_encode
   COMMAND ./test_jwt_encode
@@ -20,7 +22,8 @@ add_test(
 
 add_executable(test_jwt_decode test_jwt_decode.cc)
 target_link_libraries(test_jwt_decode ${GTest_LIBRARIES} ${PROJECT_NAME})
-target_include_directories(test_jwt_decode PRIVATE ${GTEST_INCLUDE_DIRS})
+target_include_directories(test_jwt_decode PRIVATE ${GTEST_INCLUDE_DIRS}
+                                                   ${GTest_INCLUDE_DIRS})
 add_test(
   NAME test_jwt_decode
   COMMAND ./test_jwt_decode
@@ -30,7 +33,7 @@ add_executable(test_jwt_decode_verifiy test_jwt_decode_verifiy.cc)
 target_link_libraries(test_jwt_decode_verifiy ${GTest_LIBRARIES}
                       ${PROJECT_NAME})
 target_include_directories(test_jwt_decode_verifiy
-                           PRIVATE ${GTEST_INCLUDE_DIRS})
+                           PRIVATE ${GTEST_INCLUDE_DIRS} ${GTest_INCLUDE_DIRS})
 add_test(
   NAME test_jwt_decode_verifiy
   COMMAND ./test_jwt_decode_verifiy
@@ -41,7 +44,7 @@ add_executable(test_jwt_decode_verifiy_with_exception
 target_link_libraries(test_jwt_decode_verifiy_with_exception ${GTest_LIBRARIES}
                       ${PROJECT_NAME})
 target_include_directories(test_jwt_decode_verifiy_with_exception
-                           PRIVATE ${GTEST_INCLUDE_DIRS})
+                           PRIVATE ${GTEST_INCLUDE_DIRS} ${GTest_INCLUDE_DIRS})
 add_test(
   NAME test_jwt_decode_verifiy_with_exception
   COMMAND ./test_jwt_decode_verifiy_with_exception
@@ -49,7 +52,8 @@ add_test(
 
 add_executable(test_jwt_rsa test_jwt_rsa.cc)
 target_link_libraries(test_jwt_rsa ${GTest_LIBRARIES} ${PROJECT_NAME})
-target_include_directories(test_jwt_rsa PRIVATE ${GTEST_INCLUDE_DIRS})
+target_include_directories(test_jwt_rsa PRIVATE ${GTEST_INCLUDE_DIRS}
+                                                ${GTest_INCLUDE_DIRS})
 add_test(
   NAME test_jwt_rsa
   COMMAND ./test_jwt_rsa
@@ -57,7 +61,8 @@ add_test(
 
 add_executable(test_jwt_es test_jwt_es.cc)
 target_link_libraries(test_jwt_es ${GTest_LIBRARIES} ${PROJECT_NAME})
-target_include_directories(test_jwt_es PRIVATE ${GTEST_INCLUDE_DIRS})
+target_include_directories(test_jwt_es PRIVATE ${GTEST_INCLUDE_DIRS}
+                                               ${GTest_INCLUDE_DIRS})
 add_test(
   NAME test_jwt_es
   COMMAND ./test_jwt_es

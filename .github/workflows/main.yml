@@ -48,6 +48,7 @@ jobs:
       - name: Install conan dependencies
         working-directory: ${{runner.workspace}}/build
         run: conan install $GITHUB_WORKSPACE --build missing
+        shell: bash
 
       - name: Configure CMake
         shell: bash
