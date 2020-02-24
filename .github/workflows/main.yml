@@ -17,8 +17,8 @@ jobs:
     steps:
     - uses: actions/checkout@v1
 
-    - name: install install
-      run: pip install conan
+    - name: install conan
+      run: pip3 install conan
 
     - name: Create Build Environment
       run: cmake -E make_directory ${{runner.workspace}}/build
