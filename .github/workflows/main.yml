@@ -69,4 +69,4 @@ jobs:
       - name: Test
         working-directory: ${{runner.workspace}}/build
         shell: bash
-        run: make tests && ./tests
+        run: ctest --verbose
