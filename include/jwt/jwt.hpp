@@ -38,8 +38,11 @@ SOFTWARE.
 #include "jwt/string_view.hpp"
 #include "jwt/parameters.hpp"
 #include "jwt/exceptions.hpp"
+#if defined(CPP_JWT_USE_VENDORED_NLOHMANN_JSON)
 #include "jwt/json/json.hpp"
-
+#else
+#include "nlohmann/json.hpp"
+#endif
 // For convenience
 using json_t = nlohmann::json;
 using system_time_t = std::chrono::time_point<std::chrono::system_clock>;
