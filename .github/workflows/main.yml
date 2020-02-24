@@ -8,55 +8,58 @@ env:
 
 jobs:
   build:
-
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest]
 
     steps:
-    - uses: actions/checkout@v1
+      - uses: actions/checkout@v1
 
-    - uses: actions/setup-python@v1
-      with:
-        python-version: '3.x'
+      - uses: actions/setup-python@v1
+        with:
+          python-version: "3.x"
 
-    - name: Install tools (Linux)
-      if: startsWith(runner.os, 'Linux')
-      run: |
-        sudo apt-get install python3-setuptools python3-wheel python3-pip
-      shell: bash
+      - name: Install tools (Linux)
+        if: startsWith(runner.os, 'Linux')
+        run: |
+          sudo apt-get install python3-setuptools python3-wheel python3-pip
+        shell: bash
 
-    - name: Install conan (Linux)
-      if: startsWith(runner.os, 'Linux')
-      run: |
-        sudo pip3 install conan --upgrade
-      shell: bash
+      - name: Install conan (Linux)
+        if: startsWith(runner.os, 'Linux')
+        run: |
+          sudo pip3 install conan --upgrade
+        shell: bash
 
-    - name: Install conan (Windows)
-      if: startsWith(runner.os, 'Windows')
-      run: |
-        pip3 install conan --upgrade
-      shell: bash
+      - name: Install conan (Windows)
+        if: startsWith(runner.os, 'Windows')
+        run: |
+          pip3 install conan --upgrade
+        shell: bash
 
-    - name: Create Build Environment
-      run: cmake -E make_directory ${{runner.workspace}}/build
+      - name: Create Build Environment
+        run: cmake -E make_directory ${{runner.workspace}}/build
 
-    - name: Install conan dependencies
-      working-directory: ${{runner.workspace}}/build
-      run: conan profile new default --detect && conan install $GITHUB_WORKSPACE --build missing
+      - name: Install conan profile
+        working-directory: ${{runner.workspace}}/build
+        run: conan profile new default --detect
 
-    - name: Configure CMake
-      shell: bash
-      working-directory: ${{runner.workspace}}/build
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+      - name: Install conan dependencies
+        working-directory: ${{runner.workspace}}/build
+        run: conan install $GITHUB_WORKSPACE --build missing
 
-    - name: Build
-      working-directory: ${{runner.workspace}}/build
-      shell: bash
-      run: cmake --build . --config $BUILD_TYPE
+      - name: Configure CMake
+        shell: bash
+        working-directory: ${{runner.workspace}}/build
+        run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
 
-    - name: Test
-      working-directory: ${{runner.workspace}}/build
-      shell: bash
-      run: make tests && ./tests
+      - name: Build
+        working-directory: ${{runner.workspace}}/build
+        shell: bash
+        run: cmake --build . --config $BUILD_TYPE
+
+      - name: Test
+        working-directory: ${{runner.workspace}}/build
+        shell: bash
+        run: make tests && ./tests
