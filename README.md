@@ -209,12 +209,27 @@ Tested with <strong>clang-5.0</strong> and <strong>g++-6.4</strong>.
 With issue#12, <strong>VS2017</strong> is also supported.
 
 ## Installation
-Use the C++ package manager..... just kidding :)
-This is a header only library, so you can just add it to your include path and start using it. The only somewhat tricky part is to link it with openssl library. Check out the cmake file for building it properly.
 
-For example one can run cmake like:
+### using conan
+
+```shell
+mkdir build
+cd build
+conan install .. --build missing
+cmake ..
+cmake --build . -j
 ```
-cmake -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2j -DGTEST_ROOT=$HOME/googletest
+
+### using debian
+
+```shell
+sudo apt install nlohmann-json3-dev 
+sudo apt install libgtest-dev
+sudo apt install libssl-dev
+mkdir build
+cd build
+cmake ..
+cmake --build . -j
 ```
 
 ## Parameters
