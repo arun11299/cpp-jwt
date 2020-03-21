@@ -47,6 +47,7 @@ else()
   add_definitions(-DCPP_JWT_USE_VENDORED_NLOHMANN_JSON)
 endif()
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_14)
+add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 # ##############################################################################
 # TESTS
