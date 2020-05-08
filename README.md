@@ -208,7 +208,7 @@ The library has 2 sets of APIs for encoding and decoding:
 Tested with <strong>clang-5.0</strong> and <strong>g++-6.4</strong>.
 With issue#12, <strong>VS2017</strong> is also supported.
 
-## Installation
+## Building the library
 
 ### using conan
 
@@ -231,6 +231,23 @@ cd build
 cmake ..
 cmake --build . -j
 ```
+
+## Consuming the library
+
+this library is uses cmake as a build system.
+```cmake
+# you can use cmake's `find_package` after installation or `add_subdirectory` when vendoring this repository
+
+find_package(cpp-jwt REQUIRED)
+# or
+add_subdirectory(third_party/cpp-jwt)
+
+add_executable(main main.cpp)
+target_link_libraries(main cpp-jwt::cpp-jwt)
+```
+
+you can also use this library as a conan package, its available in the [conan center](https://conan.io/center/cpp-jwt/1.2/?user=_&channel=_):
+just add `cpp-jwt[>=1.2]` to your conanfile.txt
 
 ## Parameters
 There are two sets of parameters which can be used for creating `jwt_object` and for decoding.
