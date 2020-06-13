@@ -157,8 +157,8 @@ inline void jwt_payload::decode(const jwt::string_view enc_str)
 }
 
 inline std::string jwt_signature::encode(const jwt_header& header,
-                                  const jwt_payload& payload,
-                                  std::error_code& ec)
+                                         const jwt_payload& payload,
+                                         std::error_code& ec)
 {
   std::string jwt_msg;
   ec.clear();
@@ -168,7 +168,7 @@ inline std::string jwt_signature::encode(const jwt_header& header,
 
   std::string hdr_sign = header.base64_encode();
   std::string pld_sign = payload.base64_encode();
-  std::string data = hdr_sign + '.' + pld_sign;
+  std::string data     = hdr_sign + '.' + pld_sign;
 
   auto res = sign_fn(key_, data);
 
@@ -192,8 +192,8 @@ inline std::string jwt_signature::encode(const jwt_header& header,
 }
 
 inline verify_result_t jwt_signature::verify(const jwt_header& header,
-                           const jwt::string_view hdr_pld_sign,
-                           const jwt::string_view jwt_sign)
+                                             const jwt::string_view hdr_pld_sign,
+                                             const jwt::string_view jwt_sign)
 {
   verify_func_t verify_fn = get_verify_algorithm_impl(header);
   return verify_fn(key_, hdr_pld_sign, jwt_sign);

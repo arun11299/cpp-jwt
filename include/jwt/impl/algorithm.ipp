@@ -33,19 +33,6 @@ verify_result_t HMACSign<Hasher>::verify(
 {
   std::error_code ec{};
 
-  BIO_uptr b64{BIO_new(BIO_f_base64()), bio_deletor};
-  if (!b64) {
-    throw MemoryAllocationException("BIO_new failed");
-  }
-
-  BIO* bmem = BIO_new(BIO_s_mem());
-  if (!bmem) {
-    throw MemoryAllocationException("BIO_new failed");
-  }
-
-  BIO_push(b64.get(), bmem);
-  BIO_set_flags(b64.get(), BIO_FLAGS_BASE64_NO_NL);
-
   unsigned char enc_buf[EVP_MAX_MD_SIZE];
   uint32_t enc_buf_len = 0;
 
@@ -60,27 +47,23 @@ verify_result_t HMACSign<Hasher>::verify(
     ec = AlgorithmErrc::VerificationErr;
     return {false, ec};
   }
-
-  BIO_write(b64.get(), enc_buf, enc_buf_len);
-  (void)BIO_flush(b64.get());
-
-  int len = BIO_pending(bmem);
-  if (len < 0) {
+  if (enc_buf_len == 0) {
     ec = AlgorithmErrc::VerificationErr;
     return {false, ec};
   }
 
-  std::string cbuf;
-  cbuf.resize(len + 1);
+  std::string b64_enc_str = jwt::base64_encode((const char*)&enc_buf[0], enc_buf_len);
 
-  len = BIO_read(bmem, &cbuf[0], len);
-  cbuf.resize(len);
+  if (!b64_enc_str.length()) {
+    ec = AlgorithmErrc::VerificationErr;
+    return {false, ec};
+  }
 
-  //Make the base64 string url safe
-  auto new_len = jwt::base64_uri_encode(&cbuf[0], cbuf.length());
-  cbuf.resize(new_len);
+  // Make the base64 string url safe
+  auto new_len = jwt::base64_uri_encode(&b64_enc_str[0], b64_enc_str.length());
+  b64_enc_str.resize(new_len);
 
-  bool ret = (jwt::string_view{cbuf} == jwt_sign);
+  bool ret = (jwt::string_view{b64_enc_str} == jwt_sign);
 
   return { ret, ec };
 }
