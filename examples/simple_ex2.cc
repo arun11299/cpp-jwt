@@ -6,7 +6,7 @@
 int main() {
   using namespace jwt::params;
 
-  jwt::jwt_object obj{algorithm("hs256"), secret("secret"), payload({{"user", "admin"}})};
+  jwt::jwt_object obj{algorithm("HS256"), secret("secret"), payload({{"user", "admin"}})};
 
   //Use add_claim API to add claim values which are
   // _not_ strings.

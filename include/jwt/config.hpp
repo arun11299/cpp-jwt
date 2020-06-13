@@ -29,7 +29,7 @@
 
 // To hack around Visual Studio error:
 // error C3431: 'algorithm': a scoped enumeration cannot be redeclared as an unscoped enumeration
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && !defined(__clang__)
 #define SCOPED_ENUM enum class
 #else
 #define SCOPED_ENUM enum

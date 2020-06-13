@@ -1,7 +1,10 @@
 #include <iostream>
 #include <string>
+#if defined( CPP_JWT_USE_VENDORED_NLOHMANN_JSON)
 #include "./json.hpp"
-
+#else
+#include "nlohmann/json.hpp"
+#endif
 using json = nlohmann::json;
 
 void basic_json_test()

@@ -44,7 +44,7 @@ int main() {
 
   auto priv_key = read_from_file(priv_key_path);
 
-  jwt::jwt_object obj{algorithm("rs256"), secret(priv_key), payload({{"user", "admin"}})};
+  jwt::jwt_object obj{algorithm("RS256"), secret(priv_key), payload({{"user", "admin"}})};
 
   //Use add_claim API to add claim values which are
   // _not_ strings.
@@ -76,7 +76,7 @@ int main() {
     return 1;
   }
 
-  auto dec_obj = jwt::decode(sign, algorithms({"rs256"}), verify(false), secret(pub_key));
+  auto dec_obj = jwt::decode(sign, algorithms({"RS256"}), verify(false), secret(pub_key));
 
   return 0;
 }

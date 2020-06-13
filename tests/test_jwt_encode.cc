@@ -8,7 +8,7 @@ TEST (EncodeTest, TestRemoveClaim)
 {
   using namespace jwt::params;
 
-  jwt::jwt_object obj{algorithm("hs256"), secret("secret")};
+  jwt::jwt_object obj{algorithm("HS256"), secret("secret")};
 
   obj.add_claim("iss", "arun.muralidharan")
      .add_claim("sub", "admin")
@@ -29,7 +29,7 @@ TEST (EncodeTest, TestRemoveTypHeader)
 {
   using namespace jwt::params;
 
-  jwt::jwt_object obj{algorithm("hs256"), secret("secret")};
+  jwt::jwt_object obj{algorithm("HS256"), secret("secret")};
 
   obj.add_claim("iss", "arun.muralidharan")
      .add_claim("sub", "admin")
@@ -49,12 +49,12 @@ TEST (EncodeTest, StrEncodeHS256_1)
 {
   using namespace jwt::params;
 
-  const char* expected_sign = 
+  const char* expected_sign =
    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9."
    "eyJpYXQiOjE1MTM4NjIzNzEsImlkIjoiYS1iLWMtZC1lLWYtMS0yLTMiLCJpc3MiOiJhcnVuLm11cmFsaWRoYXJhbiIsInN1YiI6ImFkbWluIn0."
    "jk7bRQKTLvs1RcuvMc2B_rt6WBYPoVPirYi_QRBPiuk";
 
-  jwt::jwt_object obj{algorithm("hs256"), secret("secret")};
+  jwt::jwt_object obj{algorithm("HS256"), secret("secret")};
 
   obj.add_claim("iss", "arun.muralidharan")
      .add_claim("sub", "admin")
@@ -102,7 +102,7 @@ TEST (EncodeTest, StrEncodeNONE)
 {
   using namespace jwt::params;
 
-  const char* expected_sign = 
+  const char* expected_sign =
     "eyJhbGciOiJOT05FIiwidHlwIjoiSldUIn0.eyJhdWQiOiJyaWZ0LmlvIiwiZXhwIjoxNTEzODYzMzcxLCJzdWIiOiJub3RoaW5nIG11Y2gifQ.";
 
   jwt::jwt_object obj{algorithm("none")};
@@ -124,7 +124,7 @@ TEST (EncodeTest, StrEncodeHS256WithKey)
 {
   using namespace jwt::params;
 
-  const char* expected_sign = 
+  const char* expected_sign =
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9."
     "eyJhdWQiOiJyaWZ0LmlvIiwiZXhwIjoxNTEzODYzMzcxLCJzdWIiOiJub3RoaW5nIG11Y2gifQ."
     "W6t7mUX6ZJwOVTsVhHSKyBSwi0wnibobdsk456wSmJg";
@@ -149,7 +149,7 @@ TEST (EncodeTest, StrEncodeHS384WithKey)
 
   using namespace jwt::params;
 
-  const char* expected_sign = 
+  const char* expected_sign =
     "eyJhbGciOiJIUzM4NCIsInR5cCI6IkpXVCJ9."
     "eyJhdWQiOiJyaWZ0LmlvIiwiZXhwIjoxNTEzODYzMzcxLCJzdWIiOiJub3RoaW5nIG11Y2gifQ."
     "cGN4FZCe9Y2c1dA-jP71IXGnYbJRc4OaUTa5m7N7ybF5h6wBwxWQ-pdcxYchjDBL";
@@ -173,7 +173,7 @@ TEST (EncodeTest, StrEncodeHS512WithKey)
 {
   using namespace jwt::params;
 
-  const char* expected_sign = 
+  const char* expected_sign =
     "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9."
     "eyJhdWQiOiJyaWZ0LmlvIiwiZXhwIjoxNTEzODYzMzcxLCJzdWIiOiJub3RoaW5nIG11Y2gifQ."
     "vQ-1JSFN1kPjUI3URP6AFK5z8V7xLhyhw-76QWhQg9Xcy-IgrJ-bCTYLBjgaprrcEWwpSnBQnP3QnIxYK0HEaQ";
@@ -199,7 +199,7 @@ TEST (EncodeTest, StrEncodeChangeAlg)
 {
   using namespace jwt::params;
 
-  const char* expected_none_sign = 
+  const char* expected_none_sign =
     "eyJhbGciOiJOT05FIiwidHlwIjoiSldUIn0.eyJhdWQiOiJyaWZ0LmlvIiwiZXhwIjoxNTEzODYzMzcxLCJzdWIiOiJub3RoaW5nIG11Y2gifQ.";
 
   jwt::string_view key = "00112233445566778899";
@@ -242,7 +242,7 @@ TEST (EncodeTest, StrEncodeNoneAlgWithKey)
   const jwt::string_view secret1 = "abcdefghijklmnopqrstuvwxyz";
   const jwt::string_view secret2 = "0123456789qwertybabe";
 
-  jwt::jwt_object obj{algorithm("NONE"),
+  jwt::jwt_object obj{algorithm("none"),
                       payload({{"iss", "arn-ml"}}),
                       secret(secret1)};
 
@@ -261,7 +261,7 @@ TEST (EncodeTest, OverwriteClaimsTest)
 {
   using namespace jwt::params;
 
-  jwt::jwt_object obj{algorithm("NONE"),
+  jwt::jwt_object obj{algorithm("none"),
                       payload({
                                 {"iss", "arn-ml"},
                                 {"x-pld1", "data1"},
@@ -312,7 +312,7 @@ TEST (EncodeTest, HeaderParamTest)
   std::cout << dec_obj.header() << std::endl;
 }
 
-int main(int argc, char **argv) 
+int main(int argc, char **argv)
 {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
