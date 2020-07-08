@@ -147,7 +147,3 @@ TEST (ESAlgo, ES384EncodingDecodingValidTest)
   EXPECT_EQ (dec_obj2.header().algo(), jwt::algorithm::ES384);
 }
 
-int main(int argc, char* argv[]) {
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}

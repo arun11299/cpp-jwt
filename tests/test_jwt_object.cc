@@ -28,8 +28,3 @@ TEST (ObjectTest, MoveConstructor)
   EXPECT_TRUE(wrapper.object.payload().has_claim_with_value("iss", "arun.muralidharan"));
 }
 
-int main(int argc, char **argv)
-{
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}
