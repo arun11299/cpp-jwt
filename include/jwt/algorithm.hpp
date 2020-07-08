@@ -235,7 +235,7 @@ inline jwt::string_view alg_to_str(SCOPED_ENUM algorithm alg) noexcept
     case algorithm::ES384: return "ES384";
     case algorithm::ES512: return "ES512";
     case algorithm::TERM:  return "TERM";
-    case algorithm::NONE:  return "none";
+    case algorithm::NONE:  return "NONE";
     case algorithm::UNKN:  return "UNKN";
     default:               assert (0 && "Unknown Algorithm");
   };
@@ -251,7 +251,7 @@ inline SCOPED_ENUM algorithm str_to_alg(const jwt::string_view alg) noexcept
 {
   if (!alg.length()) return algorithm::UNKN;
 
-  if (!strcasecmp(alg.data(), "none"))  return algorithm::NONE;
+  if (!strcasecmp(alg.data(), "NONE"))  return algorithm::NONE;
   if (!strcasecmp(alg.data(), "HS256")) return algorithm::HS256;
   if (!strcasecmp(alg.data(), "HS384")) return algorithm::HS384;
   if (!strcasecmp(alg.data(), "HS512")) return algorithm::HS512;
