@@ -34,6 +34,7 @@ enum class AlgorithmErrc
   SigningErr = 1,
   VerificationErr,
   KeyNotFoundErr,
+  InvalidKeyErr,
   NoneAlgorithmUsed, // Not an actual error!
 };
 

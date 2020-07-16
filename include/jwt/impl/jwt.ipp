@@ -856,6 +856,10 @@ void jwt_throw_exception(const std::error_code& ec)
   {
     switch (static_cast<AlgorithmErrc>(ec.value()))
     {
+      case AlgorithmErrc::InvalidKeyErr:
+      {
+        throw InvalidKeyError(ec.message());
+      }
       case AlgorithmErrc::VerificationErr:
       {
         throw InvalidSignatureError(ec.message());

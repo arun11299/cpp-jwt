@@ -91,7 +91,7 @@ verify_result_t PEMSign<Hasher>::verify(
     ev_pkey_deletor};
 
   if (!pkey) {
-    ec = AlgorithmErrc::VerificationErr;
+    ec = AlgorithmErrc::InvalidKeyErr;
     return { false, ec };
   }
 

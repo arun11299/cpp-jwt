@@ -273,6 +273,17 @@ public:
   }
 };
 
+class InvalidKeyError final: public VerificationError
+{
+public:
+  /**
+   */
+  InvalidKeyError(std::string msg)
+	: VerificationError(std::move(msg))
+  {
+  }
+};
+
 /**
  * Derived from VerificationError.
  * Thrown when there type expectation mismatch
