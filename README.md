@@ -299,7 +299,8 @@ All the parameters are basically a function which returns an instance of a type 
 
   - <strong>secret</strong>
 
-    Used to pass the key which could be some random string or public certificate data as string.
+    Used to pass the key which could be some random string or the bytes of the PEM encoded public key
+    file in PEM format (wrapped in -----BEGIN PUBLIC KEY----- block) as string.
     The passed string type must be convertible to <code>jwt::string_view</code>
 
   - <strong>algorithm</strong>
