@@ -520,6 +520,7 @@ private:
 
 #if defined(OPENSSL_VERSION_NUMBER) && OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER) && LIBRESSL_VERSION_NUMBER < 0x20700000L
 
+
   //ATTN: Below 2 functions
   //are Taken from https://github.com/nginnever/zogminer/issues/39
 
