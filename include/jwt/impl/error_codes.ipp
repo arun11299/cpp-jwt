@@ -48,6 +48,8 @@ struct AlgorithmErrCategory: std::error_category
       return "key not provided";
     case AlgorithmErrc::NoneAlgorithmUsed:
       return "none algorithm used";
+    case AlgorithmErrc::InvalidKeyErr:
+      return "invalid key";
     };
     return "unknown algorithm error";
     assert (0 && "Code not reached");
