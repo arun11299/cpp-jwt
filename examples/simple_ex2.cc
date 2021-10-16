@@ -33,11 +33,11 @@ int main() {
   //Most APIs have an overload which takes enum class type as well
   //It can be used interchangeably with strings.
   obj.remove_claim(jwt::registered_claims::expiration);
-  assert (not obj.has_claim("exp"));
+  assert (!obj.has_claim("exp"));
 
   //Using `add_claim` with extra features.
   //Check return status and overwrite
-  assert (not obj.payload().add_claim("sub", "new test", false/*overwrite*/));
+  assert (!obj.payload().add_claim("sub", "new test", false/*overwrite*/));
 
   // Overwrite an existing claim
   assert (obj.payload().add_claim("sub", "new test", true/*overwrite*/));

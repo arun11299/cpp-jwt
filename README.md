@@ -136,16 +136,16 @@ Few good resources on this material which I found useful are:
       //Most APIs have an overload which takes enum class type as well
       //It can be used interchangeably with strings.
       obj.remove_claim(jwt::registered_claims::expiration);
-      assert (not obj.has_claim("exp"));
+      assert (!obj.has_claim("exp"));
 
       //Using `add_claim` with extra features.
       //Check return status and overwrite
       bool ret = obj.payload().add_claim("sub", "new test", false/*overwrite*/);
-      assert (not ret);
+      assert (!ret);
 
       // Overwrite an existing claim
       ret = obj.payload().add_claim("sub", "new test", true/*overwrite*/);
-      assert ( ret );
+      assert (ret);
 
       assert (obj.payload().has_claim_with_value("sub", "new test"));
 
@@ -234,7 +234,7 @@ cmake --build . -j
 
 ## Consuming the library
 
-this library is uses cmake as a build system.
+This library is uses cmake as a build system.
 ```cmake
 # you can use cmake's `find_package` after installation or `add_subdirectory` when vendoring this repository
 
@@ -246,8 +246,10 @@ add_executable(main main.cpp)
 target_link_libraries(main cpp-jwt::cpp-jwt)
 ```
 
-you can also use this library as a conan package, its available in the [conan center](https://conan.io/center/cpp-jwt/1.2/?user=_&channel=_):
-just add `cpp-jwt[>=1.2]` to your conanfile.txt
+You can also use this library as a conan package, its available in the [conan center](https://conan.io/center/cpp-jwt):
+just add `cpp-jwt[>=1.2]` to your conanfile.txt.
+
+It can also be installed using [vcpkg](https://github.com/microsoft/vcpkg) by adding `"cpp-jwt"` to the dependencies in your `vcpkg.json` file.
 
 ## Parameters
 There are two sets of parameters which can be used for creating `jwt_object` and for decoding.

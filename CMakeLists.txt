@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.5.0)
-project(cpp-jwt VERSION 1.2.0)
+cmake_minimum_required(VERSION 3.14.0)
+project(cpp-jwt VERSION 1.5.0)
 
 option(CPP_JWT_BUILD_EXAMPLES "build examples" ON)
 option(CPP_JWT_BUILD_TESTS "build tests" ON)
@@ -43,7 +43,7 @@ target_link_libraries(${PROJECT_NAME} INTERFACE OpenSSL::SSL)
 if(NOT CPP_JWT_USE_VENDORED_NLOHMANN_JSON)
   target_link_libraries(${PROJECT_NAME} INTERFACE nlohmann_json::nlohmann_json)
 else()
-  add_definitions(-DCPP_JWT_USE_VENDORED_NLOHMANN_JSON)
+  target_compile_definitions(${PROJECT_NAME} INTERFACE CPP_JWT_USE_VENDORED_NLOHMANN_JSON)
 endif()
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_14)
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
@@ -90,30 +90,27 @@ install(
   NAMESPACE ${PROJECT_NAME}::
   COMPONENT dev)
 configure_package_config_file(cmake/Config.cmake.in ${PROJECT_NAME}Config.cmake
-                              INSTALL_DESTINATION ${CPP_JWT_CONFIG_INSTALL_DIR})
+                              PATH_VARS CPP_JWT_CONFIG_INSTALL_DIR
+                              INSTALL_DESTINATION ${CPP_JWT_CONFIG_INSTALL_DIR} 
+                              NO_SET_AND_CHECK_MACRO)
 write_basic_package_version_file(${PROJECT_NAME}ConfigVersion.cmake
-                                 COMPATIBILITY SameMajorVersion)
+                                 COMPATIBILITY SameMajorVersion
+                                 ARCH_INDEPENDENT)
 install(
   FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
         ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
   DESTINATION ${CPP_JWT_CONFIG_INSTALL_DIR}
   COMPONENT dev)
 
-install(
-  DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/jwt/detail
-  DESTINATION include/jwt
-  COMPONENT dev)
-install(
-  DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/jwt/impl
-  DESTINATION include/jwt
-  COMPONENT dev)
-install(
-  DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/jwt/json
-  DESTINATION include/jwt
-  COMPONENT dev)
+if(NOT CPP_JWT_USE_VENDORED_NLOHMANN_JSON)
+  set(CPP_JWT_VENDORED_NLOHMANN_JSON_INSTALL_PATTERN PATTERN "json" EXCLUDE)
+endif()
 install(
   DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/jwt/
   DESTINATION include/jwt
   COMPONENT dev
   FILES_MATCHING
-  PATTERN "*.hpp")
+  PATTERN "*.hpp"
+  PATTERN "*.ipp"
+  PATTERN "test" EXCLUDE
+  ${CPP_JWT_VENDORED_NLOHMANN_JSON_INSTALL_PATTERN})
