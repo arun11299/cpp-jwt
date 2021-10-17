@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 env:
   BUILD_TYPE: Release
-  CMAKE_ARGS: '-DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DCPP_JWT_USE_VENDORED_NLOHMANN_JSON=off'
+  CMAKE_ARGS: '-DCMAKE_BUILD_TYPE=Release -DCPP_JWT_USE_VENDORED_NLOHMANN_JSON=off'
   VCPKG_ARGUMENTS: 'nlohmann-json openssl gtest'
   VCPKG_VERSION: '699c8779f1b0feb4ed3564716d1ed31f69663ea6' # Oct 16, 2021
 
