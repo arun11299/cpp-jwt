@@ -28,7 +28,7 @@ jobs:
             parallel: 3,
           }
           - {
-            name: 'Ubuntu/20.04/GCC-10.3.0',
+            name: 'Ubuntu/20.04/GCC-9.3.0',
             os: ubuntu-20.04,
             triplet: x64-linux,
             parallel: 2,
