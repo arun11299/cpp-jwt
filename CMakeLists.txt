@@ -90,7 +90,6 @@ install(
   NAMESPACE ${PROJECT_NAME}::
   COMPONENT dev)
 configure_package_config_file(cmake/Config.cmake.in ${PROJECT_NAME}Config.cmake
-                              PATH_VARS CPP_JWT_CONFIG_INSTALL_DIR
                               INSTALL_DESTINATION ${CPP_JWT_CONFIG_INSTALL_DIR} 
                               NO_SET_AND_CHECK_MACRO)
 write_basic_package_version_file(${PROJECT_NAME}ConfigVersion.cmake
