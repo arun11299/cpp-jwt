@@ -3,70 +3,54 @@ name: CMake
 on: [push, pull_request]
 
 env:
-  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
-  BUILD_TYPE: RelWithDebInfo
+  BUILD_TYPE: Release
+  CMAKE_ARGS: '-DCMAKE_BUILD_TYPE=Release -DCPP_JWT_USE_VENDORED_NLOHMANN_JSON=off'
+  VCPKG_ARGUMENTS: 'nlohmann-json openssl gtest'
+  VCPKG_VERSION: '699c8779f1b0feb4ed3564716d1ed31f69663ea6' # Oct 16, 2021
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.config.os }}
     strategy:
+      fail-fast: false
       matrix:
-        os: [windows-latest, ubuntu-latest]
+        config:
+          - {
+            name: 'Windows/2019/MSVC-19.30.30528.0',
+            os: windows-2019,
+            triplet: x64-windows,
+            parallel: 2,
+          }
+          - {
+            name: 'MacOSX/11/AppleClang-12.0.5.12050022',
+            os: macos-11,
+            triplet: x64-osx,
+            parallel: 3,
+          }
+          - {
+            name: 'Ubuntu/20.04/GCC-9.3.0',
+            os: ubuntu-20.04,
+            triplet: x64-linux,
+            parallel: 2,
+          }
 
     steps:
       - uses: actions/checkout@v1
 
-      - uses: actions/setup-python@v1
+      - name: Install vcpkg
+        uses: lukka/run-vcpkg@v7
         with:
-          python-version: "3.x"
-
-      - name: Install tools (Linux)
-        if: startsWith(runner.os, 'Linux')
-        run: |
-          sudo apt-get install python3-setuptools python3-wheel python3-pip
-        shell: bash
-
-      - name: Install conan (Linux)
-        if: startsWith(runner.os, 'Linux')
-        run: |
-          sudo pip3 install conan --upgrade
-        shell: bash
-
-      - name: Install conan (Windows)
-        if: startsWith(runner.os, 'Windows')
-        run: |
-          pip3 install conan --upgrade
-        shell: bash
-
-      - name: Create Build Environment
-        run: cmake -E make_directory ${{runner.workspace}}/build
-
-      - name: Install conan profile
-        working-directory: ${{runner.workspace}}/build
-        run: conan profile new default --detect
-
-      - name: Use cpp 11 (Linux)
-        if: startsWith(runner.os, 'Linux')
-        run: |
-          conan profile update settings.compiler.libcxx=libstdc++11 default
-        shell: bash
-
-      - name: Install conan dependencies
-        working-directory: ${{runner.workspace}}/build
-        run: conan install $GITHUB_WORKSPACE --build missing
-        shell: bash
+          vcpkgDirectory: ${{ runner.workspace }}/vcpkg
+          vcpkgArguments: ${{ env.VCPKG_ARGUMENTS }}
+          vcpkgGitCommitId: ${{ env.VCPKG_VERSION }}
+          vcpkgTriplet: ${{ matrix.config.triplet }}
 
       - name: Configure CMake
-        shell: bash
-        working-directory: ${{runner.workspace}}/build
-        run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+        run: cmake -B ${{ github.workspace }}/build -DCMAKE_TOOLCHAIN_FILE=${{ runner.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake ${{ env.CMAKE_ARGS }}
 
       - name: Build
-        working-directory: ${{runner.workspace}}/build
-        shell: bash
-        run: cmake --build . --config $BUILD_TYPE
+        run: cmake --build ${{ github.workspace }}/build --config ${{ env.BUILD_TYPE }} --parallel ${{ matrix.config.parallel }}
 
       - name: Test
-        working-directory: ${{runner.workspace}}/build
-        shell: bash
-        run: ctest --verbose
+        working-directory: ${{ github.workspace }}/build
+        run: ctest -C ${{ env.BUILD_TYPE }} -T test --parallel ${{ matrix.config.parallel }} --output-on-failure --timeout 200
