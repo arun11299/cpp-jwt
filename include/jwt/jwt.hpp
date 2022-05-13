@@ -145,7 +145,7 @@ struct jwt_set
   {
     using is_transparent = std::true_type;
 
-    bool operator()(const jwt::string_view lhs, const jwt::string_view rhs) const
+    bool operator()(const jwt::string_view lhs, const jwt::string_view rhs) const noexcept
     {
       int ret = lhs.compare(rhs);
       return (ret < 0);
