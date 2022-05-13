@@ -72,7 +72,6 @@ inline enum type str_to_type(const jwt::string_view typ) noexcept
   else if(!strcasecmp(typ.data(), "none")) return type::NONE;
 
   JWT_NOT_REACHED("Code not reached");
-  return type::NONE;
 }
 
 
@@ -130,7 +129,6 @@ inline jwt::string_view reg_claims_to_str(SCOPED_ENUM registered_claims claim) n
     default:                            assert (0 && "Not a registered claim");
   };
   JWT_NOT_REACHED("Code not reached");
-  return "";
 }
 
 /**
@@ -147,27 +145,9 @@ struct jwt_set
   {
     using is_transparent = std::true_type;
 
-    bool operator()(const std::string& lhs, const std::string& rhs) const
-    {
-      int ret = strcmp(lhs.c_str(), rhs.c_str());
-      return (ret < 0);
-    }
-
     bool operator()(const jwt::string_view lhs, const jwt::string_view rhs) const
     {
-      int ret = strcmp(lhs.data(), rhs.data());
-      return (ret < 0);
-    }
-
-    bool operator()(const std::string& lhs, const jwt::string_view rhs) const
-    {
-      int ret = strcmp(lhs.data(), rhs.data());
-      return (ret < 0);
-    }
-
-    bool operator()(const jwt::string_view lhs, const std::string& rhs) const
-    {
-      int ret = strcmp(lhs.data(), rhs.data());
+      int ret = lhs.compare(rhs);
       return (ret < 0);
     }
   };

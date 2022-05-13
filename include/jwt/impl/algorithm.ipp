@@ -38,7 +38,7 @@ verify_result_t HMACSign<Hasher>::verify(
 
   unsigned char* res = HMAC(Hasher{}(),
                             key.data(),
-                            key.length(),
+                            static_cast<int>(key.length()),
                             reinterpret_cast<const unsigned char*>(head.data()),
                             head.length(),
                             enc_buf,
@@ -79,7 +79,7 @@ verify_result_t PEMSign<Hasher>::verify(
   std::string dec_sig = base64_uri_decode(jwt_sign.data(), jwt_sign.length());
 
   BIO_uptr bufkey{
-      BIO_new_mem_buf((void*)key.data(), key.length()),
+      BIO_new_mem_buf((void*)key.data(), static_cast<int>(key.length())),
       bio_deletor};
 
   if (!bufkey) {
@@ -180,7 +180,7 @@ EVP_PKEY* PEMSign<Hasher>::load_key(
   ec.clear();
 
   BIO_uptr bio_ptr{
-      BIO_new_mem_buf((void*)key.data(), key.length()), 
+      BIO_new_mem_buf((void*)key.data(), static_cast<int>(key.length())), 
       bio_deletor};
 
   if (!bio_ptr) {
@@ -276,7 +276,7 @@ std::string PEMSign<Hasher>::public_key_ser(
 
   EC_SIG_uptr ec_sig{d2i_ECDSA_SIG(nullptr,
                                    (const unsigned char**)&char_ptr,
-                                   sign.length()),
+                                   static_cast<long>(sign.length())),
                      ec_sig_deletor};
 
   if (!ec_sig) {
