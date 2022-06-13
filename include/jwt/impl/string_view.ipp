@@ -273,7 +273,7 @@ namespace {
  */
 
 inline size_t
-unaligned_load(const char* p)
+unaligned_load(const char* p) noexcept
 {
   std::size_t result;
   std::memcpy(&result, p, sizeof(result));
@@ -281,7 +281,7 @@ unaligned_load(const char* p)
 }
 
 inline size_t
-hash_bytes(const void* ptr, size_t len, size_t seed)
+hash_bytes(const void* ptr, size_t len, size_t seed) noexcept
 {
   const size_t m = 0x5bd1e995;
   size_t hash = seed ^ len;
@@ -329,7 +329,7 @@ namespace std {
   template <>
   struct hash<jwt::string_view>
   {
-    size_t operator()(const jwt::string_view& sv) const
+    size_t operator()(const jwt::string_view& sv) const noexcept
     {
       return jwt::hash_bytes((void*)sv.data(), sv.length(), static_cast<size_t>(0xc70f6907UL));
     }

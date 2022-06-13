@@ -70,7 +70,7 @@ inline void jwt_header::decode(const jwt::string_view enc_str, std::error_code& 
 
   try {
     payload_ = json_t::parse(std::move(json_str));
-  } catch(const std::exception& e) {
+  } catch(const std::exception&) {
     ec = DecodeErrc::JsonParseError;
     return;
   }
@@ -130,7 +130,7 @@ inline void jwt_payload::decode(const jwt::string_view enc_str, std::error_code&
   std::string json_str = base64_decode(enc_str);
   try {
     payload_ = json_t::parse(std::move(json_str));
-  } catch(const std::exception& e) {
+  } catch(const std::exception&) {
     ec = DecodeErrc::JsonParseError;
     return;
   }
@@ -530,7 +530,7 @@ jwt_object::three_parts(const jwt::string_view enc_str)
 
   result[1] = jwt::string_view{&enc_str[fpos + 1], spos - fpos - 1};
 
-  if (spos != enc_str.length()) {
+  if (spos + 1 != enc_str.length()) {
     result[2] = jwt::string_view{&enc_str[spos + 1], enc_str.length() - spos - 1};
   }
 
@@ -711,7 +711,7 @@ jwt_object decode(const jwt::string_view enc_str,
   if (dparams.verify) {
     try {
       ec = obj.verify(dparams, algos);
-    } catch (const json_ns::detail::type_error& e) {
+    } catch (const json_ns::detail::type_error&) {
       ec = VerificationErrc::TypeConversionError;
     }
 

@@ -52,7 +52,6 @@ struct AlgorithmErrCategory: std::error_category
       return "invalid key";
     };
     return "unknown algorithm error";
-    assert (0 && "Code not reached");
   }
 };
 
@@ -89,7 +88,6 @@ struct DecodeErrorCategory: std::error_category
       return "key not required for NONE algorithm";
     };
     return "unknown decode error";
-    assert (0 && "Code not reached");
   }
 };
 
@@ -128,7 +126,6 @@ struct VerificationErrorCategory: std::error_category
       return "type conversion error";
     };
     return "unknown verification error";
-    assert (0 && "Code not reached");
   }
 };
 

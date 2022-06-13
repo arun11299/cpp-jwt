@@ -138,6 +138,7 @@ public: // Exposed APIs
   /// Element Access Member Functions
   const_reference operator[](size_type idx) const noexcept
   {
+    assert(idx < len_ && "string_view subscript out of range");
     return data_[idx];
   }
 
