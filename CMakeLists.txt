@@ -76,21 +76,16 @@ endif()
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
-set(CPP_JWT_CONFIG_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
+set(CPP_JWT_CONFIG_INSTALL_DIR ${CMAKE_INSTALL_DATADIR}/cmake/${PROJECT_NAME})
 
-install(
-  TARGETS ${PROJECT_NAME}
-  EXPORT ${PROJECT_NAME}Targets
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}Targets)
 install(
   EXPORT ${PROJECT_NAME}Targets
   DESTINATION ${CPP_JWT_CONFIG_INSTALL_DIR}
   NAMESPACE ${PROJECT_NAME}::
   COMPONENT dev)
 configure_package_config_file(cmake/Config.cmake.in ${PROJECT_NAME}Config.cmake
-                              INSTALL_DESTINATION ${CPP_JWT_CONFIG_INSTALL_DIR} 
+                              INSTALL_DESTINATION ${CPP_JWT_CONFIG_INSTALL_DIR}
                               NO_SET_AND_CHECK_MACRO)
 write_basic_package_version_file(${PROJECT_NAME}ConfigVersion.cmake
                                  COMPATIBILITY SameMajorVersion
@@ -106,7 +101,7 @@ if(NOT CPP_JWT_USE_VENDORED_NLOHMANN_JSON)
 endif()
 install(
   DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/jwt/
-  DESTINATION include/jwt
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/jwt
   COMPONENT dev
   FILES_MATCHING
   PATTERN "*.hpp"
