@@ -24,7 +24,7 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
 
 endif()
 
-find_package(OpenSSL REQUIRED)
+find_package(OpenSSL REQUIRED SSL)
 
 if(NOT CPP_JWT_USE_VENDORED_NLOHMANN_JSON)
   find_package(nlohmann_json REQUIRED)
