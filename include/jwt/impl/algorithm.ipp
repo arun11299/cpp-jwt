@@ -63,7 +63,7 @@ verify_result_t HMACSign<Hasher>::verify(
   auto new_len = jwt::base64_uri_encode(&b64_enc_str[0], b64_enc_str.length());
   b64_enc_str.resize(new_len);
 
-  bool ret = (jwt::string_view{b64_enc_str} == jwt_sign);
+  bool ret = (new_len == jwt_sign.size()) && (CRYPTO_memcmp(b64_enc_str.data(), jwt_sign.data(), new_len) == 0);
 
   return { ret, ec };
 }
