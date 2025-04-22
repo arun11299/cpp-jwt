@@ -211,6 +211,9 @@ inline verify_result_t jwt_signature::check_for_algo_confusion_attack(
     case algorithm::RS256:
     case algorithm::RS384:
     case algorithm::RS512:
+    case algorithm::ES256:
+    case algorithm::ES384:
+    case algorithm::ES512:
       return {false, std::error_code{}};
     default:
       // For all other cases make sure that the secret provided
