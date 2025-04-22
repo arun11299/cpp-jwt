@@ -142,4 +142,3 @@ TEST (RSAAlgo, NoSpecificAlgo)
   EXPECT_THROW (jwt::decode(enc_str, algorithms({"none", "HS384", "RS384"}), verify(true), secret(key)),
                 jwt::InvalidAlgorithmError);
 }
-

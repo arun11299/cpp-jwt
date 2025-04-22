@@ -25,6 +25,31 @@ SOFTWARE.
 
 namespace jwt {
 
+verify_result_t is_secret_a_public_key(const jwt::string_view secret)
+{
+  std::error_code ec{};
+
+  BIO_uptr bufkey{
+    BIO_new_mem_buf((void*)secret.data(), static_cast<int>(secret.length())),
+    bio_deletor
+  };
+  if (!bufkey) {
+    throw MemoryAllocationException("BIO_new_mem_buf failed");
+  }
+
+  EC_PKEY_uptr pkey{
+    PEM_read_bio_PUBKEY(bufkey.get(), nullptr, nullptr, nullptr),
+    ev_pkey_deletor
+  };
+
+  if (!pkey) {
+    ec = AlgorithmErrc::InvalidKeyErr;
+    return { false, ec };
+  }
+
+  return {true, ec};
+}
+
 template <typename Hasher>
 verify_result_t HMACSign<Hasher>::verify(
     const jwt::string_view key,

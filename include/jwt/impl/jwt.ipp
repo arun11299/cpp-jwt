@@ -195,8 +195,28 @@ inline verify_result_t jwt_signature::verify(const jwt_header& header,
                                              const jwt::string_view hdr_pld_sign,
                                              const jwt::string_view jwt_sign)
 {
+  auto check_res = check_for_algo_confusion_attack(header);
+  if (check_res.first) {
+    return {false, VerificationErrc::AlgoConfusionAttack};
+  }
+
   verify_func_t verify_fn = get_verify_algorithm_impl(header);
   return verify_fn(key_, hdr_pld_sign, jwt_sign);
+}
+
+inline verify_result_t jwt_signature::check_for_algo_confusion_attack(
+  const jwt_header& hdr) const
+{
+  switch (hdr.algo()) {
+    case algorithm::RS256:
+    case algorithm::RS384:
+    case algorithm::RS512:
+      return {false, std::error_code{}};
+    default:
+      // For all other cases make sure that the secret provided
+      // is not the public key.
+      return is_secret_a_public_key(key_);
+  }
 }
 
 

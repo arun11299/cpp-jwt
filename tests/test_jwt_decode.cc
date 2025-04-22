@@ -186,3 +186,31 @@ TEST (DecodeTest, TypHeaderMiss)
   EXPECT_FALSE (ec);
 }
 
+TEST (DecodeTest, AlgoConfusionAttack)
+{
+  using namespace jwt::params;
+
+  using namespace jwt::params;
+
+  const char* enc_str =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9."
+    "eyJpYXQiOjE1MTM4NjIzNzEsImlkIjoiYS1iLWMtZC1lLWYtMS0yLTMiLCJpc3MiOiJhcnVuLm11cmFsaWRoYXJhbiIsInN1YiI6ImFkbWluIn0."
+    "jk7bRQKTLvs1RcuvMc2B_rt6WBYPoVPirYi_QRBPiuk";
+
+  std::string pub_key = R"(-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwtpMAM4l1H995oqlqdMh
+uqNuffp4+4aUCwuFE9B5s9MJr63gyf8jW0oDr7Mb1Xb8y9iGkWfhouZqNJbMFry+
+iBs+z2TtJF06vbHQZzajDsdux3XVfXv9v6dDIImyU24MsGNkpNt0GISaaiqv51NM
+ZQX0miOXXWdkQvWTZFXhmsFCmJLE67oQFSar4hzfAaCulaMD+b3Mcsjlh0yvSq7g
+6swiIasEU3qNLKaJAZEzfywroVYr3BwM1IiVbQeKgIkyPS/85M4Y6Ss/T+OWi1Oe
+K49NdYBvFP+hNVEoeZzJz5K/nd6C35IX0t2bN5CVXchUFmaUMYk2iPdhXdsC720t
+BwIDAQAB
+-----END PUBLIC KEY-----)";
+
+  std::error_code ec;
+  auto obj = jwt::decode(enc_str, algorithms({"HS256"}), ec, verify(true), secret(pub_key));
+
+  ASSERT_TRUE (ec);
+  EXPECT_EQ (ec.value(), static_cast<int>(jwt::VerificationErrc::AlgoConfusionAttack));
+
+}

@@ -98,6 +98,8 @@ enum class VerificationErrc
   InvalidSignature,
   // Invalid value type used for known claims
   TypeConversionError,
+  // Algorithm confusion attack detected
+  AlgoConfusionAttack,
 };
 
 /**

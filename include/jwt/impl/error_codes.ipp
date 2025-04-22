@@ -124,6 +124,8 @@ struct VerificationErrorCategory: std::error_category
       return "invalid signature";
     case VerificationErrc::TypeConversionError:
       return "type conversion error";
+    case VerificationErrc::AlgoConfusionAttack:
+      return "algo confusion attack possibility";
     };
     return "unknown verification error";
   }

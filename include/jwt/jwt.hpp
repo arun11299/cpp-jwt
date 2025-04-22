@@ -829,6 +829,10 @@ private: // Private implementation
    */
   verify_func_t get_verify_algorithm_impl(const jwt_header& hdr) const noexcept;
 
+  /*!
+   */
+  verify_result_t check_for_algo_confusion_attack(const jwt_header& hdr) const;
+
 private: // Data members;
 
   /// The key for creating the JWS
