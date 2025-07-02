@@ -25,7 +25,7 @@ SOFTWARE.
 
 namespace jwt {
 
-verify_result_t is_secret_a_public_key(const jwt::string_view secret)
+inline verify_result_t is_secret_a_public_key(const jwt::string_view secret)
 {
   std::error_code ec{};
 
