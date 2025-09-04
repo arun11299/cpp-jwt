@@ -882,7 +882,7 @@ public: // 'tors
 
 public: // Exposed static APIs
   /**
-   * Splitsa JWT string into its three parts
+   * Splits a JWT string into its three parts
    * using dot('.') as the delimiter.
    *
    * @note: Instead of actually splitting the API
