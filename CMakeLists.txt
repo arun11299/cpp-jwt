@@ -1,12 +1,13 @@
 cmake_minimum_required(VERSION 3.14.0)
 
-project(cpp-jwt VERSION 1.5.0)
-
-if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+# source dir checking is unreliable
+if(DEFINED PROJECT_NAME)
   set(root_project OFF)
 else()
   set(root_project ON)
 endif()
+
+project(cpp-jwt VERSION 1.5.0)
 
 option(CPP_JWT_BUILD_EXAMPLES "build examples" ${root_project})
 option(CPP_JWT_BUILD_TESTS "build tests" ${root_project})
