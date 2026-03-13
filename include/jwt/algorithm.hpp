@@ -63,6 +63,8 @@ using sign_func_t   = sign_result_t (*) (const jwt::string_view key,
 using verify_func_t = verify_result_t (*) (const jwt::string_view key,
                                            const jwt::string_view head,
                                            const jwt::string_view jwt_sign);
+										   
+verify_result_t is_secret_a_public_key(const jwt::string_view secret);
 
 namespace algo {
 
