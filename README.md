@@ -38,17 +38,17 @@
 
 
 ## What is it ?
-For the uninitiated, JSON Web Token(JWT) is a JSON based standard (<a href="https://tools.ietf.org/html/rfc7519">RFC-7519</a>) for creating assertions or access tokens that consists of some claims (encoded within the assertion).
-This assertion can be used in some kind of bearer authentication mechanism that the server will provide to clients, and the clients can make use of the provided assertion for accessing resources.
+JSON Web Token(JWT) is a JSON based standard (<a href="https://tools.ietf.org/html/rfc7519">RFC-7519</a>) for creating assertions or access tokens that consists of some claims (encoded within the assertion).
+This assertion can be used in a bearer authentication mechanism that the server will provide to clients, and the clients can make use of the provided assertion for accessing resources.
 
-Few good resources on this material which I found useful are:
+Some good resources on this material which I found useful are:
   <a href="https://scotch.io/tutorials/the-anatomy-of-a-json-web-token">Anatomy of JWT</a>
   <a href="https://auth0.com/learn/json-web-tokens/">Learn JWT</a>
   <a href="https://tools.ietf.org/html/rfc7519">RFC 7519</a>
 
 
 ## Example
-  Lets dive into see a simple example of encoding and decoding in Python. Taking the example of <strong>pyjwt</strong> module from its docs.
+  Lets dive into an example of encoding and decoding in Python. Taking the example of <strong>pyjwt</strong> module from its docs.
 
   ```python
   >>import jwt
@@ -95,10 +95,10 @@ Few good resources on this material which I found useful are:
 
   Almost the same API, except for some ugliness here and there. But close enough!
 
-  Lets take another example in which we will see to add payload claim having type other than string.
+  Lets take another example in which we will add a payload claim having type other than string.
   The <code>payload</code> function used in the above example to create <code>jwt_object</code> object can only take strings. For anything else, it will throw a compilation error.
 
-  For adding claims having values other than string, <code>jwt_object</code> class provides <code>add_claim</code> API. We will also see few other APIs in the next example. Make sure to read the comments :).
+  For adding claims having values other than string, <code>jwt_object</code> class provides the <code>add_claim</code> API. We will also see a few other APIs in the next example. Make sure to read the comments :).
 
   ```cpp
     #include <chrono>
@@ -157,10 +157,10 @@ The <code>jwt_object</code> class is basically a composition of the JWT componen
 
 
 ## API Philosophy
-I wanted to make the code easy to read and at the same time make most of the standard library and the modern features.
+I wanted to make the code easy to read and at the same time make most of the standard library and modern C++ features.
 It also uses some metaprogramming tricks to enforce type checks and give better error messages.
 
-The design of `parameters` alleviates the pain of remembering positional arguments. Also makes the APIs more extensible for future enhancements.
+The design of `parameters` alleviates the pain of remembering positional arguments. It also makes the APIs easier to extend for future enhancements.
 
 The library has 2 sets of APIs for encoding and decoding:
   - API which takes an instance of <code>std::error_code</code>
@@ -234,7 +234,7 @@ cmake --build . -j
 
 ## Consuming the library
 
-This library is uses cmake as a build system.
+This library uses cmake as a build system.
 ```cmake
 # you can use cmake's `find_package` after installation or `add_subdirectory` when vendoring this repository
 
@@ -429,7 +429,7 @@ For the registered claim types the library assumes specific data types for the c
 
 
 ## Advanced Examples
-We will see few complete examples which makes use of error code checks and exception handling.
+Some complete examples which make use of error code checks and exception handling.
 The examples are taken from the "tests" section. Users are requested to checkout the tests to find out more ways to use this library.
 
 Expiration verification example (uses error_code):
