@@ -32,7 +32,7 @@ if(root_project)
   endif()
 endif()
 
-find_package(OpenSSL REQUIRED SSL)
+find_package(OpenSSL CONFIG REQUIRED SSL)
 
 if(NOT CPP_JWT_USE_VENDORED_NLOHMANN_JSON)
   find_package(nlohmann_json REQUIRED)
